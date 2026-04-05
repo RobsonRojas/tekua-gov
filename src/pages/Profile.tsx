@@ -222,7 +222,9 @@ const Profile: React.FC = () => {
                   Membro Desde
                 </Typography>
                 <Typography variant="body1" fontWeight={500}>
-                  {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+                  {(profile?.created_at || authUser?.created_at) 
+                    ? new Date(profile?.created_at || authUser?.created_at as string).toLocaleDateString() 
+                    : 'N/A'}
                 </Typography>
               </Grid>
             </Grid>

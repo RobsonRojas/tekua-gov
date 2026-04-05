@@ -6,7 +6,7 @@ Members of the Tekua association need a centralized system to access governance 
 
 A new React-based web application will be developed using Material UI for the frontend. It will integrate with Supabase for authentication and data storage, using Supabase Edge Functions for server-side logic. The application will feature:
 - A secure login system.
-- A user profile view for all members.
+- A user profile view for all members, including join date ("Membro Desde").
 - An administrative dashboard for user management (restricted to admins).
 - Deployment configuration for Vercel.
 

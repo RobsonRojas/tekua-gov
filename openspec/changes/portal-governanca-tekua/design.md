@@ -21,7 +21,7 @@ The Tekua association requires a digital portal to manage its members and provid
 
 - **Framework**: React.js (Vite template) for a fast and efficient development experience.
 - **Styling**: Material UI (MUI) for a consistent, professional "Enterprise" look and feel.
-- **Backend**: Supabase for Authentication, PostgreSQL Database, and Edge Functions.
+- **Backend**: Supabase for Authentication, PostgreSQL Database, and Edge Functions. The `profiles` table includes `id`, `full_name`, `role`, `avatar_url`, and `created_at`.
 - **State Management**: React Context API for authentication state and profile data.
 - **Testing**: 
   - **Unit/Component Testing**: **Vitest** + **React Testing Library** for fast, local feedback.
