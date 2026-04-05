@@ -1,0 +1,82 @@
+{
+  "login": {
+    "title": "Tekua",
+    "subtitle": "Sign in to access governance services.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "submitting": "Signing In...",
+    "forgotPassword": "Forgot password?",
+    "restrictedAccess": "Restricted Access",
+    "onlyMembers": "Only registered members can access this portal.",
+    "errorDefault": "An error occurred during sign in. Check your credentials."
+  },
+  "profile": {
+    "title": "My Profile",
+    "edit": "Edit Profile",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Error updating profile.",
+    "defaultName": "Tekua User",
+    "member": "Member",
+    "statusActive": "Status: Active",
+    "personalInfo": "Personal Information",
+    "fullName": "Full Name",
+    "notInformed": "Not informed",
+    "corporateEmail": "Corporate Email",
+    "role": "Role / Position",
+    "memberSince": "Member Since",
+    "accountSettings": "Account Settings",
+    "security": "Security & Password",
+    "securityDesc": "Manage your security information.",
+    "activity": "Activity History",
+    "activityDesc": "See your recent portal actions.",
+    "na": "N/A"
+  },
+  "admin": {
+    "title": "User Management",
+    "subtitle": "View and manage association members and their permissions.",
+    "refresh": "Refresh",
+    "newMember": "New Member",
+    "loadError": "Error loading user list.",
+    "updateRoleSuccess": "Role of {{name}} updated to {{role}}.",
+    "updateRoleError": "Error updating role. Check if Edge Function is configured.",
+    "searchPlaceholder": "Search by name or email...",
+    "filters": "Filters",
+    "colMember": "MEMBER",
+    "colEmail": "EMAIL",
+    "colRole": "ROLE",
+    "colStatus": "STATUS",
+    "noUsersFound": "No users found.",
+    "noName": "No name",
+    "active": "Active",
+    "viewProfile": "View Profile",
+    "removeAdmin": "Remove Admin",
+    "makeAdmin": "Make Admin",
+    "removeAccess": "Remove Access"
+  },
+  "layout": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "admin": "Admin Panel",
+    "logout": "Logout",
+    "footer": "© {{year}} Tekua Association. All rights reserved."
+  },
+  "home": {
+    "title": "Tekua Governance Portal",
+    "subtitle": "Welcome to the central association services system. Here you can manage your account, access documents and participate in decisions.",
+    "cardMembrosTitle": "Member Management",
+    "cardMembrosDesc": "View and manage the complete list of association members and their data.",
+    "cardGovTitle": "Governance Services",
+    "cardGovDesc": "Access voting tools, meeting minutes and official documents.",
+    "cardDocTitle": "Documentation",
+    "cardDocDesc": "Read the Tekua association statutes and guidelines.",
+    "access": "Access"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

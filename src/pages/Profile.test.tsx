@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Profile from './Profile';
 import { AuthProvider } from '../context/AuthContext';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 // Note: AuthContext and Supabase are mocked in setup.ts

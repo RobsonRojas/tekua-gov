@@ -34,9 +34,11 @@ import {
   Filter,
   RefreshCw
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 const AdminPanel: React.FC = () => {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,7 +59,7 @@ const AdminPanel: React.FC = () => {
       setUsers(data || []);
     } catch (err: any) {
       console.error('Error fetching users:', err);
-      setMessage({ type: 'error', text: 'Erro ao carregar lista de usuários.' });
+      setMessage({ type: 'error', text: t('admin.loadError') });
     } finally {
       setLoading(false);
     }
@@ -86,27 +88,24 @@ const AdminPanel: React.FC = () => {
     try {
       const newRole = selectedUser.role === 'admin' ? 'member' : 'admin';
       
-      // Note: This would ideally be an Edge Function call for security/RBAC.
-      // For now, we update directly if RLS allows or via service role.
-      // The prompt specified Edge Functions, so we should call one.
       const { data: _data, error } = await supabase.functions.invoke('update-user-role', {
         body: { userId: selectedUser.id, role: newRole }
       });
 
       if (error) throw error;
       
-      setMessage({ type: 'success', text: `Cargo de ${selectedUser.full_name} atualizado para ${newRole}.` });
+      setMessage({ type: 'success', text: t('admin.updateRoleSuccess', { name: selectedUser.full_name, role: newRole }) });
       fetchUsers();
     } catch (err: any) {
       console.error('Error updating role:', err);
-      setMessage({ type: 'error', text: err.message || 'Erro ao atualizar cargo. Verifique se a Edge Function está configurada.' });
+      setMessage({ type: 'error', text: err.message || t('admin.updateRoleError') });
     } finally {
       setActionLoading(false);
     }
   };
 
   const filteredUsers = users.filter(u => 
-    (u.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (u.full_name || t('admin.noName')).toLowerCase().includes(searchTerm.toLowerCase()) || 
     (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -115,14 +114,14 @@ const AdminPanel: React.FC = () => {
       <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h2" color="primary.main" gutterBottom>
-            Gerenciamento de Usuários
+            {t('admin.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Visualize e gerencie os membros da associação e suas permissões.
+            {t('admin.subtitle')}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Tooltip title="Atualizar">
+          <Tooltip title={t('admin.refresh')}>
             <IconButton onClick={fetchUsers} disabled={loading}>
               <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
             </IconButton>
@@ -132,7 +131,7 @@ const AdminPanel: React.FC = () => {
             startIcon={<UserPlus size={20} />}
             sx={{ py: 1.5, px: 3 }}
           >
-            Novo Membro
+            {t('admin.newMember')}
           </Button>
         </Box>
       </Box>
@@ -162,7 +161,7 @@ const AdminPanel: React.FC = () => {
       >
         <TextField
           fullWidth
-          placeholder="Buscar por nome ou email..."
+          placeholder={t('admin.searchPlaceholder')}
           variant="outlined"
           size="medium"
           value={searchTerm}
@@ -181,7 +180,7 @@ const AdminPanel: React.FC = () => {
           startIcon={<Filter size={18} />}
           sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', color: 'text.secondary' }}
         >
-          Filtros
+          {t('admin.filters')}
         </Button>
       </Paper>
 
@@ -204,10 +203,10 @@ const AdminPanel: React.FC = () => {
         <Table sx={{ minWidth: 650 }}>
           <TableHead sx={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary', py: 3 }}>MEMBRO</TableCell>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>EMAIL</TableCell>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>CARGO</TableCell>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>STATUS</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: 'text.secondary', py: 3 }}>{t('admin.colMember')}</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colEmail')}</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colRole')}</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colStatus')}</TableCell>
               <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}></TableCell>
             </TableRow>
           </TableHead>
@@ -216,7 +215,7 @@ const AdminPanel: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
                   <Typography variant="body1" color="text.secondary">
-                    Nenhum usuário encontrado.
+                    {t('admin.noUsersFound')}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -243,14 +242,14 @@ const AdminPanel: React.FC = () => {
                         {user.full_name?.charAt(0) || user.email?.charAt(0) || '?'}
                       </Avatar>
                       <Typography variant="body1" fontWeight={600}>
-                        {user.full_name || 'Sem nome'}
+                        {user.full_name || t('admin.noName')}
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>{user.email || 'N/A'}</TableCell>
+                  <TableCell>{user.email || t('profile.na')}</TableCell>
                   <TableCell>
                     <Chip 
-                      label={user.role} 
+                      label={user.role === 'admin' ? 'Admin' : t('profile.member')} 
                       size="small" 
                       variant="outlined" 
                       sx={{ textTransform: 'capitalize', color: 'primary.light', borderColor: 'rgba(99, 102, 241, 0.3)' }} 
@@ -266,7 +265,7 @@ const AdminPanel: React.FC = () => {
                           bgcolor: 'secondary.main' 
                         }} 
                       />
-                      <Typography variant="body2">Ativo</Typography>
+                      <Typography variant="body2">{t('admin.active')}</Typography>
                     </Box>
                   </TableCell>
                   <TableCell align="right">
@@ -300,18 +299,18 @@ const AdminPanel: React.FC = () => {
       >
         <MenuItem onClick={handleMenuClose}>
           <ListItemIcon><UserIcon size={18} /></ListItemIcon>
-          <ListItemText primary="Ver Perfil" />
+          <ListItemText primary={t('admin.viewProfile')} />
         </MenuItem>
         <MenuItem onClick={handleToggleRole} disabled={actionLoading}>
           <ListItemIcon>
             {actionLoading ? <CircularProgress size={18} /> : <ShieldAlert size={18} />}
           </ListItemIcon>
-          <ListItemText primary={selectedUser?.role === 'admin' ? "Remover Administrador" : "Tornar Administrador"} />
+          <ListItemText primary={selectedUser?.role === 'admin' ? t('admin.removeAdmin') : t('admin.makeAdmin')} />
         </MenuItem>
         <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
         <MenuItem onClick={handleMenuClose} sx={{ color: '#ef4444' }}>
           <ListItemIcon><UserMinus size={18} color="#ef4444" /></ListItemIcon>
-          <ListItemText primary="Remover Acesso" />
+          <ListItemText primary={t('admin.removeAccess')} />
         </MenuItem>
       </Menu>
     </Box>

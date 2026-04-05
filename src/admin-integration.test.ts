@@ -86,9 +86,10 @@ describe('Admin Management Integration (Admin SDK)', () => {
     const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
     expect(listError).toBeNull();
     
-    const user = listData.users.find(u => u.email === testEmail);
+    if (!listData) throw new Error('listData is null');
+    const user = listData.users.find((u: any) => u.email === testEmail);
     expect(user).toBeDefined();
-    const userId = user.id;
+    const userId = user!.id;
 
     // 2. Update password
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, { password: newPassword });

@@ -22,10 +22,12 @@ import {
   Calendar,
   CheckCircle2
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
 const Profile: React.FC = () => {
+  const { t } = useTranslation();
   const { profile, user: authUser, loading: authLoading } = useAuth();
   
   const [fullName, setFullName] = useState('');
@@ -53,11 +55,11 @@ const Profile: React.FC = () => {
 
       if (error) throw error;
       
-      setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
+      setMessage({ type: 'success', text: t('profile.updateSuccess') });
       setIsEditing(false);
     } catch (err: any) {
       console.error('Update profile error:', err);
-      setMessage({ type: 'error', text: err.message || 'Erro ao atualizar perfil.' });
+      setMessage({ type: 'error', text: err.message || t('profile.updateError') });
     } finally {
       setUpdating(false);
     }
@@ -75,7 +77,7 @@ const Profile: React.FC = () => {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h2" color="primary.main">
-          Meu Perfil
+          {t('profile.title')}
         </Typography>
         <Button 
           variant="contained" 
@@ -83,7 +85,7 @@ const Profile: React.FC = () => {
           startIcon={updating ? <CircularProgress size={18} color="inherit" /> : (isEditing ? <CheckCircle2 size={18} /> : <Edit2 size={18} />)}
           onClick={isEditing ? handleUpdateProfile : () => setIsEditing(true)}
         >
-          {updating ? 'Salvando...' : (isEditing ? 'Salvar Alterações' : 'Editar Perfil')}
+          {updating ? t('profile.saving') : (isEditing ? t('profile.save') : t('profile.edit'))}
         </Button>
       </Box>
 
@@ -138,10 +140,10 @@ const Profile: React.FC = () => {
             </Badge>
 
             <Typography variant="h3" gutterBottom>
-              {profile?.full_name || 'Usuário Tekua'}
+              {profile?.full_name || t('profile.defaultName')}
             </Typography>
             <Typography variant="body1" color="text.secondary" gutterBottom sx={{ textTransform: 'capitalize' }}>
-              {profile?.role || 'Membro'}
+              {profile?.role === 'admin' ? 'Admin' : t('profile.member')}
             </Typography>
             
             <Box 
@@ -157,7 +159,7 @@ const Profile: React.FC = () => {
                 fontSize: '0.875rem'
               }}
             >
-              Status: Ativo
+              {t('profile.statusActive')}
             </Box>
           </Paper>
         </Grid>
@@ -173,13 +175,13 @@ const Profile: React.FC = () => {
             }}
           >
             <Typography variant="h3" gutterBottom sx={{ mb: 4 }}>
-              Informações Pessoais
+              {t('profile.personalInfo')}
             </Typography>
 
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Nome Completo
+                  {t('profile.fullName')}
                 </Typography>
                 {isEditing ? (
                   <TextField 
@@ -190,14 +192,14 @@ const Profile: React.FC = () => {
                   />
                 ) : (
                   <Typography variant="body1" fontWeight={500}>
-                    {profile?.full_name || 'Não informado'}
+                    {profile?.full_name || t('profile.notInformed')}
                   </Typography>
                 )}
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Email Corporativo
+                  {t('profile.corporateEmail')}
                 </Typography>
                 <Typography variant="body1" fontWeight={500}>
                   {authUser?.email}
@@ -210,28 +212,28 @@ const Profile: React.FC = () => {
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Cargo / Função
+                  {t('profile.role')}
                 </Typography>
                 <Typography variant="body1" fontWeight={500} sx={{ textTransform: 'capitalize' }}>
-                  {profile?.role || 'Membro'}
+                  {profile?.role === 'admin' ? 'Admin' : t('profile.member')}
                 </Typography>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Membro Desde
+                  {t('profile.memberSince')}
                 </Typography>
                 <Typography variant="body1" fontWeight={500}>
                   {(profile?.created_at || authUser?.created_at) 
                     ? new Date(profile?.created_at || authUser?.created_at as string).toLocaleDateString() 
-                    : 'N/A'}
+                    : t('profile.na')}
                 </Typography>
               </Grid>
             </Grid>
 
             <Box sx={{ mt: 6 }}>
               <Typography variant="h3" gutterBottom sx={{ mb: 3 }}>
-                Configurações da Conta
+                {t('profile.accountSettings')}
               </Typography>
               <List sx={{ p: 0 }}>
                 <ListItem 
@@ -245,8 +247,8 @@ const Profile: React.FC = () => {
                     <Shield size={20} />
                   </ListItemIcon>
                   <ListItemText 
-                    primary="Segurança e Senha" 
-                    secondary="Gerencie suas informações de segurança." 
+                    primary={t('profile.security')} 
+                    secondary={t('profile.securityDesc')} 
                   />
                 </ListItem>
                 <ListItem 
@@ -260,8 +262,8 @@ const Profile: React.FC = () => {
                     <Calendar size={20} />
                   </ListItemIcon>
                   <ListItemText 
-                    primary="Histórico de Atividades" 
-                    secondary="Veja suas ações recentes no portal." 
+                    primary={t('profile.activity')} 
+                    secondary={t('profile.activityDesc')} 
                   />
                 </ListItem>
               </List>

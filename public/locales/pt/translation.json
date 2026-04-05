@@ -1,0 +1,82 @@
+{
+  "login": {
+    "title": "Tekua",
+    "subtitle": "Entre para acessar os serviços de governança.",
+    "email": "Email",
+    "password": "Senha",
+    "submit": "Entrar",
+    "submitting": "Entrando...",
+    "forgotPassword": "Esqueceu a senha?",
+    "restrictedAccess": "Acesso Restrito",
+    "onlyMembers": "Apenas membros registrados podem acessar este portal.",
+    "errorDefault": "Ocorreu um erro ao entrar. Verifique suas credenciais."
+  },
+  "profile": {
+    "title": "Meu Perfil",
+    "edit": "Editar Perfil",
+    "save": "Salvar Alterações",
+    "saving": "Salvando...",
+    "updateSuccess": "Perfil atualizado com sucesso!",
+    "updateError": "Erro ao atualizar perfil.",
+    "defaultName": "Usuário Tekua",
+    "member": "Membro",
+    "statusActive": "Status: Ativo",
+    "personalInfo": "Informações Pessoais",
+    "fullName": "Nome Completo",
+    "notInformed": "Não informado",
+    "corporateEmail": "Email Corporativo",
+    "role": "Cargo / Função",
+    "memberSince": "Membro Desde",
+    "accountSettings": "Configurações da Conta",
+    "security": "Segurança e Senha",
+    "securityDesc": "Gerencie suas informações de segurança.",
+    "activity": "Histórico de Atividades",
+    "activityDesc": "Veja suas ações recentes no portal.",
+    "na": "N/A"
+  },
+  "admin": {
+    "title": "Gerenciamento de Usuários",
+    "subtitle": "Visualize e gerencie os membros da associação e suas permissões.",
+    "refresh": "Atualizar",
+    "newMember": "Novo Membro",
+    "loadError": "Erro ao carregar lista de usuários.",
+    "updateRoleSuccess": "Cargo de {{name}} atualizado para {{role}}.",
+    "updateRoleError": "Erro ao atualizar cargo. Verifique se a Edge Function está configurada.",
+    "searchPlaceholder": "Buscar por nome ou email...",
+    "filters": "Filtros",
+    "colMember": "MEMBRO",
+    "colEmail": "EMAIL",
+    "colRole": "CARGO",
+    "colStatus": "STATUS",
+    "noUsersFound": "Nenhum usuário encontrado.",
+    "noName": "Sem nome",
+    "active": "Ativo",
+    "viewProfile": "Ver Perfil",
+    "removeAdmin": "Remover Administrador",
+    "makeAdmin": "Tornar Administrador",
+    "removeAccess": "Remover Acesso"
+  },
+  "layout": {
+    "dashboard": "Dashboard",
+    "profile": "Perfil",
+    "admin": "Painel Admin",
+    "logout": "Sair",
+    "footer": "© {{year}} Tekua Associação. Todos os direitos reservados."
+  },
+  "home": {
+    "title": "Portal de Governança Tekua",
+    "subtitle": "Bem-vindo ao sistema central de serviços da associação. Aqui você pode gerenciar sua conta, acessar documentos e participar das decisões.",
+    "cardMembrosTitle": "Gerenciamento de Membros",
+    "cardMembrosDesc": "Veja e gerencie a lista completa de membros da associação e seus dados.",
+    "cardGovTitle": "Serviços de Governança",
+    "cardGovDesc": "Acesse ferramentas de votação, atas de reuniões e documentos oficiais.",
+    "cardDocTitle": "Documentação",
+    "cardDocDesc": "Leia o estatuto e as diretrizes da associação Tekua.",
+    "access": "Acessar"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso"
+  }
+}

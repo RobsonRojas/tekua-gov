@@ -6,23 +6,40 @@ import {
   FileText, 
   ChevronRight
 } from 'lucide-react';
-
-const homeCards = [
-  { title: 'Gerenciamento de Membros', description: 'Veja e gerencie a lista completa de membros da associação e seus dados.', icon: <Users size={32} />, color: '#6366f1' },
-  { title: 'Serviços de Governança', description: 'Acesse ferramentas de votação, atas de reuniões e documentos oficiais.', icon: <ShieldCheck size={32} />, color: '#10b981' },
-  { title: 'Documentação', description: 'Leia o estatuto e as diretrizes da associação Tekua.', icon: <FileText size={32} />, color: '#f59e0b' },
-];
+import { useTranslation } from 'react-i18next';
 
 const Home: React.FC = () => {
+  const { t } = useTranslation();
+
+  const homeCards = [
+    { 
+      title: t('home.cardMembrosTitle'), 
+      description: t('home.cardMembrosDesc'), 
+      icon: <Users size={32} />, 
+      color: '#6366f1' 
+    },
+    { 
+      title: t('home.cardGovTitle'), 
+      description: t('home.cardGovDesc'), 
+      icon: <ShieldCheck size={32} />, 
+      color: '#10b981' 
+    },
+    { 
+      title: t('home.cardDocTitle'), 
+      description: t('home.cardDocDesc'), 
+      icon: <FileText size={32} />, 
+      color: '#f59e0b' 
+    },
+  ];
+
   return (
     <Box>
       <Box sx={{ mb: 6 }}>
         <Typography variant="h1" gutterBottom align="center" color="primary.main">
-          Portal de Governança Tekua
+          {t('home.title')}
         </Typography>
         <Typography variant="h5" align="center" color="text.secondary" sx={{ maxWidth: '800px', mx: 'auto', mb: 8 }}>
-          Bem-vindo ao sistema central de serviços da associação. 
-          Aqui você pode gerenciar sua conta, acessar documentos e participar das decisões.
+          {t('home.subtitle')}
         </Typography>
       </Box>
 
@@ -71,7 +88,7 @@ const Home: React.FC = () => {
                   '&:hover': { background: 'transparent', opacity: 0.8 } 
                 }}
               >
-                Acessar
+                {t('home.access')}
               </Button>
             </Paper>
           </Grid>

@@ -18,21 +18,24 @@ import {
   LogOut
 } from 'lucide-react';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import LanguageSelector from '../components/LanguageSelector';
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, signOut, loading: authLoading } = useAuth();
 
   const navItems = [
-    { label: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
-    { label: 'Profile', path: '/profile', icon: <User size={20} /> },
-    { label: 'Admin', path: '/admin-panel', icon: <Settings size={20} />, adminOnly: true },
+    { label: t('layout.dashboard'), path: '/', icon: <LayoutDashboard size={20} /> },
+    { label: t('layout.profile'), path: '/profile', icon: <User size={20} /> },
+    { label: t('layout.admin'), path: '/admin-panel', icon: <Settings size={20} />, adminOnly: true },
   ];
 
   const handleLogout = async () => {
@@ -61,6 +64,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           background: 'rgba(15, 23, 42, 0.8)',
           backdropFilter: 'blur(8px)',
+          zIndex: (theme) => theme.zIndex.drawer + 1
         }}
       >
         <Container maxWidth="lg">
@@ -107,7 +111,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Tooltip title="Profile">
+              <LanguageSelector />
+              
+              <Tooltip title={t('layout.profile')}>
                 <IconButton 
                   onClick={() => navigate('/profile')} 
                   sx={{ p: 0.5, border: '2px solid transparent', '&:hover': { borderColor: 'primary.main' } }}
@@ -127,10 +133,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 sx={{ 
                   borderColor: 'rgba(255, 255, 255, 0.1)',
                   color: 'text.secondary',
-                  '&:hover': { borderColor: 'error.main', color: 'error.main' }
+                  '&:hover': { borderColor: 'error.main', color: 'error.main' },
+                  display: { xs: 'none', sm: 'flex' }
                 }}
               >
-                Logout
+                {t('layout.logout')}
               </Button>
             </Box>
           </Toolbar>
@@ -155,7 +162,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       >
         <Container maxWidth="lg">
           <Typography variant="body2" color="text.secondary" align="center">
-            © {new Date().getFullYear()} Tekua Associação. Todos os direitos reservados.
+            {t('layout.footer', { year: new Date().getFullYear() })}
           </Typography>
         </Container>
       </Box>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
+import i18n from 'i18next';
 import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
@@ -8,6 +9,7 @@ interface AuthContextType {
   profile: any | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  updateLanguage: (lang: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,10 +58,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
       setProfile(data);
+      
+      // Sync i18n with profile preference
+      if (data?.preferred_language && i18n.language !== data.preferred_language) {
+        i18n.changeLanguage(data.preferred_language);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateLanguage = async (lng: string) => {
+    try {
+      i18n.changeLanguage(lng);
+      
+      if (user) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ preferred_language: lng })
+          .eq('id', user.id);
+        
+        if (error) throw error;
+        setProfile((prev: any) => prev ? { ...prev, preferred_language: lng } : null);
+      }
+    } catch (error) {
+      console.error('Error updating language:', error);
     }
   };
 
@@ -68,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signOut, updateLanguage }}>
       {children}
     </AuthContext.Provider>
   );

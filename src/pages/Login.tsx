@@ -15,9 +15,12 @@ import {
 } from '@mui/material';
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
+import LanguageSelector from '../components/LanguageSelector';
 
 const Login: React.FC = () => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,7 +46,7 @@ const Login: React.FC = () => {
       navigate(from, { replace: true });
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.message || 'Ocorreu um erro ao entrar. Verifique suas credenciais.');
+      setError(err.message || t('login.errorDefault'));
     } finally {
       setLoading(false);
     }
@@ -51,6 +54,9 @@ const Login: React.FC = () => {
 
   return (
     <Container maxWidth="xs">
+      <Box sx={{ position: 'fixed', top: 24, right: 24 }}>
+        <LanguageSelector />
+      </Box>
       <Box 
         sx={{ 
           pt: 10, 
@@ -73,10 +79,10 @@ const Login: React.FC = () => {
         >
           <Box sx={{ mb: 4, textAlign: 'center' }}>
             <Typography variant="h3" color="primary.main" gutterBottom sx={{ fontWeight: 800 }}>
-              Tekua
+              {t('login.title')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Entre para acessar os serviços de governança.
+              {t('login.subtitle')}
             </Typography>
           </Box>
 
@@ -90,7 +96,7 @@ const Login: React.FC = () => {
             <Box sx={{ mb: 3 }}>
               <TextField
                 fullWidth
-                label="Email"
+                label={t('login.email')}
                 variant="outlined"
                 type="email"
                 required
@@ -111,7 +117,7 @@ const Login: React.FC = () => {
             <Box sx={{ mb: 4 }}>
               <TextField
                 fullWidth
-                label="Senha"
+                label={t('login.password')}
                 type={showPassword ? 'text' : 'password'}
                 variant="outlined"
                 required
@@ -153,7 +159,7 @@ const Login: React.FC = () => {
                 mb: 3
               }}
             >
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? t('login.submitting') : t('login.submit')}
             </Button>
 
             <Box sx={{ textAlign: 'center' }}>
@@ -164,14 +170,14 @@ const Login: React.FC = () => {
                 color="primary"
                 sx={{ textDecoration: 'none', fontWeight: 600 }}
               >
-                Esqueceu a senha?
+                {t('login.forgotPassword')}
               </Link>
             </Box>
           </form>
 
           <Divider sx={{ my: 4, borderColor: 'rgba(255, 255, 255, 0.05)' }}>
             <Typography variant="body2" color="text.secondary">
-              Acesso Restrito
+              {t('login.restrictedAccess')}
             </Typography>
           </Divider>
 
@@ -184,7 +190,7 @@ const Login: React.FC = () => {
               '& .MuiAlert-icon': { color: 'primary.light' }
             }}
           >
-            Apenas membros registrados podem acessar este portal.
+            {t('login.onlyMembers')}
           </Alert>
         </Paper>
       </Box>
