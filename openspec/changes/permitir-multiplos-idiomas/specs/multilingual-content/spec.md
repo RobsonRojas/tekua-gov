@@ -14,3 +14,14 @@ O sistema **DEVE (SHALL)** permitir que registros no banco de dados possuam trad
 - **WHEN** um administrador edita um registro que suporta traduções.
 - **THEN** o sistema deve prover campos de entrada para cada idioma suportado.
 - **THEN** ao salvar, o banco de dados armazena o objeto estruturado com todas as versões de tradução fornecidas.
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

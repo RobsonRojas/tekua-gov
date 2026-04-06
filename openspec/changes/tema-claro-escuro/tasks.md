@@ -15,3 +15,9 @@
 - [x] 3.1 Implementar lógica de salvamento e carregamento do `localStorage`.
 - [x] 3.2 Atualizar o `AuthContext.tsx` para sincronizar a preferência com o Supabase (campo `preferred_theme` no perfil).
 - [x] 3.3 Adicionar migração SQL para incluir a coluna `preferred_theme` na tabela `profiles`.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

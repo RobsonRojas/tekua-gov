@@ -21,3 +21,14 @@ O sistema SHALL entregar notificações visuais ao usuário, mesmo que o portal 
 #### Scenario: Ação ao Clicar na Notificação
 - **WHEN** o usuário clica na notificação exibida.
 - **THEN** o navegador SHALL abrir o portal Tekua e focar na aba correspondente, redirecionando para a rota especificada nos metadados da mensagem (ex: `/voting`).
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

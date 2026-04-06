@@ -16,3 +16,9 @@
 - [ ] 3.1 Iniciar o primeiro build automatizado a partir da branch `main`.
 - [ ] 3.2 Verificar o log de build no painel da Vercel para erros de compilador/lint.
 - [ ] 3.3 Acessar a URL de produção gerada (ex: `tekua-gov.vercel.app`) e validar se a autenticação e as rotas SPA estão funcionando corretamente.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

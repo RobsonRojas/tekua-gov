@@ -21,3 +21,14 @@ O sistema SHALL assegurar que o agente mantenha uma postura ética e instrutiva.
 #### Scenario: Aviso de IA
 - **WHEN** o chat é iniciado.
 - **THEN** o sistema exibe um aviso claro de que as respostas são geradas por IA e os documentos oficiais devem ser consultados para validação legal.
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

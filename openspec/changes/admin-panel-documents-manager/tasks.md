@@ -15,3 +15,9 @@
 - [ ] 3.1 Desenvolver as funções utilitárias no frontend para interagir com o bucket e a tabela (upload, list, delete).
 - [ ] 3.2 Adicionar termos i18n relacionados à gestão documental nos arquivos `translation.json`.
 - [ ] 3.3 Adicionar feedback de progresso no upload e alerts de confirmação para exclusão.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

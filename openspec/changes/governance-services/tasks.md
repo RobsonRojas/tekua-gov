@@ -13,3 +13,9 @@
 
 - [ ] 3.1 Adicionar traduções para o Hub de Governança e seus cartões internos nos arquivos `translation.json`.
 - [ ] 3.2 Configurar links internos para os outros sistemas (serão preenchidos à medida que as pautas, votações e tarefas forem implementadas).
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

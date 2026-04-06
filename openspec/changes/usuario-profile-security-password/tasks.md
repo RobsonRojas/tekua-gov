@@ -15,3 +15,9 @@
 - [ ] 3.1 Adicionar método de atualização de senha no `AuthContext.tsx` caso necessário (ou direto no componente via Supabase).
 - [ ] 3.2 Implementar lógica de submissão do formulário chamando `supabase.auth.updateUser`.
 - [ ] 3.3 Adicionar traduções para todos os novos termos de segurança no i18n (`translation.json`).
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

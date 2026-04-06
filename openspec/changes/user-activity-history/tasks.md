@@ -15,3 +15,9 @@
 - [ ] 3.1 Desenvolver função utilitária no frontend para disparar logs em eventos-chave (Login, Voto, Tarefa, Perfil).
 - [ ] 3.2 Injetar chamadas de log em: `Login.tsx`, `TopicDetail.tsx`, `TasksBoard.tsx` e `Profile.tsx`.
 - [ ] 3.3 Adicionar traduções (i18n) para descrições amigáveis no `translation.json`.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

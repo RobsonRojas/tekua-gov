@@ -15,3 +15,9 @@
 - [ ] 3.2 Implementar função `subscribeUser()` para obter a subscrição do navegador e enviar para o Supabase.
 - [ ] 3.3 Desenvolver o tratador de cliques na notificação (`notificationclick`) no Service Worker para navegação profunda no portal.
 - [ ] 3.4 Adicionar traduções para os textos de consentimento e mensagens no `translation.json`.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

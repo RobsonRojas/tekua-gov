@@ -16,3 +16,14 @@ O sistema **DEVE (SHALL)** permitir que o usuário alterne entre os temas claro 
 #### Scenario: Sincronização com Perfil
 - **WHEN** um usuário autenticado altera o tema.
 - **THEN** o sistema deve tentar atualizar o campo `preferred_theme` na tabela `profiles` do Supabase.
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

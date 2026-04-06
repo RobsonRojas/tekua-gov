@@ -21,3 +21,14 @@ O sistema SHALL garantir o reconhecimento do valor do trabalho através da moeda
 #### Scenario: Pagamento Virtual (Wallet)
 - **WHEN** o requisitante clica em "Aprovar Execução" após revisar as fotos.
 - **THEN** o sistema transfere o valor em Surreais do requisitante para a carteira (Wallet) do executor e gera um log de transação.
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

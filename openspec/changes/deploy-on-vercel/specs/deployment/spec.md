@@ -17,3 +17,14 @@ O sistema SHALL suportar o roteamento do React Router no servidor de produção.
 #### Scenario: Acesso Direto a Rota Interna
 - **WHEN** o usuário acessa diretamente uma URL interna (ex: `/profile` ou `/admin`).
 - **THEN** o servidor Vercel SHALL redirecionar internamente para o `index.html` (Rewrite), permitindo que o React Router carregue o componente correto sem erro 404.
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

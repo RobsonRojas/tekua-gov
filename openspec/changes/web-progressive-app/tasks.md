@@ -14,3 +14,9 @@
 
 - [x] 3.1 Revisar a responsividade do `MainLayout` para visualização em modo "standalone".
 - [x] 3.2 Testar a instalação localmente usando Chrome DevTools (Application tab).
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para o service worker e lógica de atualização (Vitest).
+- [ ] Implementar testes de integração/E2E validando o modo standalone e offline (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

@@ -16,3 +16,14 @@ O sistema **DEVE (MUST)** tentar identificar o idioma preferido do usuário no p
 - **WHEN** um novo usuário acessa o portal pela primeira vez.
 - **THEN** o sistema lê o cabeçalho `Accept-Language` do navegador ou as configurações de localidade.
 - **THEN** se o idioma for suportado, o portal é exibido nesse idioma. Caso contrário, cai no idioma padrão (PT-BR).
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

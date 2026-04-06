@@ -21,3 +21,14 @@ O sistema SHALL organizar os documentos para facilitar a localização.
 #### Scenario: Busca por Texto
 - **WHEN** o usuário digita no campo de busca (ex: "Ata 2024").
 - **THEN** o sistema filtra a lista em tempo real pelos títulos dos documentos correspondentes.
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

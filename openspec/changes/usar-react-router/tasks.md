@@ -15,3 +15,9 @@
 
 - [x] 3.1 Atualizar a lógica de redirecionamento no `Login.tsx` após o sucesso na autenticação.
 - [x] 3.2 Garantir que o `AuthContext` interaja corretamente com as rotas durante o carregamento da sessão.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

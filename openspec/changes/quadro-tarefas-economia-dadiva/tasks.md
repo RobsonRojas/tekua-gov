@@ -16,3 +16,9 @@
 - [ ] 3.2 Desenvolver tela de aprovação de prova para o requisitante.
 - [ ] 3.3 Adicionar dashboard de carteira (Wallet) no perfil do usuário.
 - [ ] 3.4 Adicionar traduções (i18n) para o ecossistema Surreal no `translation.json`.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.

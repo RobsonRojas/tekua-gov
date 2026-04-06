@@ -21,3 +21,14 @@ O sistema SHALL registrar as interações principais com as ferramentas de gover
 #### Scenario: Log de Tarefa Concluída
 - **WHEN** a prova de trabalho de uma tarefa enviada pelo usuário é aprovada.
 - **THEN** o sistema insere um log: "Sua prova para a tarefa [Título] foi aprovada e você recebeu [X] Surreais".
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

@@ -21,3 +21,14 @@ O sistema SHALL permitir que documentos obsoletos ou incorretos sejam removidos 
 #### Scenario: Permissão de Escrita Restrita
 - **WHEN** um usuário não-administrador tenta acessar o endpoint de escrita ou o bucket.
 - **THEN** o Supabase RLS deve bloquear a ação e o frontend não deve exibir os controles de edição.
+
+### Requirement: Cobertura de Testes Automatizados
+O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
+
+#### Scenario: Execução de Testes Unitários
+- **WHEN** os testes de unidade são executados (Vitest).
+- **THEN** o sistema SHALL validar o comportamento isolado de componentes e funções.
+
+#### Scenario: Execução de Testes de Integração
+- **WHEN** os testes de fluxo (E2E) são executados (Playwright).
+- **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.

@@ -16,3 +16,9 @@
 - [ ] 3.1 Desenvolver função para buscar resumos de documentos oficiais e injetar no prompt do Gemini.
 - [ ] 3.2 Implementar sistema de streaming de resposta para melhor experiência do usuário (UX).
 - [ ] 3.3 Adicionar traduções (i18n) para a interface do chat no `translation.json`.
+
+## 4. Testes e Validação
+
+- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [ ] Validar o build final e a conformidade com as especificações.
