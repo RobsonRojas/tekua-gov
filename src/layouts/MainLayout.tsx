@@ -17,16 +17,13 @@ import {
   Settings, 
   LogOut
 } from 'lucide-react';
-import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,7 +46,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   if (authLoading && !profile) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#0f172a' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
         <CircularProgress color="primary" />
       </Box>
     );
@@ -61,10 +58,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         position="sticky" 
         elevation={0}
         sx={{ 
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          background: 'rgba(15, 23, 42, 0.8)',
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+          background: (theme) => theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(8px)',
-          zIndex: (theme) => theme.zIndex.drawer + 1
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          color: 'text.primary'
         }}
       >
         <Container maxWidth="lg">
@@ -110,7 +108,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ThemeToggleButton />
               <LanguageSelector />
               
               <Tooltip title={t('layout.profile')}>
@@ -131,7 +130,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 onClick={handleLogout}
                 startIcon={<LogOut size={16} />}
                 sx={{ 
-                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: (theme) => theme.palette.divider,
                   color: 'text.secondary',
                   '&:hover': { borderColor: 'error.main', color: 'error.main' },
                   display: { xs: 'none', sm: 'flex' }
@@ -146,7 +145,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       <Box component="main" sx={{ flexGrow: 1, py: 6 }}>
         <Container maxWidth="lg">
-          {children}
+          <Outlet />
         </Container>
       </Box>
 
@@ -156,8 +155,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           py: 3, 
           px: 2, 
           mt: 'auto', 
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          background: 'rgba(15, 23, 42, 0.5)'
+          borderTop: (theme) => `1px solid ${theme.palette.divider}`,
+          background: 'background.paper'
         }}
       >
         <Container maxWidth="lg">

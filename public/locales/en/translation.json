@@ -78,5 +78,9 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success"
+  },
+  "theme": {
+    "switchToDark": "Switch to Dark Mode",
+    "switchToLight": "Switch to Light Mode"
   }
 }

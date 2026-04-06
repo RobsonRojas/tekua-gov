@@ -78,5 +78,9 @@
     "loading": "Carregando...",
     "error": "Erro",
     "success": "Sucesso"
+  },
+  "theme": {
+    "switchToDark": "Mudar para Modo Escuro",
+    "switchToLight": "Mudar para Modo Claro"
   }
 }

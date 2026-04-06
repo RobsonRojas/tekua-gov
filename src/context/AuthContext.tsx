@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import i18n from 'i18next';
 import { supabase } from '../lib/supabase';
+import { useThemeContext } from './ThemeContext';
+import type { PaletteMode } from '@mui/material';
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +12,7 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   updateLanguage: (lang: string) => Promise<void>;
+  updateTheme: (theme: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const { setThemeMode } = useThemeContext();
 
   useEffect(() => {
     // Get initial session
@@ -63,6 +67,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data?.preferred_language && i18n.language !== data.preferred_language) {
         i18n.changeLanguage(data.preferred_language);
       }
+
+      // Sync theme with profile preference
+      if (data?.preferred_theme) {
+        setThemeMode(data.preferred_theme as PaletteMode);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -88,12 +97,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateTheme = async (themeMode: string) => {
+    try {
+      setThemeMode(themeMode as PaletteMode);
+      
+      if (user) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ preferred_theme: themeMode })
+          .eq('id', user.id);
+        
+        if (error) throw error;
+        setProfile((prev: any) => prev ? { ...prev, preferred_theme: themeMode } : null);
+      }
+    } catch (error) {
+      console.error('Error updating theme:', error);
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signOut, updateLanguage }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signOut, updateLanguage, updateTheme }}>
       {children}
     </AuthContext.Provider>
   );
