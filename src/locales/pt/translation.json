@@ -79,6 +79,13 @@
     "error": "Erro",
     "success": "Sucesso"
   },
+  "auth": {
+    "invalid_credentials": "Email ou senha incorretos.",
+    "email_not_confirmed": "Por favor, confirme seu email antes de entrar.",
+    "user_not_found": "Usuário não encontrado.",
+    "rate_limit_exceeded": "Muitas tentativas. Tente novamente mais tarde.",
+    "unknown_error": "Ocorreu um erro inesperado."
+  },
   "theme": {
     "switchToDark": "Mudar para Modo Escuro",
     "switchToLight": "Mudar para Modo Claro"

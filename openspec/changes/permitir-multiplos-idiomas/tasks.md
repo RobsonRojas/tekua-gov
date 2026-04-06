@@ -29,4 +29,4 @@
 
 - [/] 5.1 Verificar se a detecção automática do navegador funciona.
 - [/] 5.2 Testar a troca manual de idioma e persistência entre sessões.
-- [ ] 5.3 Validar se as mensagens de erro do Supabase também podem ser mapeadas para traduções.
+- [x] 5.3 Validar se as mensagens de erro do Supabase também podem ser mapeadas para traduções.

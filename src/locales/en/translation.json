@@ -79,6 +79,13 @@
     "error": "Error",
     "success": "Success"
   },
+  "auth": {
+    "invalid_credentials": "Invalid login credentials.",
+    "email_not_confirmed": "Please confirm your email before logging in.",
+    "user_not_found": "User not found.",
+    "rate_limit_exceeded": "Too many requests. Please try again later.",
+    "unknown_error": "An unknown error occurred."
+  },
   "theme": {
     "switchToDark": "Switch to Dark Mode",
     "switchToLight": "Switch to Light Mode"

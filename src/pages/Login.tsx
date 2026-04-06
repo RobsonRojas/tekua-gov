@@ -31,6 +31,14 @@ const Login: React.FC = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
+  const mapSupabaseError = (message: string): string => {
+    if (message.toLowerCase().includes('invalid login credentials')) return t('auth.invalid_credentials');
+    if (message.toLowerCase().includes('email not confirmed')) return t('auth.email_not_confirmed');
+    if (message.toLowerCase().includes('user not found')) return t('auth.user_not_found');
+    if (message.toLowerCase().includes('rate limit exceeded')) return t('auth.rate_limit_exceeded');
+    return t('auth.unknown_error');
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -46,7 +54,7 @@ const Login: React.FC = () => {
       navigate(from, { replace: true });
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.message || t('login.errorDefault'));
+      setError(mapSupabaseError(err.message || ''));
     } finally {
       setLoading(false);
     }
