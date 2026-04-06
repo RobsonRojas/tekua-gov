@@ -8,6 +8,9 @@ afterEach(() => {
 });
 
 // Mock Supabase or other global providers here if needed
+vi.mock('@asamuzakjp/css-color', () => ({}));
+vi.mock('@csstools/css-calc', () => ({}));
+
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
     auth: {
