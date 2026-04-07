@@ -118,5 +118,29 @@
     "resetSuccess": "Password updated successfully! You can sign in now.",
     "errorMismatch": "Passwords do not match.",
     "errorTooShort": "Password must be at least 6 characters long."
+  },
+  "wallet": {
+    "title": "My Wallet",
+    "balance": "Available Balance",
+    "history": "Transaction History",
+    "transfer": "Transfer",
+    "receive": "Receive",
+    "send": "Send Surreais",
+    "amount": "Amount",
+    "recipient": "Recipient",
+    "description": "Description / Justification",
+    "confirm": "Confirm Transfer",
+    "success": "Transfer completed successfully!",
+    "error": "Error performing transfer.",
+    "insufficient": "Insufficient balance.",
+    "noTransactions": "No transactions found.",
+    "treasury": "Treasury",
+    "mint": "Mint Coins",
+    "total_supply": "Total Supply",
+    "from": "From",
+    "to": "To",
+    "date": "Date",
+    "surreal": "Surreal",
+    "surreais": "Surreais"
   }
 }

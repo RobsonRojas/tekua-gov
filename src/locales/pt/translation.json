@@ -118,5 +118,29 @@
     "resetSuccess": "Senha atualizada com sucesso! Você pode entrar agora.",
     "errorMismatch": "As senhas não coincidem.",
     "errorTooShort": "A senha deve ter pelo menos 6 caracteres."
+  },
+  "wallet": {
+    "title": "Minha Carteira",
+    "balance": "Saldo Disponível",
+    "history": "Histórico de Transações",
+    "transfer": "Transferir",
+    "receive": "Receber",
+    "send": "Enviar Surreais",
+    "amount": "Valor",
+    "recipient": "Destinatário",
+    "description": "Descrição / Justificativa",
+    "confirm": "Confirmar Transferência",
+    "success": "Transferência realizada com sucesso!",
+    "error": "Erro ao realizar transferência.",
+    "insufficient": "Saldo insuficiente.",
+    "noTransactions": "Nenhuma transação encontrada.",
+    "treasury": "Tesouraria",
+    "mint": "Emitir Moedas",
+    "total_supply": "Suprimento Total",
+    "from": "De",
+    "to": "Para",
+    "date": "Data",
+    "surreal": "Surreal",
+    "surreais": "Surreais"
   }
 }

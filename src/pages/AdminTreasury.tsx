@@ -1,0 +1,356 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Grid, 
+  Button, 
+  TextField, 
+  Autocomplete,
+  Alert,
+  CircularProgress,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Avatar,
+  Chip
+} from '@mui/material';
+import { 
+  Database, 
+  PlusCircle, 
+  History, 
+  Users, 
+  Search,
+  CheckCircle2,
+  AlertTriangle
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
+
+interface Profile {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
+interface Transaction {
+  id: string;
+  from_id: string | null;
+  to_id: string | null;
+  amount: number;
+  description: string;
+  created_at: string;
+  to_profile?: { full_name: string; email: string };
+}
+
+const AdminTreasury: React.FC = () => {
+  const { t } = useTranslation();
+  
+  // Minting State
+  const [recipient, setRecipient] = useState<Profile | null>(null);
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintStatus, setMintStatus] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  // Stats State
+  const [totalSupply, setTotalSupply] = useState<number>(0);
+  const [totalParticipants, setTotalParticipants] = useState<number>(0);
+  const [recentMints, setRecentMints] = useState<Transaction[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  const fetchStats = useCallback(async () => {
+    setLoadingStats(true);
+    try {
+      // 1. Total Supply
+      const { data: walletData, error: walletError } = await supabase
+        .from('wallets')
+        .select('balance');
+      if (walletError) throw walletError;
+      const total = walletData.reduce((acc, w) => acc + (w.balance || 0), 0);
+      setTotalSupply(total);
+      setTotalParticipants(walletData.length);
+
+      // 2. Recent Minting Transactions (from_id is NULL)
+      const { data: mintData, error: mintError } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          to_profile:to_id (full_name, email)
+        `)
+        .is('from_id', null)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (mintError) throw mintError;
+      setRecentMints(mintData || []);
+
+      // 3. User lists for autocomplete
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .order('full_name');
+      if (profileError) throw profileError;
+      setProfiles(profileData || []);
+
+    } catch (err) {
+      console.error('Error fetching admin stats:', err);
+    } finally {
+      setLoadingStats(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  const handleMint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recipient || !amount) return;
+
+    setIsMinting(true);
+    setMintStatus(null);
+
+    try {
+      const { data, error } = await supabase.rpc('admin_mint_currency', {
+        p_recipient_id: recipient.id,
+        p_amount: parseFloat(amount),
+        p_description: description
+      });
+
+      if (error) throw error;
+      if (data && !data.success) throw new Error(data.error);
+
+      setMintStatus({ type: 'success', text: `Sucesso! ${amount} Surreais emitidos para ${recipient.full_name}.` });
+      setAmount('');
+      setRecipient(null);
+      setDescription('');
+      fetchStats();
+    } catch (err: any) {
+       setMintStatus({ type: 'error', text: err.message || t('wallet.error') });
+    } finally {
+      setIsMinting(false);
+    }
+  };
+
+  if (loadingStats) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  return (
+    <Box>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h2" color="primary.main">
+          {t('wallet.treasury')}
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Gestão central da economia Surreal. Emita recompensas e audite o suprimento da associação.
+        </Typography>
+      </Box>
+
+      <Grid container spacing={4}>
+        {/* Statistics Widgets */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              backgroundColor: 'background.paper',
+              borderRadius: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3
+            }}
+          >
+            <Avatar sx={{ width: 64, height: 64, bgcolor: 'primary.main', color: 'white' }}>
+              <Database size={32} />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                {t('wallet.total_supply')}
+              </Typography>
+              <Typography variant="h1" sx={{ fontWeight: 800 }}>
+                {totalSupply.toLocaleString()} $S
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              backgroundColor: 'background.paper',
+              borderRadius: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3
+            }}
+          >
+            <Avatar sx={{ width: 64, height: 64, bgcolor: 'secondary.main', color: 'white' }}>
+              <Users size={32} />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                Participantes Ativos
+              </Typography>
+              <Typography variant="h1" sx={{ fontWeight: 800 }}>
+                {totalParticipants}
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Minting Form */}
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              backgroundColor: 'background.paper',
+              borderRadius: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.05)'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <PlusCircle size={24} style={{ marginRight: 12 }} color="#10b981" />
+              <Typography variant="h3">{t('wallet.mint')}</Typography>
+            </Box>
+
+            {mintStatus && (
+              <Alert severity={mintStatus.type} sx={{ mb: 3, borderRadius: '12px' }}>
+                {mintStatus.text}
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={handleMint} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Autocomplete
+                options={profiles}
+                getOptionLabel={(option) => `${option.full_name} (${option.email})`}
+                value={recipient}
+                onChange={(_, newValue) => setRecipient(newValue)}
+                renderInput={(params) => (
+                  <TextField 
+                    {...params} 
+                    label={t('wallet.recipient')} 
+                    variant="outlined" 
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: <Search size={18} style={{ marginRight: 8, color: '#94a3b8' }} />
+                    }}
+                  />
+                )}
+              />
+              <TextField
+                fullWidth
+                label={t('wallet.amount')}
+                type="number"
+                variant="outlined"
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                InputProps={{
+                  startAdornment: <Typography sx={{ mr: 1, fontWeight: 700, color: 'primary.main' }}>$S</Typography>
+                }}
+              />
+              <TextField
+                fullWidth
+                label={t('wallet.description')}
+                variant="outlined"
+                required
+                multiline
+                rows={3}
+                placeholder="Ex: Recompensa por tarefa realizada..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <Button 
+                variant="contained" 
+                size="large" 
+                type="submit"
+                disabled={isMinting || !recipient || !amount}
+                startIcon={isMinting ? <CircularProgress size={20} color="inherit" /> : <CheckCircle2 size={20} />}
+                sx={{ py: 1.5, borderRadius: '12px' }}
+              >
+                {isMinting ? 'Processando...' : 'Confirmar Emissão'}
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Audit Log / Recent Mints */}
+        <Grid size={{ xs: 12, lg: 7 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              backgroundColor: 'background.paper',
+              borderRadius: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              height: '100%'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <History size={24} style={{ marginRight: 12 }} color="#6366f1" />
+              <Typography variant="h3">Auditoria de Emissões</Typography>
+            </Box>
+
+            {recentMints.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Typography color="text.secondary">Nenhuma emissão recente.</Typography>
+              </Box>
+            ) : (
+              <List sx={{ p: 0 }}>
+                {recentMints.map((mint, index) => (
+                  <React.Fragment key={mint.id}>
+                    <ListItem sx={{ px: 0, py: 2 }}>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                              {mint.amount} $S → {mint.to_profile?.full_name || 'Desconhecido'}
+                            </Typography>
+                            <Chip label="EMISSÃO" size="small" color="secondary" variant="outlined" sx={{ borderRadius: '4px' }} />
+                          </Box>
+                        }
+                        secondary={
+                          <Box sx={{ mt: 1 }}>
+                            <Typography variant="body2" color="text.primary" sx={{ mb: 0.5 }}>
+                              {mint.description}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(mint.created_at).toLocaleString()}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                    {index < recentMints.length - 1 && <Divider component="li" sx={{ opacity: 0.05 }} />}
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+            
+            <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(245, 158, 11, 0.1)', borderRadius: '12px', display: 'flex', gap: 2 }}>
+              <AlertTriangle color="#f59e0b" size={20} />
+              <Typography variant="body2" color="text.secondary">
+                Ações de tesouraria são registradas permanentemente no banco de dados e não podem ser revertidas manualmente. Use com cautela.
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+export default AdminTreasury;

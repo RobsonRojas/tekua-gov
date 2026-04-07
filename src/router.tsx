@@ -11,6 +11,8 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const Wallet = lazy(() => import('./pages/Wallet'));
+const AdminTreasury = lazy(() => import('./pages/AdminTreasury'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -68,11 +70,29 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'wallet',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Wallet />
+          </Suspense>
+        ),
+      },
+      {
         path: 'admin-panel',
         element: (
           <ProtectedRoute adminOnly>
             <Suspense fallback={<LoadingFallback />}>
               <AdminPanel />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'admin-treasury',
+        element: (
+          <ProtectedRoute adminOnly>
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminTreasury />
             </Suspense>
           </ProtectedRoute>
         ),

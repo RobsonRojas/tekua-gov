@@ -7,6 +7,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import WalletCard from '../components/WalletCard';
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -42,6 +43,12 @@ const Home: React.FC = () => {
           {t('home.subtitle')}
         </Typography>
       </Box>
+
+      <Grid container spacing={4} sx={{ mb: 6 }}>
+        <Grid size={{ xs: 12 }}>
+          <WalletCard />
+        </Grid>
+      </Grid>
 
       <Grid container spacing={4}>
         {homeCards.map((card, index) => (
