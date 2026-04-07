@@ -30,6 +30,16 @@
     "accountSettings": "Account Settings",
     "security": "Security & Password",
     "securityDesc": "Manage your security information.",
+    "security_tab": {
+      "tabTitle": "Security",
+      "infoTab": "Basic Information",
+      "changePassword": "Change Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "updateButton": "Update Password",
+      "successMessage": "Password updated successfully!",
+      "passwordDescription": "We recommend using a strong password that you don't use on other sites."
+    },
     "activity": "Activity History",
     "activityDesc": "See your recent portal actions.",
     "na": "N/A"
