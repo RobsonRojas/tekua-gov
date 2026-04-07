@@ -2,34 +2,47 @@ import React from 'react';
 import { Typography, Grid, Paper, Box, Button } from '@mui/material';
 import { 
   Users, 
-  ShieldCheck, 
   FileText, 
-  ChevronRight
+  ChevronRight,
+  LayoutPanelLeft as MuralIcon,
+  PlusCircle as RegisterIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import WalletCard from '../components/WalletCard';
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const homeCards = [
     { 
       title: t('home.cardMembrosTitle'), 
       description: t('home.cardMembrosDesc'), 
       icon: <Users size={32} />, 
-      color: '#6366f1' 
+      color: '#6366f1',
+      path: '/admin-panel'
     },
     { 
-      title: t('home.cardGovTitle'), 
+      title: t('work.mural'), 
       description: t('home.cardGovDesc'), 
-      icon: <ShieldCheck size={32} />, 
-      color: '#10b981' 
+      icon: <MuralIcon size={32} />, 
+      color: '#10b981',
+      path: '/work-wall'
+    },
+    { 
+      title: t('work.register'), 
+      description: t('work.description'), 
+      icon: <RegisterIcon size={32} />, 
+      color: '#a855f7',
+      path: '/register-work'
     },
     { 
       title: t('home.cardDocTitle'), 
       description: t('home.cardDocDesc'), 
       icon: <FileText size={32} />, 
-      color: '#f59e0b' 
+      color: '#f59e0b',
+      path: '#'
     },
   ];
 
@@ -52,7 +65,7 @@ const Home: React.FC = () => {
 
       <Grid container spacing={4}>
         {homeCards.map((card, index) => (
-          <Grid key={index} size={{ xs: 12, md: 4 }}>
+          <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper 
               elevation={0}
               sx={{ 
@@ -88,6 +101,7 @@ const Home: React.FC = () => {
               </Typography>
               <Button 
                 endIcon={<ChevronRight size={18} />} 
+                onClick={() => navigate(card.path)}
                 sx={{ 
                   color: card.color, 
                   fontWeight: 600,

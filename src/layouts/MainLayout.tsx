@@ -15,7 +15,9 @@ import {
   LayoutDashboard, 
   User, 
   Settings, 
-  LogOut
+  LogOut,
+  Wallet as WalletIcon,
+  FileText as MuralIcon
 } from 'lucide-react';
 import { Link as RouterLink, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +33,8 @@ const MainLayout: React.FC = () => {
 
   const navItems = [
     { label: t('layout.dashboard'), path: '/', icon: <LayoutDashboard size={20} /> },
+    { label: t('wallet.title'), path: '/wallet', icon: <WalletIcon size={20} /> },
+    { label: t('work.mural'), path: '/work-wall', icon: <MuralIcon size={20} /> },
     { label: t('layout.profile'), path: '/profile', icon: <User size={20} /> },
     { label: t('layout.admin'), path: '/admin-panel', icon: <Settings size={20} />, adminOnly: true },
   ];

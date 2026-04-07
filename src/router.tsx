@@ -13,6 +13,8 @@ const Profile = lazy(() => import('./pages/Profile'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const Wallet = lazy(() => import('./pages/Wallet'));
 const AdminTreasury = lazy(() => import('./pages/AdminTreasury'));
+const WorkWall = lazy(() => import('./pages/WorkWall'));
+const RegisterWork = lazy(() => import('./pages/RegisterWork'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -95,6 +97,22 @@ export const router = createBrowserRouter([
               <AdminTreasury />
             </Suspense>
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'work-wall',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <WorkWall />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'register-work',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <RegisterWork />
+          </Suspense>
         ),
       },
     ],

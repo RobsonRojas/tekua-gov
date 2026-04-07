@@ -22,7 +22,10 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  Tooltip
+  Tooltip,
+  Tabs,
+  Tab,
+  Stack
 } from '@mui/material';
 import { 
   Search, 
@@ -32,7 +35,9 @@ import {
   ShieldAlert,
   User as UserIcon,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Settings,
+  Users
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
@@ -46,6 +51,10 @@ const AdminPanel: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  
+  const [tabValue, setTabValue] = useState(0);
+  const [threshold, setThreshold] = useState<number>(3);
+  const [savingConfig, setSavingConfig] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -65,9 +74,44 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const fetchConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('governance_settings')
+        .select('value')
+        .eq('key', 'min_contribution_confirmations')
+        .single();
+      
+      if (data && !error) {
+        setThreshold(Number(data.value));
+      }
+    } catch (err) {
+      console.error('Error fetching config:', err);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchConfig();
   }, []);
+
+  const handleSaveConfig = async () => {
+    setSavingConfig(true);
+    try {
+      const { error } = await supabase
+        .from('governance_settings')
+        .update({ value: JSON.stringify(threshold), updated_at: new Date() })
+        .eq('key', 'min_contribution_confirmations');
+
+      if (error) throw error;
+      setMessage({ type: 'success', text: t('common.success') });
+    } catch (err: any) {
+      console.error('Error saving config:', err);
+      setMessage({ type: 'error', text: err.message || t('common.error') });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, user: any) => {
     setAnchorEl(event.currentTarget);
@@ -88,11 +132,11 @@ const AdminPanel: React.FC = () => {
     try {
       const newRole = selectedUser.role === 'admin' ? 'member' : 'admin';
       
-      const { data: _data, error } = await supabase.functions.invoke('update-user-role', {
+      const { error: _error } = await supabase.functions.invoke('update-user-role', {
         body: { userId: selectedUser.id, role: newRole }
       });
 
-      if (error) throw error;
+      if (_error) throw _error;
       
       setMessage({ type: 'success', text: t('admin.updateRoleSuccess', { name: selectedUser.full_name, role: newRole }) });
       fetchUsers();
@@ -146,139 +190,193 @@ const AdminPanel: React.FC = () => {
         </Alert>
       )}
 
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 4,
-          backgroundColor: 'background.paper',
-          borderRadius: '24px',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          display: 'flex',
-          gap: 2,
-          alignItems: 'center'
-        }}
-      >
-        <TextField
-          fullWidth
-          placeholder={t('admin.searchPlaceholder')}
-          variant="outlined"
-          size="medium"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={20} color="#94a3b8" />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ maxWidth: '400px' }}
-        />
-        <Button 
-          variant="outlined" 
-          startIcon={<Filter size={18} />}
-          sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', color: 'text.secondary' }}
+      <Paper sx={{ mb: 4, borderRadius: '16px', bgcolor: 'background.paper', overflow: 'hidden' }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={(_, val) => setTabValue(val)}
+          textColor="primary"
+          indicatorColor="primary"
         >
-          {t('admin.filters')}
-        </Button>
+          <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.title')} />
+          <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
+        </Tabs>
       </Paper>
 
-      <TableContainer 
-        component={Paper} 
-        elevation={0}
-        sx={{ 
-          backgroundColor: 'background.paper', 
-          borderRadius: '24px',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          overflow: 'hidden',
-          position: 'relative'
-        }}
-      >
-        {loading && (
-          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(15, 23, 42, 0.5)', zIndex: 1 }}>
-            <CircularProgress />
-          </Box>
-        )}
-        <Table sx={{ minWidth: 650 }}>
-          <TableHead sx={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary', py: 3 }}>{t('admin.colMember')}</TableCell>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colEmail')}</TableCell>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colRole')}</TableCell>
-              <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colStatus')}</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredUsers.length === 0 && !loading ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    {t('admin.noUsersFound')}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredUsers.map((user) => (
-                <TableRow 
-                  key={user.id}
-                  sx={{ 
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.02)' }
-                  }}
-                >
-                  <TableCell component="th" scope="row">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar 
-                        sx={{ 
-                          width: 40, 
-                          height: 40, 
-                          bgcolor: user.role === 'admin' ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
-                          fontWeight: 600,
-                          fontSize: '0.875rem'
-                        }}
-                      >
-                        {user.full_name?.charAt(0) || user.email?.charAt(0) || '?'}
-                      </Avatar>
-                      <Typography variant="body1" fontWeight={600}>
-                        {user.full_name || t('admin.noName')}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{user.email || t('profile.na')}</TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={user.role === 'admin' ? 'Admin' : t('profile.member')} 
-                      size="small" 
-                      variant="outlined" 
-                      sx={{ textTransform: 'capitalize', color: 'primary.light', borderColor: 'rgba(99, 102, 241, 0.3)' }} 
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box 
-                        sx={{ 
-                          width: 8, 
-                          height: 8, 
-                          borderRadius: '50%', 
-                          bgcolor: 'secondary.main' 
-                        }} 
-                      />
-                      <Typography variant="body2">{t('admin.active')}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton onClick={(e) => handleMenuOpen(e, user)}>
-                      <MoreVertical size={20} color="#94a3b8" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))
+      {tabValue === 0 ? (
+        <>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              mb: 4,
+              backgroundColor: 'background.paper',
+              borderRadius: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              display: 'flex',
+              gap: 2,
+              alignItems: 'center'
+            }}
+          >
+            <TextField
+              fullWidth
+              placeholder={t('admin.searchPlaceholder')}
+              variant="outlined"
+              size="medium"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={20} color="#94a3b8" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ maxWidth: '400px' }}
+            />
+            <Button 
+              variant="outlined" 
+              startIcon={<Filter size={18} />}
+              sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', color: 'text.secondary' }}
+            >
+              {t('admin.filters')}
+            </Button>
+          </Paper>
+
+          <TableContainer 
+            component={Paper} 
+            elevation={0}
+            sx={{ 
+              backgroundColor: 'background.paper', 
+              borderRadius: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              overflow: 'hidden',
+              position: 'relative'
+            }}
+          >
+            {loading && (
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(15, 23, 42, 0.5)', zIndex: 1 }}>
+                <CircularProgress />
+              </Box>
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead sx={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary', py: 3 }}>{t('admin.colMember')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colEmail')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colRole')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colStatus')}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredUsers.length === 0 && !loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        {t('admin.noUsersFound')}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow 
+                      key={user.id}
+                      sx={{ 
+                        '&:last-child td, &:last-child th': { border: 0 },
+                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.02)' }
+                      }}
+                    >
+                      <TableCell component="th" scope="row">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Avatar 
+                            sx={{ 
+                              width: 40, 
+                              height: 40, 
+                              bgcolor: user.role === 'admin' ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+                              fontWeight: 600,
+                              fontSize: '0.875rem'
+                            }}
+                          >
+                            {user.full_name?.charAt(0) || user.email?.charAt(0) || '?'}
+                          </Avatar>
+                          <Typography variant="body1" fontWeight={600}>
+                            {user.full_name || t('admin.noName')}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{user.email || t('profile.na')}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={user.role === 'admin' ? 'Admin' : t('profile.member')} 
+                          size="small" 
+                          variant="outlined" 
+                          sx={{ textTransform: 'capitalize', color: 'primary.light', borderColor: 'rgba(99, 102, 241, 0.3)' }} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box 
+                            sx={{ 
+                              width: 8, 
+                              height: 8, 
+                              borderRadius: '50%', 
+                              bgcolor: 'secondary.main' 
+                            }} 
+                          />
+                          <Typography variant="body2">{t('admin.active')}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton onClick={(e) => handleMenuOpen(e, user)}>
+                          <MoreVertical size={20} color="#94a3b8" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      ) : (
+        <Paper 
+          elevation={0}
+          sx={{ 
+            p: 4, 
+            borderRadius: '24px', 
+            bgcolor: 'background.paper',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+          }}
+        >
+          <Typography variant="h5" gutterBottom fontWeight={600}>
+            {t('governance.config')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+            {t('governance.thresholdDesc')}
+          </Typography>
+          
+          <Stack spacing={3} sx={{ maxWidth: 400 }}>
+            <TextField
+              label={t('governance.threshold')}
+              type="number"
+              value={threshold}
+              onChange={(e) => setThreshold(Number(e.target.value))}
+              InputProps={{ inputProps: { min: 1, max: 20 } }}
+              fullWidth
+            />
+            <Button 
+              variant="contained" 
+              size="large"
+              onClick={handleSaveConfig}
+              disabled={savingConfig}
+              startIcon={savingConfig ? <CircularProgress size={20} /> : <Settings size={20} />}
+              sx={{ borderRadius: '12px', py: 1.5 }}
+            >
+              {t('governance.save')}
+            </Button>
+          </Stack>
+        </Paper>
+      )}
 
       <Menu
         anchorEl={anchorEl}

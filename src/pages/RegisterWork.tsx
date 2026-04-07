@@ -1,0 +1,229 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  TextField, 
+  Button, 
+  Paper, 
+  Grid, 
+  MenuItem, 
+  Alert, 
+  Snackbar,
+  CircularProgress,
+  Breadcrumbs,
+  Link as MuiLink
+} from '@mui/material';
+import { 
+  Work as WorkIcon, 
+  ArrowBack as ArrowBackIcon,
+  Send as SendIcon,
+  NavigateNext as NavigateNextIcon
+} from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+
+const RegisterWork: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [description, setDescription] = useState('');
+  const [evidenceUrl, setEvidenceUrl] = useState('');
+  const [amount, setAmount] = useState<number | string>('');
+  const [beneficiaryType, setBeneficiaryType] = useState<'tekua' | 'member'>('tekua');
+  const [beneficiaryId, setBeneficiaryId] = useState<string>('');
+  const [members, setMembers] = useState<any[]>([]);
+  
+  const [loading, setLoading] = useState(false);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  useEffect(() => {
+    if (beneficiaryType === 'member') {
+      fetchMembers();
+    }
+  }, [beneficiaryType]);
+
+  const fetchMembers = async () => {
+    setLoadingMembers(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .neq('id', user?.id)
+        .order('full_name');
+      
+      if (error) throw error;
+      setMembers(data || []);
+    } catch (err) {
+      console.error('Error fetching members:', err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.rpc('submit_contribution', {
+        p_description: description,
+        p_amount: Number(amount),
+        p_evidence_url: evidenceUrl,
+        p_beneficiary_id: beneficiaryType === 'member' ? beneficiaryId : null
+      });
+
+      if (error) throw error;
+
+      setMessage({ type: 'success', text: t('work.success') });
+      setTimeout(() => navigate('/work-wall'), 2000);
+    } catch (err: any) {
+      console.error('Error submitting work:', err);
+      setMessage({ type: 'error', text: err.message || t('common.error') });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Breadcrumbs 
+        separator={<NavigateNextIcon fontSize="small" />} 
+        aria-label="breadcrumb"
+        sx={{ mb: 3 }}
+      >
+        <MuiLink component={Link} to="/" color="inherit" underline="hover">
+          {t('layout.dashboard')}
+        </MuiLink>
+        <Typography color="text.primary">{t('work.register')}</Typography>
+      </Breadcrumbs>
+
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <WorkIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
+          <Typography variant="h4" component="h1">
+            {t('work.register')}
+          </Typography>
+        </Box>
+
+        <form onSubmit={handleSubmit}>
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                label={t('work.description')}
+                multiline
+                rows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                placeholder="Ex: Reforço na horta da Vila, tradução do manual, etc."
+                variant="outlined"
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                label={t('work.evidence')}
+                value={evidenceUrl}
+                onChange={(e) => setEvidenceUrl(e.target.value)}
+                required
+                placeholder="https://google_drive_link_ou_github_pr"
+                helperText="Link para fotos, documentos ou commits"
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                label={t('work.suggested')}
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                InputProps={{ inputProps: { min: 1 } }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                select
+                label={t('work.beneficiary')}
+                value={beneficiaryType}
+                onChange={(e) => setBeneficiaryType(e.target.value as any)}
+              >
+                <MenuItem value="tekua">{t('work.tekua')}</MenuItem>
+                <MenuItem value="member">{t('work.otherMember')}</MenuItem>
+              </TextField>
+            </Grid>
+
+            {beneficiaryType === 'member' && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  fullWidth
+                  select
+                  label={t('work.otherMember')}
+                  value={beneficiaryId}
+                  onChange={(e) => setBeneficiaryId(e.target.value)}
+                  required
+                  disabled={loadingMembers}
+                >
+                  {members.map((member) => (
+                    <MenuItem key={member.id} value={member.id}>
+                      {member.full_name || member.email}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            )}
+
+            <Grid size={{ xs: 12 }} sx={{ mt: 2, display: 'flex', gap: 2 }}>
+              <Button
+                variant="contained"
+                size="large"
+                type="submit"
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
+                sx={{ px: 4, borderRadius: 2 }}
+              >
+                {t('work.submit')}
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => navigate(-1)}
+                startIcon={<ArrowBackIcon />}
+                sx={{ borderRadius: 2 }}
+              >
+                {t('common.cancel')}
+              </Button>
+            </Grid>
+          </Grid>
+        </form>
+      </Paper>
+
+      <Snackbar
+        open={!!message}
+        autoHideDuration={6000}
+        onClose={() => setMessage(null)}
+      >
+        <Alert 
+          onClose={() => setMessage(null)} 
+          severity={message?.type || 'info'} 
+          sx={{ width: '100%' }}
+        >
+          {message?.text}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+};
+
+export default RegisterWork;

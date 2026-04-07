@@ -142,5 +142,38 @@
     "date": "Data",
     "surreal": "Surreal",
     "surreais": "Surreais"
+  },
+  "work": {
+    "title": "Registro de Trabalho",
+    "mural": "Mural de Trabalho",
+    "register": "Registrar Trabalho",
+    "description": "Descreva o que você fez",
+    "evidence": "Evidência (URL)",
+    "suggested": "Valor Sugerido ($S)",
+    "beneficiary": "Beneficiário",
+    "tekua": "Associação Tekuá",
+    "otherMember": "Outro Membro",
+    "status": "Status",
+    "confirmations": "Confirmações",
+    "needed": "Necessárias",
+    "pending": "Pendente",
+    "completed": "Concluído",
+    "rejected": "Rejeitado",
+    "submit": "Enviar Registro",
+    "confirm": "Confirmar Tarefa",
+    "confirmed": "Tarefa Confirmada",
+    "noItems": "Nenhum trabalho registrado ainda.",
+    "myInvolvement": "Minhas Contribuições",
+    "forValidating": "Para Validar",
+    "success": "Trabalho registrado com sucesso!",
+    "confirmSuccess": "Tarefa confirmada!",
+    "ownWorkError": "Você não pode confirmar seu próprio trabalho.",
+    "alreadyConfirmed": "Você já confirmou este trabalho."
+  },
+  "governance": {
+    "config": "Configuração de Governança",
+    "threshold": "Threshold de Validação",
+    "thresholdDesc": "Número mínimo de confirmações necessárias para pagamento automático.",
+    "save": "Salvar Configuração"
   }
 }

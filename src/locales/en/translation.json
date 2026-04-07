@@ -142,5 +142,38 @@
     "date": "Date",
     "surreal": "Surreal",
     "surreais": "Surreais"
+  },
+  "work": {
+    "title": "Work Registration",
+    "mural": "Work Wall",
+    "register": "Register Work",
+    "description": "Describe what you did",
+    "evidence": "Evidence (URL)",
+    "suggested": "Requested Amount ($S)",
+    "beneficiary": "Beneficiary",
+    "tekua": "Tekuá Association",
+    "otherMember": "Other Member",
+    "status": "Status",
+    "confirmations": "Confirmations",
+    "needed": "Needed",
+    "pending": "Pending",
+    "completed": "Completed",
+    "rejected": "Rejected",
+    "submit": "Submit Registration",
+    "confirm": "Confirm Task",
+    "confirmed": "Task Confirmed",
+    "noItems": "No work items registered yet.",
+    "myInvolvement": "My Contributions",
+    "forValidating": "To Validate",
+    "success": "Work registered successfully!",
+    "confirmSuccess": "Task confirmed!",
+    "ownWorkError": "You cannot confirm your own work.",
+    "alreadyConfirmed": "You already confirmed this work."
+  },
+  "governance": {
+    "config": "Governance Config",
+    "threshold": "Validation Threshold",
+    "thresholdDesc": "Minimum number of confirmations required for automatic payout.",
+    "save": "Save Config"
   }
 }
