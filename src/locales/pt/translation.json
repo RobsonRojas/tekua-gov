@@ -84,10 +84,29 @@
     "email_not_confirmed": "Por favor, confirme seu email antes de entrar.",
     "user_not_found": "Usuário não encontrado.",
     "rate_limit_exceeded": "Muitas tentativas. Tente novamente mais tarde.",
-    "unknown_error": "Ocorreu um erro inesperado."
+    "unknown_error": "Ocorreu um erro inesperado.",
+    "invalid_session": "Sessão inválida ou expirada. Por favor, solicite um novo link."
   },
   "theme": {
     "switchToDark": "Mudar para Modo Escuro",
     "switchToLight": "Mudar para Modo Claro"
+  },
+  "forgotPassword": {
+    "title": "Recuperar Senha",
+    "subtitle": "Insira seu email para receber um link de redefinição.",
+    "email": "Endereço de Email",
+    "submit": "Enviar Link",
+    "submitting": "Enviando...",
+    "success": "Link enviado! Verifique sua caixa de entrada.",
+    "backToLogin": "Voltar para o Login",
+    "resetTitle": "Definir Nova Senha",
+    "resetSubtitle": "Escolha uma senha forte para sua conta.",
+    "newPassword": "Nova Senha",
+    "confirmPassword": "Confirmar Nova Senha",
+    "resetSubmit": "Atualizar Senha",
+    "resetSubmitting": "Atualizando...",
+    "resetSuccess": "Senha atualizada com sucesso! Você pode entrar agora.",
+    "errorMismatch": "As senhas não coincidem.",
+    "errorTooShort": "A senha deve ter pelo menos 6 caracteres."
   }
 }

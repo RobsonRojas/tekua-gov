@@ -35,12 +35,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        if (session?.user) await fetchProfile(session.user.id);
-        else {
+        
+        // Only fetch profile on specific events to avoid lock contention
+        // during password updates or redundant refreshes
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+          await fetchProfile(session.user.id);
+        } else if (!session) {
           setProfile(null);
+          setLoading(false);
+        } else {
+          // For other events like USER_UPDATED, we might not need to re-fetch the entire profile
+          // or we are already handling the state update elsewhere (like in ResetPassword)
           setLoading(false);
         }
       }

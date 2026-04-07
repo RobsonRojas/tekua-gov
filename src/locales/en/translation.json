@@ -84,10 +84,29 @@
     "email_not_confirmed": "Please confirm your email before logging in.",
     "user_not_found": "User not found.",
     "rate_limit_exceeded": "Too many requests. Please try again later.",
-    "unknown_error": "An unknown error occurred."
+    "unknown_error": "An unknown error occurred.",
+    "invalid_session": "Invalid or expired session. Please request a new link."
   },
   "theme": {
     "switchToDark": "Switch to Dark Mode",
     "switchToLight": "Switch to Light Mode"
+  },
+  "forgotPassword": {
+    "title": "Recover Password",
+    "subtitle": "Enter your email to receive a reset link.",
+    "email": "Email Address",
+    "submit": "Send Link",
+    "submitting": "Sending...",
+    "success": "Link sent! Check your inbox.",
+    "backToLogin": "Back to Login",
+    "resetTitle": "Set New Password",
+    "resetSubtitle": "Choose a strong password for your account.",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "resetSubmit": "Update Password",
+    "resetSubmitting": "Updating...",
+    "resetSuccess": "Password updated successfully! You can sign in now.",
+    "errorMismatch": "Passwords do not match.",
+    "errorTooShort": "Password must be at least 6 characters long."
   }
 }
