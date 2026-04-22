@@ -17,9 +17,10 @@ O portal Tekua Governance já integra o sistema de recompensas em "Surreais" atr
 
 ## Decisions
 
-- **PostgreSQL Functions (RPC)**: Utilizar funções SQL rodando no banco para processar transferências. Isso evita inconsistências (ex: saldo negativo por race condition no client-side).
-- **Consistência Atômica**: Toda transação deve registrar o débito na origem, o crédito no destino e um novo registro na tabela `transactions` dentro de uma única transação de banco.
-- **Auditoria de Tesouraria**: O usuário "Admin" (ou um profile específico da associação) manterá uma carteira com saldo gerado institucionalmente para distribuição.
+- **Unified Framework**: Esta funcionalidade segue as especificações do [Framework Unificado de Economia de Dádiva](./framework-design.md).
+- **PostgreSQL Functions (RPC)**: Utilizar funções SQL (**Edge Functions + RPC**) rodando no banco para processar transferências. Isso evita inconsistências (ex: saldo negativo por race condition no client-side).
+- **Consistência Atômica**: Toda transação deve registrar o débito na origem, o crédito no destino e um novo registro na tabela `ledger` dentro de uma única transação de banco.
+- **Auditoria de Tesouraria**: O perfil institucional da Tekuá (`profiles.role == 'admin'` ou uma conta específica de Tesouraria) manterá a carteira mestre para geração de liquidez comunitária.
 - **UI Components**:
     - `WalletBalance`: Componente de exibição de saldo com toggle para ocultar valores.
     - `TransactionHistory`: Tabela ou lista com filtros por tipo de transação (Crédito/Débito).
