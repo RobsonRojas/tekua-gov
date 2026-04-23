@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { downloadCSV } from './csvExport';
-import { ContributionReportItem } from '../hooks/useContributionReports';
+import type { ContributionReportItem } from '../hooks/useContributionReports';
 
 describe('downloadCSV', () => {
   it('should not do anything if data is empty', () => {

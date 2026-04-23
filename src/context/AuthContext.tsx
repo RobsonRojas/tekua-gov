@@ -27,9 +27,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { setThemeMode } = useThemeContext();
 
   useEffect(() => {
-    // Listen for auth changes (including initial session)
+    let mounted = true;
+
+    // Safety timeout to prevent infinite loading screen
+    const loadingTimeout = setTimeout(() => {
+      if (mounted && loading) setLoading(false);
+    }, 6000);
+
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user && currentProfileIdRef.current !== session.user.id) {
+            await fetchProfile(session.user.id);
+          } else {
+            setLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching initial session:", error);
+        if (mounted) setLoading(false);
+      }
+    };
+
+    initSession();
+
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -50,6 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     return () => {
+      mounted = false;
+      clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
   }, []);
