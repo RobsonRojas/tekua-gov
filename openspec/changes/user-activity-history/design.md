@@ -16,10 +16,20 @@ O usuário do portal não possui um local para revisar suas próprias interaçõ
 
 ## Decisions
 
-- **Schema Management**: Criar tabela `activity_logs` com FK para `profiles`.
-- **UI Architecture**: Utilizar componentes de timeline do MUI ou uma lista seccionada por data.
-- **Data Fetching**: Paginação simples para não sobrecarregar a tela de carregamento (ex: carregar os últimos 50 eventos).
-- **Log Injection**: Inserir chamadas de registro de log (`insert log`) nos fluxos de `signIn`, `confirmVote`, `submitTask` e `updateProfile`.
+- **Schema Definition**: Esta é a especificação mestre da tabela `activity_logs`.
+    - `id`: UUID (PK)
+    - `user_id`: UUID (FK `profiles`)
+    - `action_type`: ENUM (`auth`, `vote`, `task`, `document`, `profile_update`)
+    - `description`: JSONB (Metadados da ação, suportando i18n: `{ "pt": "...", "en": "..." }`)
+    - `ip_address`: TEXT (Opcional, para segurança)
+    - `created_at`: TIMESTAMPTZ (Default `now()`)
+- **Logging Injection (Edge Functions)**:
+    - O registro de logs não deve ser disparado diretamente pelo frontend.
+    - Toda **Edge Function** de mutação (voto, tarefa, profile) deve inserir uma linha correspondente na `activity_logs` como parte da transação.
+- **Privacy & Security (RLS)**:
+    - Membros (`member`) podem ler apenas logs onde `user_id == auth.uid()`.
+    - Administradores (`admin`) possuem acesso de leitura global a esta tabela.
+- **UI Architecture**: Utilizar componentes de timeline do MUI no perfil do usuário (`/profile/activity`).
 
 ## Risks / Trade-offs
 

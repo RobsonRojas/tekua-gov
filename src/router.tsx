@@ -15,6 +15,8 @@ const Wallet = lazy(() => import('./pages/Wallet'));
 const AdminTreasury = lazy(() => import('./pages/AdminTreasury'));
 const WorkWall = lazy(() => import('./pages/WorkWall'));
 const RegisterWork = lazy(() => import('./pages/RegisterWork'));
+const ReportsDashboard = lazy(() => import('./pages/Dashboard/Reports/index'));
+
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -115,7 +117,16 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'dashboard/reports',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <ReportsDashboard />
+          </Suspense>
+        ),
+      },
     ],
+
   },
   {
     path: '*',

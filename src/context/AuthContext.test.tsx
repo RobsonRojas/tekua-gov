@@ -1,5 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuth } from './AuthContext';
+import { AuthProvider } from './AuthContext';
+import { useAuth } from './useAuth';
 import { supabase } from '../lib/supabase';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import i18n from 'i18next';

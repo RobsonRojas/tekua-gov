@@ -16,11 +16,11 @@ O sistema Tekuá possui uma política de transparência radical. Embora o histó
 
 ## Decisions
 
-- **URL Structure**: `/admin/activity`.
-- **Query Strategy**: Utilizar um `JOIN` (via PostgREST do Supabase) entre a tabela `activity_logs` e a tabela `profiles` para obter o nome e email do executor de cada ação.
-- **Filtering**: Implementar filtros de busca no lado do servidor para evitar carregamento excessivo de dados no client-side.
-- **Audit Persistence**: A tabela `activity_logs` (especificada na proposta do usuário) será a fonte única da verdade.
-- **Permissioning**: Verificação obrigatória do campo `role: 'admin'` no objeto de perfil do usuário logado.
+- **URL Structure**: Accessible via `/admin/activity`.
+- **Primary Schema**: Esta funcionalidade utiliza a tabela `activity_logs` especificada em [user-activity-history](../user-activity-history/design.md).
+- **Query Strategy**: Utilizar PostgREST para leitura direta com RLS. Através do campo `user_id`, realizar a expansão do objeto (JOIN implícito) para exibir `profiles(full_name, email)`.
+- **Filtering**: Implementar filtros de busca por `user_id`, `action_type` e `date_range` no server-side (filtros de URL).
+- **Permissions**: Acesso restrito a perfis `admin` via RLS e verificação de token na Edge Function (se houver lógica de exportação futura).
 
 ## Risks / Trade-offs
 

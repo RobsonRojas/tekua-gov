@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Link as RouterLink, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import LanguageSelector from '../components/LanguageSelector';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 
@@ -36,6 +36,7 @@ const MainLayout: React.FC = () => {
     { label: t('wallet.title'), path: '/wallet', icon: <WalletIcon size={20} /> },
     { label: t('work.mural'), path: '/work-wall', icon: <MuralIcon size={20} /> },
     { label: t('layout.profile'), path: '/profile', icon: <User size={20} /> },
+    { label: t('admin.reports') || 'Relatórios', path: '/dashboard/reports', icon: <LayoutDashboard size={20} /> },
     { label: t('layout.admin'), path: '/admin-panel', icon: <Settings size={20} />, adminOnly: true },
   ];
 

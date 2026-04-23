@@ -15,7 +15,7 @@ import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import LanguageSelector from '../components/LanguageSelector';
 
 const ResetPassword: React.FC = () => {

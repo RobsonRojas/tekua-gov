@@ -32,7 +32,7 @@ import {
   User
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { supabase } from '../lib/supabase';
 
 interface Transaction {

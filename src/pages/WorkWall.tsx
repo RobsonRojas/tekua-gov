@@ -20,7 +20,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import ContributionCard from '../components/ContributionCard';
 
 const WorkWall: React.FC = () => {
@@ -57,8 +57,8 @@ const WorkWall: React.FC = () => {
         .from('contributions')
         .select(`
           *,
-          profiles (full_name, email),
-          beneficiary_profiles:profiles (full_name, email),
+          profiles:profiles!user_id (id, full_name),
+          beneficiary_profiles:profiles!beneficiary_id (id, full_name),
           confirmations:contribution_confirmations (count)
         `)
         .order('created_at', { ascending: false });

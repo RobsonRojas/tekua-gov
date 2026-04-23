@@ -17,9 +17,12 @@ A Associação Tekuá necessita de um local seguro para disponibilizar documento
 ## Decisions
 
 - **Storage Strategy**: Criar um bucket privado chamado `official-docs` no Supabase.
-- **Metadata Storage**: Tabela `documents` contendo o caminho do arquivo no bucket e outros campos informativos.
-- **UI Architecture**: Inserir uma nova seção ou aba no `AdminPanel.tsx` para essa funcionalidade.
-- **Categorization**: Usar uma lista pré-definida de categorias para consistência (Estatuto, Atas, Financeiro, Outros).
+- **Metadata Storage**: Tabela `documents` contendo o caminho do arquivo no bucket, `category`, e metadados como `title` e `description` em formato **JSONB** (i18n).
+- **UI Architecture**: Inserir uma nova seção no `AdminPanel.tsx`. No frontend, acesso via rota `/admin/documents`.
+- **Mutations (Edge Functions)**:
+    - `document_upload_handler`: Para registrar metadados e validar permissões pós-upload no Storage.
+    - `document_metadata_update`: Para editar títulos/descrições multilíngues.
+- **Categorization**: Usar uma lista pré-definida de categorias para consistência (Estatuto, Atas, Financeiro, Outros). Categorias também suportam tradução via objeto JSON centralizado ou no banco.
 
 ## Risks / Trade-offs
 

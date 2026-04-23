@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { Languages, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 const LanguageSelector: React.FC = () => {
   const { i18n } = useTranslation();

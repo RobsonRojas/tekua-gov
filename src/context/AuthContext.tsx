@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import i18n from 'i18next';
 import { supabase } from '../lib/supabase';
@@ -15,40 +15,35 @@ interface AuthContextType {
   updateTheme: (theme: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchingUserIdRef = React.useRef<string | null>(null);
+  const currentProfileIdRef = React.useRef<string | null>(null);
   const { setThemeMode } = useThemeContext();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setLoading(false);
-    });
-
-    // Listen for auth changes
+    // Listen for auth changes (including initial session)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Only fetch profile on specific events to avoid lock contention
-        // during password updates or redundant refreshes
         if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
-          await fetchProfile(session.user.id);
+          if (currentProfileIdRef.current !== session.user.id) {
+            await fetchProfile(session.user.id);
+          } else {
+            setLoading(false);
+          }
         } else if (!session) {
           setProfile(null);
+          currentProfileIdRef.current = null;
           setLoading(false);
         } else {
-          // For other events like USER_UPDATED, we might not need to re-fetch the entire profile
-          // or we are already handling the state update elsewhere (like in ResetPassword)
           setLoading(false);
         }
       }
@@ -60,7 +55,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    if (fetchingUserIdRef.current === userId) return;
+    
+    fetchingUserIdRef.current = userId;
     setLoading(true);
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -68,21 +67,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
-      setProfile(data);
-      
-      // Sync i18n with profile preference
-      if (data?.preferred_language && i18n.language !== data.preferred_language) {
-        i18n.changeLanguage(data.preferred_language);
-      }
+      if (!error && data) {
+        setProfile(data);
+        currentProfileIdRef.current = data.id;
+        
+        if (data.preferred_language && i18n.language !== data.preferred_language) {
+          i18n.changeLanguage(data.preferred_language);
+        }
 
-      // Sync theme with profile preference
-      if (data?.preferred_theme) {
-        setThemeMode(data.preferred_theme as PaletteMode);
+        if (data.preferred_theme) {
+          setThemeMode(data.preferred_theme as PaletteMode);
+        }
+      } else {
+        setProfile(null);
+        currentProfileIdRef.current = null;
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      setProfile(null);
+      currentProfileIdRef.current = null;
     } finally {
+      fetchingUserIdRef.current = null;
       setLoading(false);
     }
   };
@@ -134,10 +138,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

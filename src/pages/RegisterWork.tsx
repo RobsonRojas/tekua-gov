@@ -23,7 +23,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 const RegisterWork: React.FC = () => {
   const { t } = useTranslation();
@@ -52,7 +52,7 @@ const RegisterWork: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email')
+        .select('id, full_name')
         .neq('id', user?.id)
         .order('full_name');
       

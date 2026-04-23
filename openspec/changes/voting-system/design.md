@@ -17,12 +17,16 @@ O portal Tekua Governance atualmente não possui uma interface para deliberaçã
 
 ## Decisions
 
-- **Rich Text Engine**: Utilizar `React Quill` ou similar para o formulário de criação do administrador.
+- **Rich Text Engine**: Utilizar `React Quill` para conteúdo rico. O conteúdo deve ser salvo no formato **JSONB** para suportar múltiplos idiomas (`pt`, `en`).
 - **Data Model**:
-    - `discussion_topics`: Metadados e conteúdo da pauta.
-    - `comments`: Discussões associadas a cada tópico.
-    - `votes`: Registros de votos individuais (vinculados ao `topic_id` e `user_id`).
-- **Permissions**: Apenas administradores criam temas e encerram votações. Todos os membros debatem e votam.
+    - `discussion_topics`: `id`, `title` (JSONB), `content` (JSONB), `status` (open, closed), `created_at`.
+    - `comments`: `id`, `topic_id`, `user_id`, `content` (TEXT), `created_at`.
+    - `votes`: `id`, `topic_id`, `user_id`, `option` (ENUM: 'yes', 'no', 'abstain'), `created_at`.
+- **Routing**: Seguir padrão RESTful: `/dashboard/voting/:id` para detalhe da pauta.
+- **Mutations (Edge Functions)**:
+    - `vote_registration`: Função para registrar voto garantindo unicidade e validação de tempo.
+    - `topic_management`: Funções administrativas para abrir/fechar pautas.
+- **Permissions**: Apenas perfis `admin` ou `moderator` criam temas e encerram votações. Todos os membros autenticados debatem e votam.
 
 ## Risks / Trade-offs
 

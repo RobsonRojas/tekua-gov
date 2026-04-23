@@ -17,32 +17,16 @@ A economia da dádiva da Vila Tekuá depende do reconhecimento mútuo. Este sist
 ## Decisions
 
 ### 1. Modelo de Dados (Schema)
-- **Tabela `contributions`**:
-  - `id`: UUID (PK)
-  - `user_id`: UUID (FK para profiles) - quem realizou o trabalho.
-  - `beneficiary_id`: UUID (FK para profiles, opcional) - para quem foi o trabalho. Se NULL, assume-se Tekuá (Tesouraria).
-  - `amount_suggested`: NUMERIC - quanto o usuário propõe receber.
-  - `description`: TEXT - o que foi feito.
-  - `evidence_url`: TEXT - link para prova do trabalho.
-  - `status`: ENUM ('pending', 'completed', 'rejected') - estado da contribuição.
-- **Tabela `contribution_confirmations`**:
-  - `id`: UUID (PK)
-  - `contribution_id`: UUID (FK para contributions)
-  - `user_id`: UUID (FK para profiles) - quem confirmou.
-  - UNIQUE(contribution_id, user_id) - impede votos duplicados.
+Este sistema utiliza as tabelas `activities`, `activity_evidence` e `activity_confirmations` definidas no [Framework Unificado de Economia de Dádiva](../user-surreal-digital-currency-wallet/framework-design.md).
+
+- **Configuração de Atividade**: Contribuições de trabalho registradas pelo usuário serão criadas com `type = 'contribution'` e `validation_method = 'community_consensus'`.
 - **Tabela `governance_settings`**:
   - `key`: TEXT (PK) - ex: 'min_contribution_confirmations'
   - `value`: JSONB - ex: 3
 
 ### 2. Fluxo de Validação e Pagamento
-- Utilizaremos uma **Function RPC** `confirm_contribution`.
-- Cada vez que um usuário confirma uma tarefa:
-  1. Registra na `contribution_confirmations`.
-  2. Conta o número atual de confirmações para aquela contribuição.
-  3. Compara com o valor em `governance_settings`.
-  4. Se `count >= threshold` e `status == 'pending'`:
-     - Altera `status` para 'completed'.
-     - Chama internamente a lógica de `admin_mint_currency` (via SECURITY DEFINER) para transferir o valor para o `user_id` autor da contribuição.
+- Utilizaremos a **Edge Function** `process_activity_validation`.
+- O gatilho de pagamento (`execute_currency_transfer`) é disparado automaticamente quando o threshold de confirmações é atingido.
 
 ### 3. Interface de Usuário (UI)
 - **Dashboard**: Aba ou Seção "Reconhecimento" ou "Mural de Trabalho".

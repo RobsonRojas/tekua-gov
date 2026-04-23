@@ -16,13 +16,11 @@ A Associação Tekuá utiliza o sistema de economia de dádiva para manter sua b
 
 ## Decisions
 
-- **Currency name**: Surreal.
-- **Georeferencing**: Utilizar a API de Geolocation do navegador para capturar `lat/lng` no momento do upload da foto de prova.
-- **Table Schema**:
-    - `tasks`: Cabeçalho da tarefa, coordenadas de destino e valor.
-    - `task_evidence`: Registros das submissões dos membros com URLs do storage.
-    - `wallets`: Tabela de saldo simples por `profile_id`.
-- **Validation**: O membro que cadastrou a tarefa deve dar o "OK" final após revisar as fotos para que o saldo seja transferido.
+- **Unified Framework**: Esta funcionalidade segue as especificações do [Framework Unificado de Economia de Dádiva](../user-surreal-digital-currency-wallet/framework-design.md).
+- **Activity Configuration**: Tarefas criadas pela associação serão do `type = 'task'` com `validation_method = 'requester_approval'`.
+- **i18n**: Todos o conteúdo de títulos e descrições das tarefas deve suportar o formato **JSONB**.
+- **Georeferencing**: Utilizar a API de Geolocation do navegador para capturar `lat/lng` se `geo_required == true`.
+- **Validation**: O membro que cadastrou a tarefa (`requester_id`) deve dar o "OK" final através da Edge Function `process_activity_validation`.
 
 ## Risks / Trade-offs
 

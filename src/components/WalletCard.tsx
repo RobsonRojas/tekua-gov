@@ -10,7 +10,7 @@ import {
 import { Wallet as WalletIcon, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { supabase } from '../lib/supabase';
 
 const WalletCard: React.FC = () => {

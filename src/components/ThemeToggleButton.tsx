@@ -2,7 +2,7 @@ import React from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import { LightMode, DarkMode } from '@mui/icons-material';
 import { useThemeContext } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { useTranslation } from 'react-i18next';
 
 const ThemeToggleButton: React.FC = () => {
