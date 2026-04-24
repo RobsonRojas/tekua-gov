@@ -37,10 +37,12 @@ import {
   Filter,
   RefreshCw,
   Settings,
-  Users
+  Users,
+  FileText
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
+import DocumentManager from '../components/admin/DocumentManager';
 
 const AdminPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -199,6 +201,7 @@ const AdminPanel: React.FC = () => {
         >
           <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.title')} />
           <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
+          <Tab icon={<FileText size={18} />} iconPosition="start" label={t('docs.docsTitle', 'Documentação')} />
         </Tabs>
       </Paper>
 
@@ -338,7 +341,7 @@ const AdminPanel: React.FC = () => {
             </Table>
           </TableContainer>
         </>
-      ) : (
+      ) : tabValue === 1 ? (
         <Paper 
           elevation={0}
           sx={{ 
@@ -376,7 +379,19 @@ const AdminPanel: React.FC = () => {
             </Button>
           </Stack>
         </Paper>
-      )}
+      ) : tabValue === 2 ? (
+        <Paper 
+          elevation={0}
+          sx={{ 
+            p: 4, 
+            borderRadius: '24px', 
+            bgcolor: 'background.paper',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+          }}
+        >
+          <DocumentManager />
+        </Paper>
+      ) : null}
 
       <Menu
         anchorEl={anchorEl}

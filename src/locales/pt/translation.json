@@ -207,5 +207,32 @@
     "title": "Fique Atualizado!",
     "description": "Ative as notificações para ser avisado sobre novas votações e mensagens importantes na plataforma Tekua.",
     "enable": "Ativar Notificações"
+  },
+  "docs": {
+    "docsTitle": "Documentação",
+    "managerTitle": "Gerenciador de Documentos Oficiais",
+    "managerDesc": "Faça upload e gerencie os documentos oficiais da associação que estarão disponíveis para os membros.",
+    "uploadNew": "Enviar Novo Documento",
+    "titlePt": "Título (PT)",
+    "titleEn": "Título (EN)",
+    "descPt": "Descrição (PT)",
+    "descEn": "Descrição (EN)",
+    "category": "Categoria",
+    "selectFile": "Selecionar Arquivo (PDF, DOCX)",
+    "upload": "Enviar Documento",
+    "listTitle": "Documentos Cadastrados",
+    "noDocuments": "Nenhum documento encontrado.",
+    "title": "Título",
+    "date": "Data",
+    "actions": "Ações",
+    "deleteConfirmTitle": "Excluir Documento?",
+    "deleteConfirmText": "Tem certeza que deseja excluir o documento:",
+    "categories": {
+      "estatuto": "Estatuto",
+      "atas": "Atas",
+      "relatorios": "Relatórios",
+      "financeiro": "Financeiro",
+      "outros": "Outros"
+    }
   }
 }

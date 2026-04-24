@@ -207,5 +207,32 @@
     "title": "Stay Updated!",
     "description": "Enable notifications to be alerted about new votes and important messages on the Tekua platform.",
     "enable": "Enable Notifications"
+  },
+  "docs": {
+    "docsTitle": "Documentation",
+    "managerTitle": "Official Documents Manager",
+    "managerDesc": "Upload and manage the association's official documents that will be available to members.",
+    "uploadNew": "Upload New Document",
+    "titlePt": "Title (PT)",
+    "titleEn": "Title (EN)",
+    "descPt": "Description (PT)",
+    "descEn": "Description (EN)",
+    "category": "Category",
+    "selectFile": "Select File (PDF, DOCX)",
+    "upload": "Upload Document",
+    "listTitle": "Registered Documents",
+    "noDocuments": "No documents found.",
+    "title": "Title",
+    "date": "Date",
+    "actions": "Actions",
+    "deleteConfirmTitle": "Delete Document?",
+    "deleteConfirmText": "Are you sure you want to delete the document:",
+    "categories": {
+      "estatuto": "Statute",
+      "atas": "Minutes",
+      "relatorios": "Reports",
+      "financeiro": "Financial",
+      "outros": "Other"
+    }
   }
 }
