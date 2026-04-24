@@ -14,12 +14,12 @@ O sistema SHALL permitir que o usuário autenticado consulte o saldo atual de su
 - **WHEN** o usuário solicita o extrato.
 - **THEN** o sistema SHALL listar todas as transações (Entradas e Saídas) com data, valor, descrição e destinatário/remetente.
 
-### Requirement: Transferência P2P (Peer-to-Peer)
-O sistema SHALL possibilitar o envio de moedas entre membros da comunidade de forma segura.
+### Requirement: Transferência P2P e Rastreabilidade
+O sistema SHALL possibilitar o envio de moedas entre membros da comunidade de forma segura e manter rastreabilidade com as atividades de governança.
 
-#### Scenario: Envio de Moedas
-- **WHEN** o remetente informa o email/id do destinatário, o valor e a justificativa e confirma a operação.
-- **THEN** o sistema SHALL debitar o valor da carteira de origem e creditar na carteira de destino de forma atômica.
+#### Scenario: Envio de Moedas e Vínculo de Atividade
+- **WHEN** o remetente informa o email/id do destinatário, o valor, a justificativa e o ID da atividade relacionada.
+- **THEN** o sistema SHALL debitar o valor da carteira de origem e creditar na carteira de destino de forma atômica, registrando o `activity_id` para auditoria.
 
 #### Scenario: Saldo Insuficiente
 - **WHEN** o remetente tenta enviar um valor maior do que possui em saldo.

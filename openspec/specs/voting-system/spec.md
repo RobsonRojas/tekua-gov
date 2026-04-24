@@ -10,9 +10,9 @@ O sistema SHALL permitir o debate organizado e a tomada de decisão formal atrav
 - **WHEN** um administrador preenche o título e o conteúdo em texto rico (Rich Text) e define o prazo de encerramento.
 - **THEN** o sistema salva a pauta como "Ativa" e a disponibiliza para todos os membros.
 
-#### Scenario: Debate em Texto Rico
-- **WHEN** um membro acessa a página de detalhes de um tema e insere um comentário.
-- **THEN** o sistema registra o comentário e o exibe cronologicamente abaixo da descrição do tema.
+#### Scenario: Debate em Texto Rico e Multilíngue
+- **WHEN** um membro acessa a página de detalhes de um tema e insere um comentário no seu idioma.
+- **THEN** o sistema armazena o comentário em um campo JSONB, utilizando o idioma atual como chave, e o exibe cronologicamente.
 
 ### Requirement: Sistema de Votação Formal
 O sistema SHALL permitir que membros exerçam seu direito de voto de forma segura e única.
