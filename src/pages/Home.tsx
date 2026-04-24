@@ -5,7 +5,8 @@ import {
   FileText, 
   ChevronRight,
   Gavel,
-  LayoutPanelLeft as MuralIcon
+  LayoutPanelLeft as MuralIcon,
+  Sparkles
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +36,13 @@ const Home: React.FC = () => {
       icon: <Gavel size={32} />, 
       color: '#10b981',
       path: '/governance'
+    },
+    { 
+      title: t('ai.title') || 'Agente IA', 
+      description: t('ai.welcome'), 
+      icon: <Sparkles size={32} />, 
+      color: '#f43f5e',
+      path: '/ai-agent'
     },
     { 
       title: t('work.mural'), 
@@ -73,7 +81,7 @@ const Home: React.FC = () => {
 
       <Grid container spacing={4}>
         {homeCards.map((card, index) => (
-          <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
             <Paper 
               elevation={0}
               sx={{ 

@@ -25,6 +25,7 @@ const GovernanceServices = lazy(() => import('./pages/GovernanceServices'));
 const TasksBoard = lazy(() => import('./pages/TasksBoard'));
 const CreateTask = lazy(() => import('./pages/CreateTask'));
 const SubmitTaskProof = lazy(() => import('./pages/SubmitTaskProof'));
+const AIAgent = lazy(() => import('./pages/AIAgent'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -206,6 +207,14 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <SubmitTaskProof />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'ai-agent',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AIAgent />
           </Suspense>
         ),
       },

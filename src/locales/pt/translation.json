@@ -255,5 +255,14 @@
       "date": "Data e Hora",
       "details": "Detalhes"
     }
+  },
+  "ai": {
+    "title": "Agente Tekua IA",
+    "welcome": "Olá! Eu sou o Agente Tekua. Como posso ajudar você hoje?",
+    "placeholder": "Digite sua pergunta aqui...",
+    "disclaimer": "As respostas são geradas por IA. Consulte os documentos oficiais para validação legal.",
+    "thinking": "Pensando...",
+    "error": "Desculpe, ocorreu um erro ao processar sua pergunta.",
+    "nav": "Assistente IA"
   }
 }

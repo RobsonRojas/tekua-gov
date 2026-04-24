@@ -18,7 +18,7 @@ A Associação Tekuá possui uma estrutura complexa de governança e economia. T
 
 - **LLM Engine**: Google Gemini 1.5 Flash (devido ao contexto de janela grande e custo-benefício).
 - **RAG / Context**: Inserir o resumo dos principais documentos (Estatuto, Manuais) no `system_instruction` do modelo. Os textos serão buscados da tabela `documents`.
-- **Frontend library**: `@google/generative-ai` para interações diretas (seguro se a API Key for restrita por domínio ou se implementada via Edge Function intermediária - preferível via Edge Function por segurança).
+- **Backend Architecture**: Toda a comunicação com o Gemini deve ser feita via **Supabase Edge Function** (`ai-handler`). Isso garante que a API Key não seja exposta ao frontend e permite o uso de streaming seguro.
 - **UI Architecture**: Interface de chat moderna, com histórico de mensagens na sessão atual.
 
 ## Risks / Trade-offs

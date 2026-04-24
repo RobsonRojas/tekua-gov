@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 .env
 analyze_specs.py condense.py
+supabase/.temp
+.agent
