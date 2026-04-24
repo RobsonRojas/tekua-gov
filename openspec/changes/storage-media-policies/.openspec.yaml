@@ -1,0 +1,6 @@
+changeName: storage-media-policies
+schemaName: spec-driven
+artifacts:
+  proposal: proposal.md
+  specs: specs/**/*.md
+  tasks: tasks.md

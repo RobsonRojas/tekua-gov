@@ -1,0 +1,7 @@
+changeName: refactor-integrity-i18n-unification
+schemaName: spec-driven
+artifacts:
+  proposal: proposal.md
+  design: design.md
+  specs: specs/**/*.md
+  tasks: tasks.md

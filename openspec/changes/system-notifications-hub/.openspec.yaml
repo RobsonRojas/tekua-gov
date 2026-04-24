@@ -1,0 +1,6 @@
+changeName: system-notifications-hub
+schemaName: spec-driven
+artifacts:
+  proposal: proposal.md
+  specs: specs/**/*.md
+  tasks: tasks.md
