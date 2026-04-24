@@ -184,5 +184,23 @@
     "threshold": "Threshold de Validação",
     "thresholdDesc": "Número mínimo de confirmações necessárias para pagamento automático.",
     "save": "Salvar Configuração"
+  },
+  "voting": {
+    "title": "Votações e Pautas",
+    "createTopic": "Criar Nova Pauta",
+    "noTopics": "Nenhuma pauta encontrada.",
+    "statusOpen": "Aberta",
+    "statusClosed": "Encerrada",
+    "topicTitle": "Título da Pauta",
+    "topicContent": "Conteúdo da Pauta",
+    "castVote": "Registrar Voto",
+    "yes": "Sim",
+    "no": "Não",
+    "abstain": "Abstenção",
+    "voteRecorded": "Seu voto foi registrado com sucesso.",
+    "comments": "Comentários",
+    "addComment": "Adicione um comentário...",
+    "send": "Enviar",
+    "voteError": "Erro ao registrar voto. Talvez você já tenha votado."
   }
 }

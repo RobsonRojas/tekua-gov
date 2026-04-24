@@ -16,7 +16,8 @@ const AdminTreasury = lazy(() => import('./pages/AdminTreasury'));
 const WorkWall = lazy(() => import('./pages/WorkWall'));
 const RegisterWork = lazy(() => import('./pages/RegisterWork'));
 const ReportsDashboard = lazy(() => import('./pages/Dashboard/Reports/index'));
-
+const Voting = lazy(() => import('./pages/Voting'));
+const TopicDetail = lazy(() => import('./pages/TopicDetail'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -122,6 +123,22 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <ReportsDashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'voting',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Voting />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'voting/:id',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <TopicDetail />
           </Suspense>
         ),
       },

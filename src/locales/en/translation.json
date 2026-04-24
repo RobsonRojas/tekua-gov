@@ -180,9 +180,27 @@
     "alreadyConfirmed": "You already confirmed this work."
   },
   "governance": {
-    "config": "Governance Config",
+    "config": "Governance Configuration",
     "threshold": "Validation Threshold",
-    "thresholdDesc": "Minimum number of confirmations required for automatic payout.",
-    "save": "Save Config"
+    "thresholdDesc": "Minimum number of confirmations required for automatic payment.",
+    "save": "Save Configuration"
+  },
+  "voting": {
+    "title": "Voting and Topics",
+    "createTopic": "Create New Topic",
+    "noTopics": "No topics found.",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
+    "topicTitle": "Topic Title",
+    "topicContent": "Topic Content",
+    "castVote": "Cast Vote",
+    "yes": "Yes",
+    "no": "No",
+    "abstain": "Abstain",
+    "voteRecorded": "Your vote was successfully recorded.",
+    "comments": "Comments",
+    "addComment": "Add a comment...",
+    "send": "Send",
+    "voteError": "Error recording vote. You might have already voted."
   }
 }
