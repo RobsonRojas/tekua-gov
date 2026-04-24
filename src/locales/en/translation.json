@@ -179,7 +179,13 @@
     "success": "Work registered successfully!",
     "confirmSuccess": "Task confirmed!",
     "ownWorkError": "You cannot confirm your own work.",
-    "alreadyConfirmed": "You already confirmed this work."
+    "alreadyConfirmed": "You already confirmed this work.",
+    "open": "Open",
+    "in_progress": "In Progress",
+    "pending_validation": "Awaiting Validation",
+    "accept": "Accept Task",
+    "submit": "Submit Completion",
+    "requester": "Requester"
   },
   "governance": {
     "config": "Governance Configuration",

@@ -179,7 +179,13 @@
     "success": "Trabalho registrado com sucesso!",
     "confirmSuccess": "Tarefa confirmada!",
     "ownWorkError": "Você não pode confirmar seu próprio trabalho.",
-    "alreadyConfirmed": "Você já confirmou este trabalho."
+    "alreadyConfirmed": "Você já confirmou este trabalho.",
+    "open": "Aberta",
+    "in_progress": "Em Execução",
+    "pending_validation": "Aguardando Validação",
+    "accept": "Assumir Tarefa",
+    "submit": "Concluir e Enviar",
+    "requester": "Solicitante"
   },
   "governance": {
     "config": "Configuração de Governança",

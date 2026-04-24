@@ -32,6 +32,13 @@ const GovernanceServices: React.FC = () => {
       path: '/voting'
     },
     {
+      title: t('work.title'),
+      description: t('work.mural'),
+      icon: <FileText size={32} />,
+      color: '#6366f1',
+      path: '/tasks-board'
+    },
+    {
       title: t('docs.docsTitle'),
       description: t('home.cardDocDesc'),
       icon: <FileText size={32} />,

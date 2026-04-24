@@ -22,6 +22,9 @@ const AdminActivityHistory = lazy(() => import('./pages/AdminActivityHistory'));
 const MemberManagement = lazy(() => import('./pages/MemberManagement'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const GovernanceServices = lazy(() => import('./pages/GovernanceServices'));
+const TasksBoard = lazy(() => import('./pages/TasksBoard'));
+const CreateTask = lazy(() => import('./pages/CreateTask'));
+const SubmitTaskProof = lazy(() => import('./pages/SubmitTaskProof'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -179,6 +182,30 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <TopicDetail />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'tasks-board',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <TasksBoard />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'tasks/new',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <CreateTask />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'tasks/:id/submit',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <SubmitTaskProof />
           </Suspense>
         ),
       },

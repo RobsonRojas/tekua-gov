@@ -24,9 +24,11 @@ import {
   Calendar,
   CheckCircle2,
   User,
-  Settings
+  Settings,
+  Wallet
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { supabase } from '../lib/supabase';
 import SecurityTab from './components/SecurityTab';
@@ -61,6 +63,7 @@ function TabPanel(props: TabPanelProps) {
 
 const Profile: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { profile, user: authUser, loading: authLoading } = useAuth();
   
   const [fullName, setFullName] = useState('');
@@ -68,12 +71,24 @@ const Profile: React.FC = () => {
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [tabValue, setTabValue] = useState(0);
+  const [balance, setBalance] = useState<number | null>(null);
 
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name || '');
+      fetchBalance();
     }
   }, [profile]);
+
+  const fetchBalance = async () => {
+    if (!authUser) return;
+    const { data } = await supabase
+      .from('wallets')
+      .select('balance')
+      .eq('profile_id', authUser.id)
+      .single();
+    if (data) setBalance(data.balance);
+  };
 
   const handleUpdateProfile = async () => {
     if (!authUser) return;
@@ -241,6 +256,37 @@ const Profile: React.FC = () => {
               >
                 {t('profile.statusActive')}
               </Box>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  mt: 3,
+                  p: 3,
+                  borderRadius: '16px',
+                  bgcolor: 'rgba(99, 102, 241, 0.05)',
+                  border: '1px solid rgba(99, 102, 241, 0.1)',
+                  textAlign: 'left'
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                  <Wallet size={20} color="#6366f1" />
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('wallet.balance')}
+                  </Typography>
+                </Box>
+                <Typography variant="h4" fontWeight={700} color="primary.main">
+                  {balance !== null ? `${balance} $S` : '...'}
+                </Typography>
+                <Button 
+                  size="small" 
+                  fullWidth 
+                  variant="text" 
+                  onClick={() => navigate('/wallet')}
+                  sx={{ mt: 1, textTransform: 'none', fontWeight: 600 }}
+                >
+                  {t('home.access')}
+                </Button>
+              </Paper>
             </Paper>
           </Grid>
 
