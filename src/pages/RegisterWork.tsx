@@ -40,6 +40,7 @@ const RegisterWork: React.FC = () => {
   
   const [loading, setLoading] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
@@ -63,6 +64,29 @@ const RegisterWork: React.FC = () => {
       console.error('Error fetching members:', err);
     } finally {
       setLoadingMembers(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setUploadingFile(true);
+      try {
+        const { uploadFile, getFileUrl } = await import('../utils/storage');
+        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+        const path = await uploadFile(file, {
+          bucket: 'task-evidence',
+          path: fileName
+        });
+        const url = await getFileUrl('task-evidence', path, true);
+        setEvidenceUrl(url);
+        setMessage({ type: 'success', text: 'Imagem carregada e otimizada com sucesso!' });
+      } catch (err: any) {
+        console.error('Error uploading file:', err);
+        setMessage({ type: 'error', text: 'Erro ao carregar imagem.' });
+      } finally {
+        setUploadingFile(false);
+      }
     }
   };
 
@@ -135,15 +159,33 @@ const RegisterWork: React.FC = () => {
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label={t('work.evidence')}
-                value={evidenceUrl}
-                onChange={(e) => setEvidenceUrl(e.target.value)}
-                required
-                placeholder="https://google_drive_link_ou_github_pr"
-                helperText="Link para fotos, documentos ou commits"
-              />
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                <TextField
+                  fullWidth
+                  label={t('work.evidence')}
+                  value={evidenceUrl}
+                  onChange={(e) => setEvidenceUrl(e.target.value)}
+                  required
+                  placeholder="https://link_ou_upload"
+                  helperText="Link para fotos ou clique no botão ao lado para carregar"
+                />
+                <Box sx={{ mt: 1 }}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    disabled={uploadingFile}
+                    sx={{ height: 56, minWidth: 100 }}
+                  >
+                    {uploadingFile ? <CircularProgress size={24} /> : 'Upload'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                    />
+                  </Button>
+                </Box>
+              </Box>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

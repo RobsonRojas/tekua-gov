@@ -98,6 +98,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
     }
   };
 
+  const evidenceUrl = activity.evidence?.[0]?.evidence_url;
+
   return (
     <Card elevation={0} sx={{ 
       height: '100%', 
@@ -107,11 +109,30 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
       border: '1px solid rgba(255, 255, 255, 0.05)',
       bgcolor: 'background.paper',
       transition: 'transform 0.2s, border-color 0.2s',
+      overflow: 'hidden',
       '&:hover': {
         transform: 'translateY(-4px)',
         borderColor: 'primary.main'
       }
     }}>
+      {evidenceUrl && (
+        <Box sx={{ height: 180, position: 'relative', overflow: 'hidden' }}>
+          <Box
+            component="img"
+            src={evidenceUrl}
+            alt={title}
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'opacity 0.3s',
+              bgcolor: 'rgba(255,255,255,0.02)'
+            }}
+            onLoad={(e) => (e.currentTarget.style.opacity = '1')}
+            onError={(e) => (e.currentTarget.style.display = 'none')}
+          />
+        </Box>
+      )}
       <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Chip 
@@ -136,10 +157,18 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
           {description}
         </Typography>
 
-        {activity.status === 'pending_validation' && (
+        {evidenceUrl && (
           <Box sx={{ mb: 2 }}>
-             <Typography variant="caption" color="primary.main" component="a" href="#" sx={{ textDecoration: 'none', fontWeight: 600 }}>
-               Ver Evidências
+             <Typography 
+               variant="caption" 
+               color="primary.main" 
+               component="a" 
+               href={evidenceUrl} 
+               target="_blank" 
+               rel="noopener noreferrer"
+               sx={{ textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}
+             >
+               <PlayCircle size={14} /> {t('work.viewEvidence') || 'Ver Evidência'}
              </Typography>
           </Box>
         )}

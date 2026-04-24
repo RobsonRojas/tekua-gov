@@ -42,7 +42,8 @@ const WorkWall: React.FC = () => {
           *,
           requester:profiles!requester_id (id, full_name),
           worker:profiles!worker_id (id, full_name),
-          confirmations:activity_confirmations (count)
+          confirmations:activity_confirmations (count),
+          evidence:activity_evidence (evidence_url)
         `)
         .order('created_at', { ascending: false });
 

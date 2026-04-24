@@ -64,14 +64,11 @@ export function useDocuments() {
       const filePath = `${metadata.category}/${fileName}`;
 
       // 1. Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('official-docs')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
+      const { uploadFile } = await import('../utils/storage');
+      await uploadFile(file, {
+        bucket: 'official-docs',
+        path: filePath,
+      });
 
       // Simulate progress since supabase-js doesn't provide upload progress natively for small files easily
       setUploadProgress(50);
@@ -139,12 +136,8 @@ export function useDocuments() {
 
   const getDownloadUrl = async (filePath: string) => {
     try {
-      const { data, error } = await supabase.storage
-        .from('official-docs')
-        .createSignedUrl(filePath, 3600); // 1 hour expiry
-
-      if (error) throw error;
-      return data.signedUrl;
+      const { getFileUrl } = await import('../utils/storage');
+      return await getFileUrl('official-docs', filePath, false);
     } catch (err: any) {
       console.error('Error generating signed URL:', err);
       setError(err.message || 'Failed to generate download URL.');
