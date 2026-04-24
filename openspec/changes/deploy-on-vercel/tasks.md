@@ -9,7 +9,7 @@
 - [ ] 2.1 Cadastrar as variáveis de ambiente na seção "Environment Variables" do Vercel:
     - `VITE_SUPABASE_URL`: URL de sua instância Supabase.
     - `VITE_SUPABASE_ANON_KEY`: Anon Key de sua instância Supabase.
-- [ ] 2.2 Validar o arquivo `vercel.json` na raiz do projeto com a regra de rewrite global (`/(.*) -> /index.html`).
+- [x] 2.2 Validar o arquivo `vercel.json` na raiz do projeto com a regra de rewrite global (`/(.*) -> /index.html`).
 
 ## 3. Lançamento e Validação do Deploy
 
@@ -21,4 +21,4 @@
 
 - [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
 - [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
-- [ ] Validar o build final e a conformidade com as especificações.
+- [x] Validar o build final e a conformidade com as especificações.

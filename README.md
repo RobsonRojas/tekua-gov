@@ -52,3 +52,21 @@ export default tseslint.config({
   },
 })
 ```
+
+## Deployment
+
+O Portal Tekuá está configurado para deploy automatizado via **Vercel**.
+
+### Configuração no Painel Vercel
+
+1. **Importar Projeto**: Conecte sua conta do GitHub e importe o repositório `tekua-gov`.
+2. **Framework Preset**: Selecione **Vite**.
+3. **Environment Variables**: Configure as seguintes variáveis na seção "Settings > Environment Variables":
+   - `VITE_SUPABASE_URL`: URL do seu projeto Supabase.
+   - `VITE_SUPABASE_ANON_KEY`: Anon Key do seu projeto Supabase.
+4. **Build & Output**: 
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+
+### Roteamento SPA
+O arquivo `vercel.json` na raiz do projeto garante que todas as rotas do frontend sejam redirecionadas para o `index.html`, permitindo o funcionamento correto do React Router em produção.
