@@ -16,7 +16,7 @@ vi.mock('react-i18next', () => ({
 
 const mockUpdateLanguage = vi.fn();
 
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../context/useAuth', () => ({
   useAuth: () => ({
     updateLanguage: mockUpdateLanguage,
   }),

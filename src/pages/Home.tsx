@@ -4,8 +4,8 @@ import {
   Users, 
   FileText, 
   ChevronRight,
-  LayoutPanelLeft as MuralIcon,
-  PlusCircle as RegisterIcon
+  Gavel,
+  LayoutPanelLeft as MuralIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -30,25 +30,25 @@ const Home: React.FC = () => {
       disabled: !isAdmin
     },
     { 
-      title: t('work.mural'), 
+      title: t('home.cardGovTitle'), 
       description: t('home.cardGovDesc'), 
-      icon: <MuralIcon size={32} />, 
+      icon: <Gavel size={32} />, 
       color: '#10b981',
-      path: '/work-wall'
+      path: '/governance'
     },
     { 
-      title: t('work.register'), 
+      title: t('work.mural'), 
       description: t('work.description'), 
-      icon: <RegisterIcon size={32} />, 
+      icon: <MuralIcon size={32} />, 
       color: '#a855f7',
-      path: '/register-work'
+      path: '/work-wall'
     },
     { 
       title: t('home.cardDocTitle'), 
       description: t('home.cardDocDesc'), 
       icon: <FileText size={32} />, 
       color: '#f59e0b',
-      path: '#'
+      path: '/documents'
     },
   ];
 

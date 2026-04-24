@@ -27,9 +27,9 @@
 
 ## 5. Verificação e Testes
 
-- [/] 5.1 Verificar se a detecção automática do navegador funciona.
-- [/] 5.2 Testar a troca manual de idioma e persistência entre sessões.
+- [x] 5.1 Verificar se a detecção automática do navegador funciona.
+- [x] 5.2 Testar a troca manual de idioma e persistência entre sessões.
 - [x] 5.3 Validar se as mensagens de erro do Supabase também podem ser mapeadas para traduções.
 
-- [ ] Implementar testes unitários para o seletor de idiomas e i18n helper (Vitest).
-- [ ] Implementar testes Playwright para validar a troca de idioma e persistência.
+- [x] Implementar testes unitários para o seletor de idiomas e i18n helper (Vitest).
+- [x] Implementar testes Playwright para validar a troca de idioma e persistência.

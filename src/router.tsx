@@ -20,6 +20,8 @@ const Voting = lazy(() => import('./pages/Voting'));
 const TopicDetail = lazy(() => import('./pages/TopicDetail'));
 const AdminActivityHistory = lazy(() => import('./pages/AdminActivityHistory'));
 const MemberManagement = lazy(() => import('./pages/MemberManagement'));
+const Documentation = lazy(() => import('./pages/Documentation'));
+const GovernanceServices = lazy(() => import('./pages/GovernanceServices'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -122,6 +124,22 @@ export const router = createBrowserRouter([
               <MemberManagement />
             </Suspense>
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documents',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Documentation />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'governance',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <GovernanceServices />
+          </Suspense>
         ),
       },
       {

@@ -56,6 +56,7 @@
   "admin": {
     "title": "User Management",
     "subtitle": "View and manage association members and their permissions.",
+    "reports": "Contribution Reports",
     "refresh": "Refresh",
     "newMember": "New Member",
     "loadError": "Error loading user list.",
@@ -96,7 +97,8 @@
   "common": {
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "all": "All"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",
