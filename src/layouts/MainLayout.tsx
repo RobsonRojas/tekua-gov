@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/useAuth';
 import LanguageSelector from '../components/LanguageSelector';
 import ThemeToggleButton from '../components/ThemeToggleButton';
+import NotificationCenter from '../components/NotificationCenter/NotificationCenter';
 
 const MainLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -120,6 +121,7 @@ const MainLayout: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ThemeToggleButton />
               <LanguageSelector />
+              <NotificationCenter />
               
               <Tooltip title={t('layout.profile')}>
                 <IconButton 

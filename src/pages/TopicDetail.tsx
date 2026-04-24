@@ -10,6 +10,7 @@ interface Topic {
   title: any;
   content: any;
   status: 'open' | 'closed';
+  created_by?: string;
 }
 
 interface Comment {
@@ -101,6 +102,20 @@ const TopicDetail: React.FC = () => {
       content: contentObj 
     }]);
     if (!error) {
+      // Notify topic owner if not the same person
+      if (topic && topic.created_by && topic.created_by !== user.id) {
+        await supabase.rpc('create_notification', {
+          p_user_id: topic.created_by,
+          p_title: { pt: 'Novo comentário', en: 'New comment' },
+          p_message: { 
+            pt: `Alguém comentou na pauta: ${getLocalized(topic.title)}`, 
+            en: `Someone commented on topic: ${getLocalized(topic.title)}` 
+          },
+          p_type: 'social',
+          p_link: `/topics/${id}`
+        });
+      }
+      
       setNewComment('');
       fetchTopicData();
     }
