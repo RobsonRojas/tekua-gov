@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
-import ContributionCard from '../components/ContributionCard';
+import ActivityCard from '../components/ActivityCard';
 
 const WorkWall: React.FC = () => {
   const { t } = useTranslation();
@@ -29,7 +29,7 @@ const WorkWall: React.FC = () => {
   const { user } = useAuth();
 
   const [tabIndex, setTabIndex] = useState(0);
-  const [contributions, setContributions] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [threshold, setThreshold] = useState(3);
 
@@ -49,17 +49,17 @@ const WorkWall: React.FC = () => {
     }
   };
 
-  const fetchContributions = useCallback(async () => {
+  const fetchActivities = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('contributions')
+        .from('activities')
         .select(`
           *,
-          profiles:profiles!user_id (id, full_name),
-          beneficiary_profiles:profiles!beneficiary_id (id, full_name),
-          confirmations:contribution_confirmations (count)
+          requester:profiles!requester_id (id, full_name),
+          worker:profiles!worker_id (id, full_name),
+          confirmations:activity_confirmations (count)
         `)
         .order('created_at', { ascending: false });
 
@@ -67,11 +67,11 @@ const WorkWall: React.FC = () => {
 
       // Check which ones the user has already confirmed
       const { data: userConfirms } = await supabase
-        .from('contribution_confirmations')
-        .select('contribution_id')
+        .from('activity_confirmations')
+        .select('activity_id')
         .eq('user_id', user.id);
       
-      const confirmedIds = new Set(userConfirms?.map(c => c.contribution_id) || []);
+      const confirmedIds = new Set(userConfirms?.map(c => c.activity_id) || []);
 
       const refinedData = data?.map(item => ({
         ...item,
@@ -80,15 +80,15 @@ const WorkWall: React.FC = () => {
 
       // Filter based on tab
       if (tabIndex === 1) { // My Involvement
-         setContributions(refinedData.filter(c => c.user_id === user.id));
+         setActivities(refinedData.filter(c => c.worker_id === user.id || c.requester_id === user.id));
       } else if (tabIndex === 2) { // To Validate
-         setContributions(refinedData.filter(c => c.user_id !== user.id && !confirmedIds.has(c.id) && c.status === 'pending'));
+         setActivities(refinedData.filter(c => c.worker_id !== user.id && !confirmedIds.has(c.id) && c.status === 'pending_validation'));
       } else { // All
-         setContributions(refinedData);
+         setActivities(refinedData);
       }
 
     } catch (err) {
-      console.error('Error fetching contributions:', err);
+      console.error('Error fetching activities:', err);
     } finally {
       setLoading(false);
     }
@@ -96,8 +96,8 @@ const WorkWall: React.FC = () => {
 
   useEffect(() => {
     fetchThreshold();
-    fetchContributions();
-  }, [fetchContributions]);
+    fetchActivities();
+  }, [fetchActivities]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -112,7 +112,7 @@ const WorkWall: React.FC = () => {
           <Button 
             variant="outlined" 
             startIcon={<RefreshIcon />} 
-            onClick={() => fetchContributions()}
+            onClick={() => fetchActivities()}
           >
             {t('admin.refresh')}
           </Button>
@@ -147,13 +147,12 @@ const WorkWall: React.FC = () => {
         </Box>
       ) : (
         <Grid container spacing={3}>
-          {contributions.length > 0 ? (
-            contributions.map((contribution) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={contribution.id}>
-                <ContributionCard 
-                  contribution={contribution} 
-                  threshold={threshold}
-                  onRefresh={fetchContributions}
+          {activities.length > 0 ? (
+            activities.map((activity) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={activity.id}>
+                <ActivityCard 
+                  activity={activity} 
+                  onRefresh={fetchActivities}
                 />
               </Grid>
             ))

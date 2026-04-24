@@ -72,11 +72,12 @@ const RegisterWork: React.FC = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('submit_contribution', {
-        p_description: description,
-        p_amount: Number(amount),
+      const { error } = await supabase.rpc('submit_activity', {
+        p_title: { pt: 'Contribuição Individual', en: 'Individual Contribution' },
+        p_description: { pt: description, en: description },
+        p_reward_amount: Number(amount),
         p_evidence_url: evidenceUrl,
-        p_beneficiary_id: beneficiaryType === 'member' ? beneficiaryId : null
+        p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null
       });
 
       if (error) throw error;

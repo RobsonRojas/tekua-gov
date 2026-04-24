@@ -15,7 +15,7 @@ interface Topic {
 interface Comment {
   id: string;
   user_id: string;
-  content: string;
+  content: any; // Localized object
   created_at: string;
   profiles: { full_name: string; avatar_url: string };
 }
@@ -90,7 +90,16 @@ const TopicDetail: React.FC = () => {
 
   const handleComment = async () => {
     if (!user || !id || !newComment.trim()) return;
-    const { error } = await supabase.from('topic_comments').insert([{ topic_id: id, user_id: user.id, content: newComment }]);
+    const contentObj = { [i18n.language]: newComment };
+    // Add other language as same text for now to avoid empty fields
+    if (i18n.language === 'pt') contentObj.en = newComment;
+    else contentObj.pt = newComment;
+
+    const { error } = await supabase.from('topic_comments').insert([{ 
+      topic_id: id, 
+      user_id: user.id, 
+      content: contentObj 
+    }]);
     if (!error) {
       setNewComment('');
       fetchTopicData();
@@ -156,7 +165,7 @@ const TopicDetail: React.FC = () => {
               <Box>
                 <Typography variant="subtitle2">{c.profiles?.full_name}</Typography>
                 <Typography variant="body2" color="text.secondary">{new Date(c.created_at).toLocaleString()}</Typography>
-                <Typography variant="body1" sx={{ mt: 1 }}>{c.content}</Typography>
+                <Typography variant="body1" sx={{ mt: 1 }}>{getLocalized(c.content)}</Typography>
               </Box>
             </Box>
           ))}

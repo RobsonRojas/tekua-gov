@@ -37,11 +37,13 @@ interface Profile {
 interface Transaction {
   id: string;
   from_id: string | null;
-  to_id: string | null;
+  to_id: string;
   amount: number;
   description: string;
+  activity_id: string | null;
   created_at: string;
-  to_profile?: { full_name: string; email: string };
+  to_profile?: { full_name: string; avatar_url: string };
+  from_profile?: { full_name: string; avatar_url: string };
 }
 
 const AdminTreasury: React.FC = () => {
@@ -327,9 +329,21 @@ const AdminTreasury: React.FC = () => {
                             <Typography variant="body2" color="text.primary" sx={{ mb: 0.5 }}>
                               {mint.description}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {new Date(mint.created_at).toLocaleString()}
-                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" color="text.secondary">
+                                {new Date(mint.created_at).toLocaleString()}
+                              </Typography>
+                              {mint.activity_id && (
+                                <Typography 
+                                  variant="caption" 
+                                  color="primary.main" 
+                                  sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                                  onClick={() => navigate('/work-wall')}
+                                >
+                                  Ver Atividade →
+                                </Typography>
+                              )}
+                            </Box>
                           </Box>
                         }
                       />

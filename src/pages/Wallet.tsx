@@ -41,6 +41,7 @@ interface Transaction {
   to_id: string | null;
   amount: number;
   description: string;
+  activity_id: string | null;
   created_at: string;
   from_profile?: { full_name: string; email: string };
   to_profile?: { full_name: string; email: string };
@@ -311,14 +312,26 @@ const Wallet: React.FC = () => {
                             </Box>
                           }
                           secondary={
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                              <Typography variant="body2" color="text.secondary">
-                                {isDebit ? `${t('wallet.to')}: ` : `${t('wallet.from')}: `}
-                                <strong>{otherParty}</strong>
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {new Date(tx.created_at).toLocaleDateString()}
-                              </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', mt: 0.5 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {isDebit ? `${t('wallet.to')}: ` : `${t('wallet.from')}: `}
+                                  <strong>{otherParty}</strong>
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {new Date(tx.created_at).toLocaleDateString()}
+                                </Typography>
+                              </Box>
+                              {tx.activity_id && (
+                                <Typography 
+                                  variant="caption" 
+                                  color="primary.main" 
+                                  sx={{ mt: 0.5, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                                  onClick={() => navigate('/work-wall')}
+                                >
+                                  {t('work.viewActivity') || 'Ver Atividade Relacionada'} →
+                                </Typography>
+                              )}
                             </Box>
                           }
                         />
