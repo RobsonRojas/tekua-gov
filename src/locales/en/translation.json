@@ -234,5 +234,18 @@
       "financeiro": "Financial",
       "outros": "Other"
     }
+  },
+  "audit": {
+    "title": "Audit History",
+    "description": "Monitor all activities performed on the portal by association members.",
+    "filters": "Audit Filters",
+    "userSearch": "Search User",
+    "activityTrends": "Activity Trends (30 days)",
+    "table": {
+      "user": "User",
+      "action": "Action",
+      "date": "Date and Time",
+      "details": "Details"
+    }
   }
 }

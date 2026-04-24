@@ -18,6 +18,7 @@ const RegisterWork = lazy(() => import('./pages/RegisterWork'));
 const ReportsDashboard = lazy(() => import('./pages/Dashboard/Reports/index'));
 const Voting = lazy(() => import('./pages/Voting'));
 const TopicDetail = lazy(() => import('./pages/TopicDetail'));
+const AdminActivityHistory = lazy(() => import('./pages/AdminActivityHistory'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -98,6 +99,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute adminOnly>
             <Suspense fallback={<LoadingFallback />}>
               <AdminTreasury />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'admin/activity',
+        element: (
+          <ProtectedRoute adminOnly>
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminActivityHistory />
             </Suspense>
           </ProtectedRoute>
         ),

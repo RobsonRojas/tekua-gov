@@ -234,5 +234,18 @@
       "financeiro": "Financeiro",
       "outros": "Outros"
     }
+  },
+  "audit": {
+    "title": "Histórico de Auditoria",
+    "description": "Monitore todas as atividades realizadas no portal pelos membros da associação.",
+    "filters": "Filtros de Auditoria",
+    "userSearch": "Buscar Usuário",
+    "activityTrends": "Tendência de Atividade (30 dias)",
+    "table": {
+      "user": "Usuário",
+      "action": "Ação",
+      "date": "Data e Hora",
+      "details": "Detalhes"
+    }
   }
 }
