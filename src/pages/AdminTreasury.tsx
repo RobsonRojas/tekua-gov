@@ -26,6 +26,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 interface Profile {
@@ -48,6 +49,7 @@ interface Transaction {
 
 const AdminTreasury: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   // Minting State
   const [recipient, setRecipient] = useState<Profile | null>(null);

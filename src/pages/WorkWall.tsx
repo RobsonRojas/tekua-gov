@@ -31,23 +31,6 @@ const WorkWall: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [threshold, setThreshold] = useState(3);
-
-  const fetchThreshold = async () => {
-    try {
-      const { data } = await supabase
-        .from('governance_settings')
-        .select('value')
-        .eq('key', 'min_contribution_confirmations')
-        .single();
-      
-      if (data) {
-        setThreshold(Number(data.value));
-      }
-    } catch (err) {
-      console.error('Error fetching threshold:', err);
-    }
-  };
 
   const fetchActivities = useCallback(async () => {
     if (!user) return;
@@ -95,7 +78,6 @@ const WorkWall: React.FC = () => {
   }, [user, tabIndex]);
 
   useEffect(() => {
-    fetchThreshold();
     fetchActivities();
   }, [fetchActivities]);
 

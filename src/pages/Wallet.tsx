@@ -32,6 +32,7 @@ import {
   User
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { supabase } from '../lib/supabase';
 
@@ -49,6 +50,7 @@ interface Transaction {
 
 const Wallet: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   
   const [balance, setBalance] = useState<number>(0);
