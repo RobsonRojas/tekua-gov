@@ -12,9 +12,13 @@ import { useNavigate } from 'react-router-dom';
 import WalletCard from '../components/WalletCard';
 import PushNotificationBanner from '../components/PushNotificationBanner';
 
+import { useAuth } from '../context/useAuth';
+
 const Home: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
 
   const homeCards = [
     { 
@@ -22,7 +26,8 @@ const Home: React.FC = () => {
       description: t('home.cardMembrosDesc'), 
       icon: <Users size={32} />, 
       color: '#6366f1',
-      path: '/admin-panel'
+      path: '/admin/members',
+      disabled: !isAdmin
     },
     { 
       title: t('work.mural'), 
@@ -105,8 +110,9 @@ const Home: React.FC = () => {
               <Button 
                 endIcon={<ChevronRight size={18} />} 
                 onClick={() => navigate(card.path)}
+                disabled={card.disabled}
                 sx={{ 
-                  color: card.color, 
+                  color: card.disabled ? 'text.disabled' : card.color, 
                   fontWeight: 600,
                   p: 0,
                   '&:hover': { background: 'transparent', opacity: 0.8 } 
