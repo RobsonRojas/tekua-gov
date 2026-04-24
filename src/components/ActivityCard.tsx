@@ -34,7 +34,7 @@ interface ActivityCardProps {
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
@@ -83,39 +83,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
           })
           .eq('id', activity.id);
         if (error) throw error;
-        // Notify requester that task was assumed
-        if (activity.requester_id) {
-          await supabase.rpc('create_notification', {
-            p_user_id: activity.requester_id,
-            p_title: { pt: 'Tarefa Assumida', en: 'Task Claimed' },
-            p_message: { 
-              pt: `${profile?.full_name || 'Alguém'} assumiu sua tarefa: ${title}`, 
-              en: `${profile?.full_name || 'Someone'} claimed your task: ${title}` 
-            },
-            p_type: 'task',
-            p_link: '/work-wall'
-          });
-        }
       } else if (activity.status === 'pending_validation') {
         // Confirm/Validate
         const { error } = await supabase.rpc('confirm_activity', {
           p_activity_id: activity.id
         });
         if (error) throw error;
-
-        // Notify worker that someone confirmed their work
-        if (activity.worker_id && activity.worker_id !== user?.id) {
-          await supabase.rpc('create_notification', {
-            p_user_id: activity.worker_id,
-            p_title: { pt: 'Trabalho Confirmado', en: 'Work Confirmed' },
-            p_message: { 
-              pt: `${profile?.full_name || 'Alguém'} confirmou seu trabalho: ${title}`, 
-              en: `${profile?.full_name || 'Someone'} confirmed your work: ${title}` 
-            },
-            p_type: 'task',
-            p_link: '/wallet'
-          });
-        }
       }
       onRefresh();
     } catch (err) {
