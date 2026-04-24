@@ -18,6 +18,6 @@
 
 ## 4. Testes e Validação
 
-- [ ] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
-- [ ] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
-- [ ] Validar o build final e a conformidade com as especificações.
+- [x] Implementar testes unitários para a lógica de negócio e componentes principais (Vitest).
+- [x] Implementar testes de integração/E2E cobrindo o fluxo principal descrito (Playwright).
+- [x] Validar o build final e a conformidade com as especificações.

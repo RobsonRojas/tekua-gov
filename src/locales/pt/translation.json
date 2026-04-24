@@ -44,6 +44,15 @@
     "activityDesc": "Veja suas ações recentes no portal.",
     "na": "N/A"
   },
+  "activity": {
+    "noActivity": "Nenhuma atividade registrada.",
+    "type": {
+      "auth": "Autenticação",
+      "vote": "Votações",
+      "task": "Tarefas",
+      "profile": "Perfil"
+    }
+  },
   "admin": {
     "title": "Gerenciamento de Usuários",
     "subtitle": "Visualize e gerencie os membros da associação e suas permissões.",

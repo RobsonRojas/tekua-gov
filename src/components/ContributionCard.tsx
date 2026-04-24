@@ -22,6 +22,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
+import { logActivity } from '../utils/activityLogger';
 
 interface ContributionCardProps {
   contribution: any;
@@ -50,6 +51,14 @@ const ContributionCard: React.FC<ContributionCardProps> = ({ contribution, thres
       });
 
       if (error) throw error;
+
+      if (user) {
+        logActivity(user.id, 'vote', {
+          pt: `Você confirmou a tarefa: ${contribution.description.substring(0, 30)}...`,
+          en: `You confirmed the task: ${contribution.description.substring(0, 30)}...`
+        });
+      }
+
       onRefresh();
     } catch (err: any) {
       console.error('Error confirming contribution:', err);

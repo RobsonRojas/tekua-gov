@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
+import { logActivity } from '../utils/activityLogger';
 
 const RegisterWork: React.FC = () => {
   const { t } = useTranslation();
@@ -79,6 +80,11 @@ const RegisterWork: React.FC = () => {
       });
 
       if (error) throw error;
+
+      logActivity(user.id, 'task', {
+        pt: `Trabalho registrado: ${description.substring(0, 30)}...`,
+        en: `Work registered: ${description.substring(0, 30)}...`
+      });
 
       setMessage({ type: 'success', text: t('work.success') });
       setTimeout(() => navigate('/work-wall'), 2000);

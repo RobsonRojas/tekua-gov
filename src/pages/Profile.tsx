@@ -30,6 +30,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/useAuth';
 import { supabase } from '../lib/supabase';
 import SecurityTab from './components/SecurityTab';
+import ActivityTab from './components/ActivityTab';
+import { logActivity } from '../utils/activityLogger';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -87,6 +89,11 @@ const Profile: React.FC = () => {
 
       if (error) throw error;
       
+      logActivity(authUser.id, 'profile_update', {
+        pt: 'Perfil atualizado',
+        en: 'Profile updated'
+      });
+
       setMessage({ type: 'success', text: t('profile.updateSuccess') });
       setIsEditing(false);
     } catch (err: any) {
@@ -158,6 +165,11 @@ const Profile: React.FC = () => {
             icon={<Settings size={18} />} 
             iconPosition="start" 
             label={t('profile.security_tab.tabTitle')} 
+          />
+          <Tab 
+            icon={<Calendar size={18} />} 
+            iconPosition="start" 
+            label={t('profile.activity')} 
           />
         </Tabs>
       </Box>
@@ -326,6 +338,7 @@ const Profile: React.FC = () => {
                       cursor: 'pointer',
                       '&:hover .MuiListItemText-primary': { color: 'primary.main' }
                     }}
+                    onClick={() => setTabValue(2)}
                   >
                     <ListItemIcon sx={{ color: 'text.secondary', minWidth: 40 }}>
                       <Calendar size={20} />
@@ -353,6 +366,20 @@ const Profile: React.FC = () => {
           }}
         >
           <SecurityTab />
+        </Paper>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={2}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            backgroundColor: 'background.paper',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+          }}
+        >
+          <ActivityTab />
         </Paper>
       </TabPanel>
     </Box>

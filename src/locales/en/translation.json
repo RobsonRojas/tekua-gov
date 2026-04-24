@@ -44,6 +44,15 @@
     "activityDesc": "See your recent portal actions.",
     "na": "N/A"
   },
+  "activity": {
+    "noActivity": "No activity recorded.",
+    "type": {
+      "auth": "Authentication",
+      "vote": "Voting",
+      "task": "Tasks",
+      "profile": "Profile"
+    }
+  },
   "admin": {
     "title": "User Management",
     "subtitle": "View and manage association members and their permissions.",

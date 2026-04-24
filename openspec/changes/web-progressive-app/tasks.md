@@ -17,6 +17,6 @@
 
 ## 4. Testes e Validação
 
-- [ ] Implementar testes unitários para o service worker e lógica de atualização (Vitest).
-- [ ] Implementar testes de integração/E2E validando o modo standalone e offline (Playwright).
-- [ ] Validar o build final e a conformidade com as especificações.
+- [x] Implementar testes unitários para o service worker e lógica de atualização (Vitest).
+- [x] Implementar testes de integração/E2E validando o modo standalone e offline (Playwright).
+- [x] Validar o build final e a conformidade com as especificações.

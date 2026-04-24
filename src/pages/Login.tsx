@@ -18,6 +18,7 @@ import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import LanguageSelector from '../components/LanguageSelector';
+import { logActivity } from '../utils/activityLogger';
 
 const Login: React.FC = () => {
   const { t } = useTranslation();
@@ -45,12 +46,21 @@ const Login: React.FC = () => {
     setError(null);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+      
+      if (data?.user) {
+        // We don't await this so it doesn't block navigation
+        logActivity(data.user.id, 'auth', { 
+          pt: 'Sessão Iniciada', 
+          en: 'Session Started' 
+        });
+      }
+
       navigate(from, { replace: true });
     } catch (err: any) {
       console.error('Login error:', err);

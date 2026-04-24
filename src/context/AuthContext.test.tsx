@@ -14,6 +14,15 @@ vi.mock('i18next', () => ({
   }
 }));
 
+// Mock ThemeContext
+vi.mock('./ThemeContext', () => ({
+  useThemeContext: () => ({
+    themeMode: 'light',
+    setThemeMode: vi.fn(),
+    toggleThemeMode: vi.fn()
+  })
+}));
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
@@ -29,6 +38,7 @@ describe('AuthContext', () => {
   });
 
   it('should handle sign out', async () => {
+    vi.spyOn(supabase.auth, 'signOut').mockResolvedValue({ error: null });
     const { result } = renderHook(() => useAuth(), { wrapper });
     
     await act(async () => {
