@@ -6,7 +6,6 @@ import {
   Box, 
   Tabs, 
   Tab, 
-  CircularProgress, 
   Button,
   Fab,
   Tooltip,
@@ -22,6 +21,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
 import ActivityCard from '../components/ActivityCard';
+import ActivityCardSkeleton from '../components/Skeletons/ActivityCardSkeleton';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const WorkWall: React.FC = () => {
   const { t } = useTranslation();
@@ -125,20 +126,37 @@ const WorkWall: React.FC = () => {
       </Paper>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
+        <Grid container spacing={3}>
+          {[...Array(6)].map((_, i) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
+              <ActivityCardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
       ) : (
         <Grid container spacing={3}>
           {activities.length > 0 ? (
-            activities.map((activity) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={activity.id}>
-                <ActivityCard 
-                  activity={activity} 
-                  onRefresh={fetchActivities}
-                />
+          <AnimatePresence>
+            {activities.map((activity, index) => (
+              <Grid 
+                size={{ xs: 12, sm: 6, md: 4 }} 
+                key={activity.id}
+              >
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <ActivityCard 
+                    activity={activity} 
+                    onRefresh={fetchActivities}
+                  />
+                </motion.div>
               </Grid>
-            ))
+            ))}
+          </AnimatePresence>
           ) : (
             <Grid size={{ xs: 12 }}>
               <Box sx={{ textAlign: 'center', py: 8, opacity: 0.6 }}>

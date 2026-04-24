@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, List, ListItem, ListItemButton, ListItemText, Chip, CircularProgress, Container, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Box, Typography, Button, Paper, List, ListItem, ListItemButton, ListItemText, Chip, Container, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, Skeleton } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import TopicCardSkeleton from '../components/Skeletons/TopicCardSkeleton';
 
 interface Topic {
   id: string;
@@ -66,7 +67,19 @@ const Voting: React.FC = () => {
   };
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+          <Skeleton variant="text" width={200} height={40} />
+          <Skeleton variant="rectangular" width={150} height={40} />
+        </Box>
+        <Stack spacing={2}>
+          {[...Array(4)].map((_, i) => (
+            <TopicCardSkeleton key={i} />
+          ))}
+        </Stack>
+      </Container>
+    );
   }
 
   return (
