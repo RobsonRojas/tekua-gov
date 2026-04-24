@@ -21,7 +21,7 @@
 - [x] 4.1 Build the `/profile` page using MUI components.
 - [x] 4.2 Fetch and display authenticated user data from Supabase.
 - [x] 4.3 Add functionality to update profile name.
-- [ ] 4.4 Add `created_at` to `profiles` and display in the UI as "Membro Desde".
+- [x] 4.4 Add `created_at` to `profiles` and display in the UI as "Membro Desde".
 
 ## 5. Admin Panel
 - [x] 5.1 Create the `/admin-panel` page restricted to "admin" users.
