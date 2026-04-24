@@ -14,7 +14,7 @@ import {
   Clear as ClearIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import type { ReportFilters as IReportFilters } from '../hooks/useContributionReports';
+import type { ReportFilters as IReportFilters } from '../hooks/useActivityReports';
 
 interface ReportFiltersProps {
   filters: IReportFilters;
@@ -40,7 +40,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
       </Box>
       
       <Grid container spacing={2} alignItems="center">
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
           <TextField
             select
             fullWidth
@@ -51,13 +51,31 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
             size="small"
           >
             <MenuItem value="all">{t('common.all') || 'Todos'}</MenuItem>
-            <MenuItem value="pending">{t('work.pending') || 'Pendente'}</MenuItem>
-            <MenuItem value="completed">{t('work.completed') || 'Concluído'}</MenuItem>
-            <MenuItem value="rejected">{t('work.rejected') || 'Rejeitado'}</MenuItem>
+            <MenuItem value="open">{t('work.open') || 'Aberta'}</MenuItem>
+            <MenuItem value="in_progress">{t('work.in_progress') || 'Em Progresso'}</MenuItem>
+            <MenuItem value="pending_validation">{t('work.pending') || 'Pendente'}</MenuItem>
+            <MenuItem value="completed">{t('work.completed') || 'Concluída'}</MenuItem>
+            <MenuItem value="rejected">{t('work.rejected') || 'Rejeitada'}</MenuItem>
+          </TextField>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+          <TextField
+            select
+            fullWidth
+            label={t('work.type') || 'Tipo'}
+            name="type"
+            value={filters.type || 'all'}
+            onChange={handleChange}
+            size="small"
+          >
+            <MenuItem value="all">{t('common.all') || 'Todos'}</MenuItem>
+            <MenuItem value="task">{t('work.task') || 'Tarefa'}</MenuItem>
+            <MenuItem value="contribution">{t('work.contribution') || 'Contribuição'}</MenuItem>
           </TextField>
         </Grid>
         
-        <Grid size={{ xs: 12, sm: 6, md: 2.5 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
           <TextField
             fullWidth
             type="date"
@@ -70,7 +88,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
           />
         </Grid>
         
-        <Grid size={{ xs: 12, sm: 6, md: 2.5 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
           <TextField
             fullWidth
             type="date"
@@ -93,23 +111,22 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
             onChange={handleChange}
             size="small"
             InputProps={{
-              startAdornment: <InputAdornment position="start">₮</InputAdornment>,
+              startAdornment: <InputAdornment position="start">$S</InputAdornment>,
             }}
           />
         </Grid>
 
         <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button 
-              variant="outlined" 
-              color="secondary" 
-              onClick={onClear}
-              fullWidth
-              startIcon={<ClearIcon />}
-            >
-              {t('admin.clear') || 'Limpar'}
-            </Button>
-          </Box>
+          <Button 
+            variant="outlined" 
+            color="secondary" 
+            onClick={onClear}
+            fullWidth
+            startIcon={<ClearIcon />}
+            size="large"
+          >
+            {t('admin.clear') || 'Limpar'}
+          </Button>
         </Grid>
       </Grid>
     </Paper>

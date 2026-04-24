@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { downloadCSV } from './csvExport';
-import type { ContributionReportItem } from '../hooks/useContributionReports';
+import type { ActivityReportItem } from '../hooks/useActivityReports';
 
 describe('downloadCSV', () => {
   it('should not do anything if data is empty', () => {
@@ -18,15 +18,18 @@ describe('downloadCSV', () => {
     global.URL.createObjectURL = createObjectURL;
     global.URL.revokeObjectURL = revokeObjectURL;
     
-    const mockData: ContributionReportItem[] = [
+    const mockData: ActivityReportItem[] = [
       {
         id: '1',
         created_at: '2026-04-22',
-        description: 'Test contribution',
-        amount_suggested: 100,
+        type: 'contribution',
+        title: { pt: 'Teste', en: 'Test' },
+        description: { pt: 'Desc Teste', en: 'Test Desc' },
+        reward_amount: 100,
         status: 'completed',
-        user_id: 'user1',
-        profiles: { full_name: 'John Doe' }
+        worker_id: 'user1',
+        worker: { full_name: 'John Doe' },
+        requester_id: null
       }
     ];
     
@@ -45,7 +48,7 @@ describe('downloadCSV', () => {
     downloadCSV(mockData);
     
     expect(createObjectURL).toHaveBeenCalled();
-    expect(link.setAttribute).toHaveBeenCalledWith('download', expect.stringContaining('contributions_report'));
+    expect(link.setAttribute).toHaveBeenCalledWith('download', expect.stringContaining('activities_report'));
     expect(link.click).toHaveBeenCalled();
   });
 });

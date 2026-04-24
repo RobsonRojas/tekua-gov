@@ -34,3 +34,13 @@
 - [x] 6.2 Implement access control checks to ensure only logged-in members can view the page
 - [x] 6.3 Perform manual verification of filters, charts, and CSV export functionality
 - [x] 6.4 Write unit tests for the CSV utility and data fetching logic
+
+## 7. Refactor to Unified Activities Framework
+
+- [x] 7.1 Update `useContributionReports` hook to query the `activities` table instead of `contributions`
+- [x] 7.2 Map legacy field names (`amount_suggested` -> `reward_amount`) and handle i18n JSONB fields in reports
+- [x] 7.3 Update filters to include `type` (Task vs Contribution) and adapt status mapping
+- [x] 7.4 Verify that charts and CSV export correctly process the new activity data format
+- [x] 7.5 Rename components and hooks to reflect the broader "Activities" scope if appropriate
+
+

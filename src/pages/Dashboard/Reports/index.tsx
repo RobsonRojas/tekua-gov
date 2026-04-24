@@ -14,8 +14,8 @@ import { Download as DownloadIcon } from '@mui/icons-material';
 import ReportFilters from './components/ReportFilters';
 import ContributionTable from './components/ContributionTable';
 import ReportingCharts from './components/ReportingCharts';
-import { useContributionReports } from './hooks/useContributionReports';
-import type { ReportFilters as IReportFilters } from './hooks/useContributionReports';
+import { useActivityReports } from './hooks/useActivityReports';
+import type { ReportFilters as IReportFilters } from './hooks/useActivityReports';
 import { downloadCSV } from './utils/csvExport';
 
 const ReportsDashboard: React.FC = () => {
@@ -25,17 +25,19 @@ const ReportsDashboard: React.FC = () => {
   // Extract filters from searchParams
   const filters: IReportFilters = useMemo(() => ({
     status: searchParams.get('status') || 'all',
+    type: searchParams.get('type') || 'all',
     startDate: searchParams.get('startDate') || '',
     endDate: searchParams.get('endDate') || '',
     minAmount: searchParams.get('minAmount') ? Number(searchParams.get('minAmount')) : undefined,
     maxAmount: searchParams.get('maxAmount') ? Number(searchParams.get('maxAmount')) : undefined,
   }), [searchParams]);
 
-  const { data, loading, error } = useContributionReports(filters);
+  const { data, loading, error } = useActivityReports(filters);
 
   const handleFilterChange = (newFilters: IReportFilters) => {
     const params: Record<string, string> = {};
     if (newFilters.status && newFilters.status !== 'all') params.status = newFilters.status;
+    if (newFilters.type && newFilters.type !== 'all') params.type = newFilters.type;
     if (newFilters.startDate) params.startDate = newFilters.startDate;
     if (newFilters.endDate) params.endDate = newFilters.endDate;
     if (newFilters.minAmount) params.minAmount = String(newFilters.minAmount);

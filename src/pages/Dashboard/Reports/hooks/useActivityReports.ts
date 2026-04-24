@@ -1,32 +1,35 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../../lib/supabase';
 
-export interface ContributionReportItem {
+export interface ActivityReportItem {
   id: string;
   created_at: string;
-  description: string;
-  amount_suggested: number;
-  status: 'pending' | 'completed' | 'rejected';
-  user_id: string;
-  profiles: {
+  title: any; // { pt, en }
+  description: any; // { pt, en }
+  reward_amount: number;
+  status: string;
+  type: 'task' | 'contribution';
+  worker_id: string | null;
+  requester_id: string | null;
+  worker?: {
     full_name: string | null;
   } | null;
-  beneficiary_profiles?: {
+  requester?: {
     full_name: string | null;
   } | null;
 }
 
 export interface ReportFilters {
   status?: string;
+  type?: string;
   startDate?: string;
   endDate?: string;
-  contributor?: string;
   minAmount?: number;
   maxAmount?: number;
 }
 
-export const useContributionReports = (filters: ReportFilters) => {
-  const [data, setData] = useState<ContributionReportItem[]>([]);
+export const useActivityReports = (filters: ReportFilters) => {
+  const [data, setData] = useState<ActivityReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,16 +39,19 @@ export const useContributionReports = (filters: ReportFilters) => {
 
     try {
       let query = supabase
-        .from('contributions')
+        .from('activities')
         .select(`
           id,
           created_at,
+          title,
           description,
-          amount_suggested,
+          reward_amount,
           status,
-          user_id,
-          profiles:profiles!user_id (full_name),
-          beneficiary_profiles:profiles!beneficiary_id (full_name)
+          type,
+          worker_id,
+          requester_id,
+          worker:profiles!worker_id (full_name),
+          requester:profiles!requester_id (full_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -53,30 +59,24 @@ export const useContributionReports = (filters: ReportFilters) => {
         query = query.eq('status', filters.status);
       }
 
+      if (filters.type && filters.type !== 'all') {
+        query = query.eq('type', filters.type);
+      }
+
       if (filters.startDate) {
         query = query.gte('created_at', filters.startDate);
       }
 
       if (filters.endDate) {
-        // To include the whole end day, we could add 1 day or use T23:59:59
         query = query.lte('created_at', filters.endDate);
       }
 
-      if (filters.contributor) {
-        // Filtering by contributor name is tricky with Supabase's simple JS client
-        // unless we use a join/text search. For now, we'll assume exact ID or just filter client-side 
-        // if it's too complex. But Supabase allows ilike on joined tables sometimes.
-        // Actually, it's better to filter by user_id if we have a selector.
-        // If it's a text search, we might need a more complex query.
-        // For MVP, let's stick to status and dates first.
-      }
-
       if (filters.minAmount !== undefined) {
-        query = query.gte('amount_suggested', filters.minAmount);
+        query = query.gte('reward_amount', filters.minAmount);
       }
 
       if (filters.maxAmount !== undefined) {
-        query = query.lte('amount_suggested', filters.maxAmount);
+        query = query.lte('reward_amount', filters.maxAmount);
       }
 
       const { data: results, error: fetchError } = await query;
@@ -85,7 +85,7 @@ export const useContributionReports = (filters: ReportFilters) => {
 
       setData(results as any[] || []);
     } catch (err: any) {
-      console.error('Error fetching contribution reports:', err);
+      console.error('Error fetching activity reports:', err);
       setError(err.message || 'Error fetching data');
     } finally {
       setLoading(false);
