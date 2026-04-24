@@ -202,5 +202,10 @@
     "addComment": "Adicione um comentário...",
     "send": "Enviar",
     "voteError": "Erro ao registrar voto. Talvez você já tenha votado."
+  },
+  "push": {
+    "title": "Fique Atualizado!",
+    "description": "Ative as notificações para ser avisado sobre novas votações e mensagens importantes na plataforma Tekua.",
+    "enable": "Ativar Notificações"
   }
 }

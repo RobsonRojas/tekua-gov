@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import WalletCard from '../components/WalletCard';
+import PushNotificationBanner from '../components/PushNotificationBanner';
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -56,6 +57,8 @@ const Home: React.FC = () => {
           {t('home.subtitle')}
         </Typography>
       </Box>
+
+      <PushNotificationBanner />
 
       <Grid container spacing={4} sx={{ mb: 6 }}>
         <Grid size={{ xs: 12 }}>

@@ -202,5 +202,10 @@
     "addComment": "Add a comment...",
     "send": "Send",
     "voteError": "Error recording vote. You might have already voted."
+  },
+  "push": {
+    "title": "Stay Updated!",
+    "description": "Enable notifications to be alerted about new votes and important messages on the Tekua platform.",
+    "enable": "Enable Notifications"
   }
 }
