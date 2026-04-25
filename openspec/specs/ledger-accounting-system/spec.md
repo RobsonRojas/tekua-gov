@@ -1,7 +1,12 @@
-## ADDED Requirements
+# ledger-accounting-system Specification
+
+## Purpose
+Garantir a integridade financeira da plataforma através de um sistema de contabilidade de partida dobrada (ledger), assegurando que todos os créditos e débitos estejam equilibrados e sejam auditáveis.
+
+## Requirements
 
 ### Requirement: Registro em Partida Dobrada
-O sistema **SHALL** registrar todas as movimentações financeiras como entradas de ledger que se equilibram.
+O sistema SHALL registrar todas as movimentações financeiras como entradas de ledger que se equilibram.
 
 #### Scenario: Payout de atividade no ledger
 - **WHEN** Uma atividade de 100 Surreals é liberada para um usuário.
@@ -10,7 +15,7 @@ O sistema **SHALL** registrar todas as movimentações financeiras como entradas
 - **AND** A soma de ambas as entradas na transação é zero.
 
 ### Requirement: Imutabilidade do Ledger
-O sistema **MUST** garantir que as entradas do ledger sejam imutáveis após a criação. Correções devem ser feitas através de novas entradas de estorno.
+O sistema MUST garantir que as entradas do ledger sejam imutáveis após a criação. Correções devem ser feitas através de novas entradas de estorno.
 
 #### Scenario: Estorno de transação errônea
 - **WHEN** Uma transferência incorreta é identificada.
