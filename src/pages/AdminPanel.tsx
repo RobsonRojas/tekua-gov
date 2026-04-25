@@ -38,11 +38,13 @@ import {
   RefreshCw,
   Settings,
   Users,
-  FileText
+  FileText,
+  DollarSign
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import DocumentManager from '../components/admin/DocumentManager';
+import FinancialIntegrity from '../components/admin/FinancialIntegrity';
 
 const AdminPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -202,6 +204,7 @@ const AdminPanel: React.FC = () => {
           <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.title')} />
           <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
           <Tab icon={<FileText size={18} />} iconPosition="start" label={t('docs.docsTitle', 'Documentação')} />
+          <Tab icon={<DollarSign size={18} />} iconPosition="start" label={t('admin.finance', 'Financeiro')} />
         </Tabs>
       </Paper>
 
@@ -390,6 +393,18 @@ const AdminPanel: React.FC = () => {
           }}
         >
           <DocumentManager />
+        </Paper>
+      ) : tabValue === 3 ? (
+        <Paper 
+          elevation={0}
+          sx={{ 
+            p: 4, 
+            borderRadius: '24px', 
+            bgcolor: 'background.paper',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+          }}
+        >
+          <FinancialIntegrity />
         </Paper>
       ) : null}
 
