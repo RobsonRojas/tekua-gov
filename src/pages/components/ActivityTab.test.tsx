@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ActivityTab from './ActivityTab';
 import { useAuth } from '../../context/useAuth';
 import { supabase } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
@@ -16,9 +17,9 @@ vi.mock('../../context/useAuth', () => ({
   useAuth: vi.fn(),
 }));
 
-vi.mock('../../lib/supabase', () => ({
-  supabase: {
-    from: vi.fn(),
+vi.mock('../../lib/api', () => ({
+  apiClient: {
+    invoke: vi.fn(),
   },
 }));
 
@@ -31,27 +32,18 @@ describe('ActivityTab', () => {
       user: { id: 'test-user-id' }
     });
 
-    // Default supabase mock
-    const mockEq = vi.fn().mockReturnThis();
-    const mockOrder = vi.fn().mockReturnThis();
-    const mockLimit = vi.fn().mockResolvedValue({
+    // Default apiClient mock
+    (apiClient.invoke as any).mockResolvedValue({
       data: [
         {
           id: 'log-1',
-          user_id: 'test-user-id',
-          action_type: 'auth',
+          actor_id: 'test-user-id',
+          action: 'auth',
           description: { pt: 'Sessão Iniciada' },
           created_at: new Date().toISOString()
         }
       ],
       error: null
-    });
-
-    (supabase.from as any).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: mockEq,
-      order: mockOrder,
-      limit: mockLimit,
     });
   });
 
@@ -66,14 +58,8 @@ describe('ActivityTab', () => {
   });
 
   it('shows empty state when no activity is found', async () => {
-    // Override supabase mock to return empty
-    const mockLimit = vi.fn().mockResolvedValue({ data: [], error: null });
-    (supabase.from as any).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: mockLimit,
-    });
+    // Override apiClient mock to return empty
+    (apiClient.invoke as any).mockResolvedValue({ data: [], error: null });
 
     render(<ActivityTab />);
     

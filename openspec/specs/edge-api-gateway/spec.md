@@ -14,6 +14,17 @@ The system SHALL provide a suite of Supabase Edge Functions that serve as the ex
 - **WHEN** a request is made to an edge function without a valid Authorization header
 - **THEN** the system SHALL return a 401 Unauthorized error and block database access
 
+### Requirement: API Resilience and Fault Tolerance
+The frontend API client SHALL implement mechanisms to prevent application hanging and ensure high availability of data services.
+
+#### Scenario: Authentication session hang
+- **WHEN** the API client attempts to retrieve the user's session and the request times out (e.g., > 500ms)
+- **THEN** the system SHALL fallback to using the public anonymous key to prevent the UI from hanging.
+
+#### Scenario: SDK independence (Native Fetch)
+- **WHEN** performing Edge Function invocations
+- **THEN** the system SHALL use a standard fetch-based transport layer to ensure compatibility across different browser environments (e.g., Brave, Chrome) and bypass SDK-level deadlocks.
+
 ### Requirement: Unified Error Handling
 All Edge Functions SHALL return a standardized error response if a database operation fails or validation rules are violated.
 
