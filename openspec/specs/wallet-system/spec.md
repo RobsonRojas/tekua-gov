@@ -15,15 +15,15 @@ O sistema SHALL permitir que o usuário autenticado consulte o saldo atual de su
 - **THEN** o sistema SHALL listar todas as transações (Entradas e Saídas) com data, valor, descrição e destinatário/remetente.
 
 ### Requirement: Transferência P2P e Rastreabilidade
-O sistema SHALL possibilitar o envio de moedas entre membros da comunidade de forma segura e manter rastreabilidade com as atividades de governança.
+O sistema SHALL possibilitar o envio de moedas entre membros da comunidade de forma segura e manter rastreabilidade com as atividades de governança. Toda lógica de transferência MUST ser processada exclusivamente no servidor (Edge Functions) para garantir a integridade.
 
 #### Scenario: Envio de Moedas e Vínculo de Atividade
-- **WHEN** o remetente informa o email/id do destinatário, o valor, a justificativa e o ID da atividade relacionada.
-- **THEN** o sistema SHALL debitar o valor da carteira de origem e creditar na carteira de destino de forma atômica, registrando o `activity_id` para auditoria.
+- **WHEN** o remetente solicita o envio informando o destinatário, valor, justificativa e ID da atividade via API segura.
+- **THEN** o sistema SHALL validar o saldo e permissões no servidor, debitar o valor da carteira de origem e creditar na carteira de destino de forma atômica, registrando o `activity_id` para auditoria.
 
 #### Scenario: Saldo Insuficiente
 - **WHEN** o remetente tenta enviar um valor maior do que possui em saldo.
-- **THEN** o sistema SHALL impedir a operação e exibir um alerta de erro.
+- **THEN** a Edge Function SHALL impedir a operação e retornar um erro estruturado de saldo insuficiente.
 
 ### Requirement: Gestão de Tesouraria Administrativa
 O sistema SHALL prover uma interface para que administradores gerenciem o suprimento de moedas da associação.
