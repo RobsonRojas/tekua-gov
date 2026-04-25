@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import type { ActivityLog, ActivityActionType } from '../pages/components/ActivityTab';
 
 export interface AdminActivityLog extends ActivityLog {
@@ -31,42 +31,24 @@ export function useAdminActivity() {
     setLoading(true);
     setError(null);
     try {
-      let query = supabase
-        .from('audit_logs')
-        .select('*, profiles(full_name, email)', { count: 'exact' });
+      const { data, error: apiError } = await apiClient.invoke('api-audit', 'fetchAdminLogs', {
+        page,
+        pageSize,
+        filters
+      });
 
-      // Apply filters
-      if (filters.actionType && filters.actionType !== 'all') {
-        query = query.eq('action_type', filters.actionType);
-      }
+      if (apiError) throw new Error(apiError);
 
-      if (filters.startDate) {
-        query = query.gte('created_at', filters.startDate);
-      }
+      const { logs: apiLogs, count } = data || { logs: [], count: 0 };
 
-      if (filters.endDate) {
-        // Add 23:59:59 to include the whole end day
-        const end = new Date(filters.endDate);
-        end.setHours(23, 59, 59, 999);
-        query = query.lte('created_at', end.toISOString());
-      }
-
-      // User search (complex because it's a join)
-      if (filters.userSearch) {
-        // We filter by full_name or email in the profiles join
-        // Note: PostgREST doesn't support easy OR across joins in a single query filter string 
-        // without complex syntax, so we use a simpler approach or raw filter if needed.
-        // For now, we'll use a direct filter on the profiles table if possible.
-        query = query.or(`full_name.ilike.%${filters.userSearch}%,email.ilike.%${filters.userSearch}%`, { foreignTable: 'profiles' });
-      }
-
-      const { data, error: dbError, count } = await query
-        .order('created_at', { ascending: false })
-        .range(page * pageSize, (page + 1) * pageSize - 1);
-
-      if (dbError) throw dbError;
-
-      setLogs((data as any) || []);
+      setLogs((apiLogs as any[]).map(log => ({
+        id: log.id,
+        user_id: log.actor_id,
+        action_type: log.action,
+        description: log.description,
+        created_at: log.created_at,
+        profiles: log.profiles
+      })));
       setTotalCount(count || 0);
     } catch (err: any) {
       console.error('Error fetching admin activity logs:', err);

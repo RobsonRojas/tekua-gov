@@ -1,24 +1,22 @@
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import type { ActivityActionType } from '../pages/components/ActivityTab';
 
 export const logActivity = async (
   userId: string,
   actionType: ActivityActionType,
   description: Record<string, string>,
-  ipAddress?: string
+  metadata: any = {}
 ) => {
   try {
-    const { error } = await supabase.from('audit_logs').insert([
-      {
-        user_id: userId,
-        action_type: actionType,
-        description: description,
-        ip_address: ipAddress || null,
-      },
-    ]);
+    const { error } = await apiClient.invoke('api-audit', 'logActivity', {
+      userId,
+      action: actionType,
+      description,
+      metadata
+    });
 
     if (error) {
-      console.error('Failed to log activity:', error);
+      console.error('Failed to log activity via API:', error);
     }
   } catch (err) {
     console.error('Exception logging activity:', err);

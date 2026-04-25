@@ -98,7 +98,8 @@
     "loading": "Carregando...",
     "error": "Erro",
     "success": "Sucesso",
-    "all": "Todos"
+    "all": "Todos",
+    "filter": "Filtrar"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",

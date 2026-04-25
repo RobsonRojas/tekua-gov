@@ -3,15 +3,15 @@ import {
   Box, 
   Typography, 
   CircularProgress,
-  Alert,
   MenuItem,
   Select,
   FormControl,
-  InputLabel
+  InputLabel,
+  Button
 } from '@mui/material';
 import { Calendar, LogIn, FileText, CheckSquare, Edit2, Activity } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
 import { useAuth } from '../../context/useAuth';
 
 export type ActivityActionType = 'auth' | 'vote' | 'task' | 'document' | 'profile_update';
@@ -34,31 +34,39 @@ const ActivityTab: React.FC = () => {
   const [filter, setFilter] = useState<string>('all');
 
   useEffect(() => {
-    fetchLogs();
+    if (user) {
+      fetchLogs();
+    } else {
+      setLoading(false);
+    }
   }, [user, filter]);
 
   const fetchLogs = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setError(null);
+    
     try {
-      let query = supabase
-        .from('audit_logs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const { data, error } = await apiClient.invoke<any[]>('api-audit', 'fetchLogs', {
+        limit: 50,
+        filter
+      });
         
-      if (filter !== 'all') {
-        query = query.eq('action_type', filter);
-      }
+      if (error) throw new Error(error);
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setLogs(data as ActivityLog[]);
+      setLogs((data || []).map((log: any) => ({
+        id: log.id,
+        user_id: log.actor_id,
+        action_type: log.action,
+        description: log.description,
+        created_at: log.created_at
+      })));
     } catch (err: any) {
       console.error('Error fetching activity logs:', err);
-      setError(err.message || 'Error fetching logs');
+      setError(err.message || 'Erro ao carregar o histórico de atividades. Tente atualizar a página.');
     } finally {
       setLoading(false);
     }
@@ -109,13 +117,33 @@ const ActivityTab: React.FC = () => {
         </FormControl>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {loading ? (
+      {error ? (
+        <Box sx={{ py: 6, textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <Box 
+              sx={{ 
+                p: 3, 
+                borderRadius: '50%', 
+                bgcolor: 'rgba(239, 68, 68, 0.1)',
+                color: 'error.main'
+              }}
+            >
+              <Activity size={48} />
+            </Box>
+          </Box>
+          <Typography variant="h6" gutterBottom>
+            {error}
+          </Typography>
+          <Button 
+            variant="outlined" 
+            onClick={() => fetchLogs()}
+            startIcon={<Activity size={18} />}
+            sx={{ mt: 2 }}
+          >
+            {t('admin.refresh') || 'Tentar Novamente'}
+          </Button>
+        </Box>
+      ) : loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -141,7 +169,8 @@ const ActivityTab: React.FC = () => {
         <Box sx={{ position: 'relative', ml: 2, borderLeft: '2px solid', borderColor: 'divider', pl: 4, py: 1 }}>
           {logs.map((log) => {
             const currentLang = i18n.language || 'pt';
-            const text = log.description[currentLang] || log.description['pt'] || log.description['en'] || 'Activity';
+            const description = log.description || {};
+            const text = description[currentLang] || description['pt'] || description['en'] || 'Activity';
             
             return (
               <Box key={log.id} sx={{ position: 'relative', mb: 4, '&:last-child': { mb: 0 } }}>
