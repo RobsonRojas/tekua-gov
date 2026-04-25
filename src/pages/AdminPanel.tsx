@@ -39,12 +39,14 @@ import {
   Settings,
   Users,
   FileText,
-  DollarSign
+  DollarSign,
+  ShieldCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import DocumentManager from '../components/admin/DocumentManager';
 import FinancialIntegrity from '../components/admin/FinancialIntegrity';
+import PayoutAudit from '../components/admin/PayoutAudit';
 
 const AdminPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -205,6 +207,7 @@ const AdminPanel: React.FC = () => {
           <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
           <Tab icon={<FileText size={18} />} iconPosition="start" label={t('docs.docsTitle', 'Documentação')} />
           <Tab icon={<DollarSign size={18} />} iconPosition="start" label={t('admin.finance', 'Financeiro')} />
+          <Tab icon={<ShieldCheck size={18} />} iconPosition="start" label={t('admin.payoutAudit', 'Auditoria')} />
         </Tabs>
       </Paper>
 
@@ -405,6 +408,18 @@ const AdminPanel: React.FC = () => {
           }}
         >
           <FinancialIntegrity />
+        </Paper>
+      ) : tabValue === 4 ? (
+        <Paper 
+          elevation={0}
+          sx={{ 
+            p: 4, 
+            borderRadius: '24px', 
+            bgcolor: 'background.paper',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+          }}
+        >
+          <PayoutAudit />
         </Paper>
       ) : null}
 

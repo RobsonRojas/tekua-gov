@@ -54,6 +54,8 @@ const Wallet: React.FC = () => {
   const { user } = useAuth();
   
   const [balance, setBalance] = useState<number>(0);
+  const [lockedBalance, setLockedBalance] = useState<number>(0);
+  const [auditPendingBalance, setAuditPendingBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -96,6 +98,30 @@ const Wallet: React.FC = () => {
 
       if (transError) throw transError;
       setTransactions(transData || []);
+
+      // 3. Fetch Locked and Audit Pending balances
+      const { data: activityData, error: activityError } = await supabase
+        .from('activities')
+        .select('reward_amount, requires_audit, audit_status, available_at')
+        .eq('worker_id', user.id)
+        .eq('status', 'completed');
+
+      if (!activityError && activityData) {
+        const now = new Date();
+        let locked = 0;
+        let audit = 0;
+        
+        activityData.forEach(a => {
+          const isLockedByTime = new Date(a.available_at) > now;
+          const isPendingAudit = a.requires_audit && a.audit_status === 'pending';
+          
+          if (isLockedByTime && !isPendingAudit) locked += Number(a.reward_amount);
+          if (isPendingAudit) audit += Number(a.reward_amount);
+        });
+        
+        setLockedBalance(locked);
+        setAuditPendingBalance(audit);
+      }
 
     } catch (err) {
       console.error('Error fetching wallet data:', err);
@@ -229,6 +255,23 @@ const Wallet: React.FC = () => {
               zIndex: 0
             }} />
           </Paper>
+          
+          {(lockedBalance > 0 || auditPendingBalance > 0) && (
+            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {lockedBalance > 0 && (
+                <Paper variant="outlined" sx={{ p: 1.5, borderColor: 'rgba(255, 255, 255, 0.1)', bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px' }}>
+                  <Typography variant="caption" color="text.secondary" display="block">Bloqueado (Tempo)</Typography>
+                  <Typography variant="body1" fontWeight={700}>$S {lockedBalance.toLocaleString()}</Typography>
+                </Paper>
+              )}
+              {auditPendingBalance > 0 && (
+                <Paper variant="outlined" sx={{ p: 1.5, borderColor: 'rgba(255, 171, 0, 0.3)', bgcolor: 'rgba(255, 171, 0, 0.05)', borderRadius: '12px' }}>
+                  <Typography variant="caption" color="warning.main" display="block">Pendente de Auditoria</Typography>
+                  <Typography variant="body1" fontWeight={700} color="warning.main">$S {auditPendingBalance.toLocaleString()}</Typography>
+                </Paper>
+              )}
+            </Box>
+          )}
         </Grid>
 
         {/* Info / Quick Actions */}
