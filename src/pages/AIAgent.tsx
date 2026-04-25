@@ -32,6 +32,7 @@ import ReactMarkdown from 'react-markdown';
 interface Message {
   role: 'user' | 'model';
   content: string;
+  tools?: string[];
 }
 
 const AIAgent: React.FC = () => {
@@ -113,14 +114,24 @@ const AIAgent: React.FC = () => {
       const stream = await chatWithGemini(newMessages, systemInstruction);
       
       let assistantResponse = '';
-      setMessages([...newMessages, { role: 'model', content: '' }]);
+      const toolsUsed: string[] = [];
+      
+      setMessages([...newMessages, { role: 'model', content: '', tools: [] }]);
 
-      for await (const chunk of stream) {
-        assistantResponse += chunk.text();
-        setMessages(prev => [
-          ...prev.slice(0, -1),
-          { role: 'model', content: assistantResponse }
-        ]);
+      for await (const event of stream) {
+        if (event.type === 'tool') {
+          toolsUsed.push(event.name);
+          setMessages(prev => [
+            ...prev.slice(0, -1),
+            { role: 'model', content: assistantResponse, tools: [...toolsUsed] }
+          ]);
+        } else if (event.type === 'text') {
+          assistantResponse = event.content;
+          setMessages(prev => [
+            ...prev.slice(0, -1),
+            { role: 'model', content: assistantResponse, tools: [...toolsUsed] }
+          ]);
+        }
       }
     } catch (err) {
       console.error('Gemini Error:', err);
@@ -214,7 +225,24 @@ const AIAgent: React.FC = () => {
                     '& p': { m: 0 }
                   }}
                 >
+                  {msg.role === 'model' && msg.content === '' && msg.tools && msg.tools.length > 0 && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <CircularProgress size={16} />
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {t('ai.thinking') || 'Consultando plataforma...'} ({msg.tools[msg.tools.length-1]})
+                      </Typography>
+                    </Box>
+                  )}
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  {msg.tools && msg.tools.length > 0 && msg.content !== '' && (
+                    <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {msg.tools.map((tool, i) => (
+                        <Typography key={i} variant="caption" sx={{ color: 'primary.light', bgcolor: 'rgba(99, 102, 241, 0.1)', px: 1, py: 0.2, borderRadius: '4px' }}>
+                          🔧 {tool}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
                 </Paper>
               </Box>
             </Fade>
@@ -250,6 +278,7 @@ const AIAgent: React.FC = () => {
               disabled={!docsLoaded || loading}
               variant="outlined"
               size="small"
+              inputProps={{ 'data-testid': 'ai-chat-input' }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '100px',

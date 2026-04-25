@@ -11,39 +11,46 @@ export const chatWithGemini = async (
 ) => {
   const { data, error } = await supabase.functions.invoke('ai-handler', {
     body: { messages, systemInstruction },
+    headers: {
+      accept: 'text/event-stream',
+    },
   });
 
   if (error) {
     throw new Error(error.message || 'Error calling AI Agent');
   }
 
-  // If it's not a stream (e.g. error from function), handle it
-  if (!(data instanceof ReadableStream)) {
-    // If the function returned a JSON error
-    if (data && typeof data === 'object' && 'error' in data) {
-      throw new Error(data.error);
-    }
-    
-    // Fallback for non-streaming response if ever needed
-    return {
-      async *[Symbol.asyncIterator]() {
-        yield { text: () => String(data) };
-      }
-    };
-  }
-
-  // Create an async generator to mimic the Gemini SDK stream
+  // Handle the event stream from tool calling loop
   return {
     async *[Symbol.asyncIterator]() {
       const reader = data.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
       try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           
-          const text = typeof value === 'string' ? value : new TextDecoder().decode(value);
-          yield { text: () => text };
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const event = JSON.parse(line);
+              if (event.type === 'tool') {
+                yield { type: 'tool', name: event.name };
+              } else if (event.type === 'text') {
+                yield { type: 'text', content: event.content };
+              } else if (event.type === 'error') {
+                throw new Error(event.message);
+              }
+            } catch (e) {
+              console.error('Error parsing event line:', e, line);
+            }
+          }
         }
       } finally {
         reader.releaseLock();
