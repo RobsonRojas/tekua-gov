@@ -8,7 +8,7 @@ export const logActivity = async (
   ipAddress?: string
 ) => {
   try {
-    const { error } = await supabase.from('activity_logs').insert([
+    const { error } = await supabase.from('audit_logs').insert([
       {
         user_id: userId,
         action_type: actionType,

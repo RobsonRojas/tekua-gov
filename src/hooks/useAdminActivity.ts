@@ -32,7 +32,7 @@ export function useAdminActivity() {
     setError(null);
     try {
       let query = supabase
-        .from('activity_logs')
+        .from('audit_logs')
         .select('*, profiles(full_name, email)', { count: 'exact' });
 
       // Apply filters

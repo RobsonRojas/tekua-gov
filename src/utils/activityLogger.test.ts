@@ -17,7 +17,7 @@ describe('activityLogger', () => {
 
     await logActivity('user-123', 'auth', { pt: 'Teste' });
 
-    expect(supabase.from).toHaveBeenCalledWith('activity_logs');
+    expect(supabase.from).toHaveBeenCalledWith('audit_logs');
     expect(mockInsert).toHaveBeenCalledWith([
       {
         user_id: 'user-123',

@@ -44,7 +44,7 @@ describe('useAdminActivity Hook', () => {
 
     expect(result.current.logs).toEqual(mockLogs);
     expect(result.current.totalCount).toBe(1);
-    expect(supabase.from).toHaveBeenCalledWith('activity_logs');
+    expect(supabase.from).toHaveBeenCalledWith('audit_logs');
     expect(mockFrom.select).toHaveBeenCalledWith('*, profiles(full_name, email)', { count: 'exact' });
   });
 

@@ -42,7 +42,7 @@ const ActivityTab: React.FC = () => {
     setLoading(true);
     try {
       let query = supabase
-        .from('activity_logs')
+        .from('audit_logs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
