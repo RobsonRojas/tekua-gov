@@ -48,8 +48,8 @@ serve(async (req) => {
           .from('activities')
           .select(`
             *,
-            requester:profiles!requester_id (id, full_name, email),
-            worker:profiles!worker_id (id, full_name, email),
+            requester:profiles!requester_id (id, full_name),
+            worker:profiles!worker_id (id, full_name),
             confirmations:activity_confirmations (count),
             evidence:activity_evidence (file_path)
           `)
@@ -84,15 +84,18 @@ serve(async (req) => {
       }
 
       case 'createActivity': {
-        const { title, description, rewardAmount, type = 'activity', geoRequired = false } = params
+        const { title, description, rewardAmount, type = 'task', geoRequired = false } = params
         if (!title || !description) throw new Error('Missing activity title or description')
+        
+        const amount = Number(rewardAmount)
+        if (isNaN(amount) || amount <= 0) throw new Error('Reward amount must be a positive number')
 
         const { data, error } = await supabaseClient
           .from('activities')
           .insert({ 
             title: typeof title === 'string' ? { pt: title, en: title } : title, 
             description: typeof description === 'string' ? { pt: description, en: description } : description, 
-            reward_amount: Number(rewardAmount),
+            reward_amount: amount,
             type: type,
             requester_id: user.id,
             status: 'open',

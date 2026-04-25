@@ -81,7 +81,7 @@ serve(async (req) => {
 
       case 'logActivity': {
         const { action: actionType, description, metadata = {} } = params
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabaseAdmin
           .from('audit_logs')
           .insert({
             actor_id: user.id,

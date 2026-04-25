@@ -18,6 +18,11 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
     if (authError || !user) throw new Error('Unauthorized')
 
@@ -71,8 +76,8 @@ serve(async (req) => {
           .from('transactions')
           .select(`
             *,
-            from_profile:from_id (full_name, email),
-            to_profile:to_id (full_name, email)
+            from_profile:from_id (full_name),
+            to_profile:to_id (full_name)
           `)
           .or(`from_id.eq.${user.id},to_id.eq.${user.id}`)
           .order('created_at', { ascending: false })
@@ -129,7 +134,7 @@ serve(async (req) => {
         const { data: walletData } = await supabaseAdmin.from('wallets').select('balance')
         const { data: mintData } = await supabaseAdmin
           .from('transactions')
-          .select(`*, to_profile:to_id (full_name, email)`)
+          .select(`*, to_profile:to_id (full_name)`)
           .is('from_id', null)
           .order('created_at', { ascending: false })
           .limit(10)

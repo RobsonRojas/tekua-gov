@@ -86,6 +86,15 @@ const WorkWall: React.FC = () => {
           <Button 
             variant="contained" 
             startIcon={<AddIcon />} 
+            onClick={() => navigate('/create-demand')}
+            color="secondary"
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
+          >
+            {t('work.createDemand') || 'Criar Demanda'}
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />} 
             onClick={() => navigate('/register-work')}
             sx={{ display: { xs: 'none', sm: 'flex' } }}
           >
@@ -155,6 +164,17 @@ const WorkWall: React.FC = () => {
           )}
         </Grid>
       )}
+
+      <Tooltip title={t('work.createDemand') || 'Criar Demanda'} placement="left">
+        <Fab 
+          color="secondary" 
+          aria-label="add-demand" 
+          sx={{ position: 'fixed', bottom: 104, right: 32, display: { sm: 'none' } }}
+          onClick={() => navigate('/create-demand')}
+        >
+          <AddIcon />
+        </Fab>
+      </Tooltip>
 
       <Tooltip title={t('work.register')} placement="left">
         <Fab 

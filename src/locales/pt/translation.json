@@ -99,7 +99,10 @@
     "error": "Erro",
     "success": "Sucesso",
     "all": "Todos",
-    "filter": "Filtrar"
+    "filter": "Filtrar",
+    "cancel": "Cancelar",
+    "startDate": "Data Início",
+    "endDate": "Data Fim"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",
@@ -186,7 +189,12 @@
     "pending_validation": "Aguardando Validação",
     "accept": "Assumir Tarefa",
     "submit": "Concluir e Enviar",
-    "requester": "Solicitante"
+    "requester": "Solicitante",
+    "createDemand": "Criar Demanda",
+    "demandCreated": "Demanda criada com sucesso!",
+    "reward": "Valor da Recompensa (Surreal)",
+    "publish": "Publicar Demanda",
+    "title": "Título da Demanda"
   },
   "governance": {
     "config": "Configuração de Governança",

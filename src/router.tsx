@@ -15,6 +15,7 @@ const Wallet = lazy(() => import('./pages/Wallet'));
 const AdminTreasury = lazy(() => import('./pages/AdminTreasury'));
 const WorkWall = lazy(() => import('./pages/WorkWall'));
 const RegisterWork = lazy(() => import('./pages/RegisterWork'));
+const CreateDemand = lazy(() => import('./pages/CreateDemand'));
 const ReportsDashboard = lazy(() => import('./pages/Dashboard/Reports/index'));
 const Voting = lazy(() => import('./pages/Voting'));
 const TopicDetail = lazy(() => import('./pages/TopicDetail'));
@@ -160,6 +161,14 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <RegisterWork />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'create-demand',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <CreateDemand />
           </Suspense>
         ),
       },

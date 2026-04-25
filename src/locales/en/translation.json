@@ -98,7 +98,10 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
-    "all": "All"
+    "all": "All",
+    "cancel": "Cancel",
+    "startDate": "Start Date",
+    "endDate": "End Date"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",
@@ -185,7 +188,12 @@
     "pending_validation": "Awaiting Validation",
     "accept": "Accept Task",
     "submit": "Submit Completion",
-    "requester": "Requester"
+    "requester": "Requester",
+    "createDemand": "Create Demand",
+    "demandCreated": "Demand created successfully!",
+    "reward": "Reward Amount (Surreal)",
+    "publish": "Publish Demand",
+    "title": "Demand Title"
   },
   "governance": {
     "config": "Governance Configuration",
