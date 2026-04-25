@@ -264,5 +264,10 @@
     "thinking": "Pensando...",
     "error": "Desculpe, ocorreu um erro ao processar sua pergunta.",
     "nav": "Assistente IA"
+  },
+  "offline": {
+    "banner": "Você está em modo offline. Algumas ações serão sincronizadas quando houver conexão.",
+    "saved": "Dados salvos localmente.",
+    "syncing": "Sincronizando dados pendentes..."
   }
 }

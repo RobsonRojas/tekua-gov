@@ -9,7 +9,8 @@ import {
   Button,
   Fab,
   Tooltip,
-  Paper
+  Paper,
+  Alert
 } from '@mui/material';
 import { 
   Add as AddIcon, 
@@ -22,6 +23,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
 import ActivityCard from '../components/ActivityCard';
 import ActivityCardSkeleton from '../components/Skeletons/ActivityCardSkeleton';
+import { useQueryWithCache } from '../hooks/useQueryWithCache';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const WorkWall: React.FC = () => {
@@ -30,58 +32,60 @@ const WorkWall: React.FC = () => {
   const { user } = useAuth();
 
   const [tabIndex, setTabIndex] = useState(0);
+
+  const fetcher = useCallback(async () => {
+    if (!user) return { data: [], error: null };
+    
+    const { data, error } = await supabase
+      .from('activities')
+      .select(`
+        *,
+        requester:profiles!requester_id (id, full_name),
+        worker:profiles!worker_id (id, full_name),
+        confirmations:activity_confirmations (count),
+        evidence:activity_evidence (evidence_url)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) return { data: null, error };
+
+    const { data: userConfirms } = await supabase
+      .from('activity_confirmations')
+      .select('activity_id')
+      .eq('user_id', user.id);
+    
+    const confirmedIds = new Set(userConfirms?.map(c => c.activity_id) || []);
+
+    const refinedData = data?.map(item => ({
+      ...item,
+      user_has_confirmed: confirmedIds.has(item.id)
+    })) || [];
+
+    return { data: refinedData, error: null };
+  }, [user]);
+
+  const { data: rawActivities, loading, isOfflineData, refetch } = useQueryWithCache(
+    'work-wall-activities',
+    fetcher,
+    [user]
+  );
+
   const [activities, setActivities] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchActivities = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('activities')
-        .select(`
-          *,
-          requester:profiles!requester_id (id, full_name),
-          worker:profiles!worker_id (id, full_name),
-          confirmations:activity_confirmations (count),
-          evidence:activity_evidence (evidence_url)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Check which ones the user has already confirmed
-      const { data: userConfirms } = await supabase
-        .from('activity_confirmations')
-        .select('activity_id')
-        .eq('user_id', user.id);
-      
-      const confirmedIds = new Set(userConfirms?.map(c => c.activity_id) || []);
-
-      const refinedData = data?.map(item => ({
-        ...item,
-        user_has_confirmed: confirmedIds.has(item.id)
-      })) || [];
-
-      // Filter based on tab
-      if (tabIndex === 1) { // My Involvement
-         setActivities(refinedData.filter(c => c.worker_id === user.id || c.requester_id === user.id));
-      } else if (tabIndex === 2) { // To Validate
-         setActivities(refinedData.filter(c => c.worker_id !== user.id && !confirmedIds.has(c.id) && c.status === 'pending_validation'));
-      } else { // All
-         setActivities(refinedData);
-      }
-
-    } catch (err) {
-      console.error('Error fetching activities:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, tabIndex]);
 
   useEffect(() => {
-    fetchActivities();
-  }, [fetchActivities]);
+    if (!rawActivities || !user) return;
+
+    let filtered = rawActivities;
+    const confirmedIds = new Set(rawActivities.filter(a => a.user_has_confirmed).map(c => c.id));
+
+    if (tabIndex === 1) { // My Involvement
+      filtered = rawActivities.filter(c => c.worker_id === user.id || c.requester_id === user.id);
+    } else if (tabIndex === 2) { // To Validate
+      filtered = rawActivities.filter(c => c.worker_id !== user.id && !confirmedIds.has(c.id) && c.status === 'pending_validation');
+    }
+
+    setActivities(filtered);
+  }, [rawActivities, tabIndex, user]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -96,7 +100,7 @@ const WorkWall: React.FC = () => {
           <Button 
             variant="outlined" 
             startIcon={<RefreshIcon />} 
-            onClick={() => fetchActivities()}
+            onClick={() => refetch()}
           >
             {t('admin.refresh')}
           </Button>
@@ -110,6 +114,12 @@ const WorkWall: React.FC = () => {
           </Button>
         </Box>
       </Box>
+
+      {isOfflineData && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          {t('offline.usingCached') || 'Exibindo dados em cache. Algumas informações podem estar desatualizadas.'}
+        </Alert>
+      )}
 
       <Paper sx={{ mb: 4, borderRadius: 2 }}>
         <Tabs 
@@ -125,7 +135,7 @@ const WorkWall: React.FC = () => {
         </Tabs>
       </Paper>
 
-      {loading ? (
+      {loading && !rawActivities ? (
         <Grid container spacing={3}>
           {[...Array(6)].map((_, i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
@@ -151,7 +161,7 @@ const WorkWall: React.FC = () => {
                 >
                   <ActivityCard 
                     activity={activity} 
-                    onRefresh={fetchActivities}
+                    onRefresh={refetch}
                   />
                 </motion.div>
               </Grid>

@@ -96,13 +96,24 @@ const RegisterWork: React.FC = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('submit_activity', {
+      const submissionData = {
         p_title: { pt: 'Contribuição Individual', en: 'Individual Contribution' },
         p_description: { pt: description, en: description },
         p_reward_amount: Number(amount),
         p_evidence_url: evidenceUrl,
         p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null
-      });
+      };
+
+      if (!navigator.onLine) {
+        const { enqueueAction } = await import('../lib/db');
+        await enqueueAction('submit_task', submissionData);
+        
+        setMessage({ type: 'success', text: t('offline.saved') || 'Dados salvos localmente. Serão enviados quando houver conexão.' });
+        setTimeout(() => navigate('/work-wall'), 2000);
+        return;
+      }
+
+      const { error } = await supabase.rpc('submit_activity', submissionData);
 
       if (error) throw error;
 

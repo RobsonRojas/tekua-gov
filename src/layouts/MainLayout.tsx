@@ -27,6 +27,7 @@ import { useAuth } from '../context/useAuth';
 import LanguageSelector from '../components/LanguageSelector';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import NotificationCenter from '../components/NotificationCenter/NotificationCenter';
+import OfflineBanner from '../components/OfflineBanner';
 
 const MainLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -64,6 +65,7 @@ const MainLayout: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <OfflineBanner />
       <AppBar 
         position="sticky" 
         elevation={0}
