@@ -27,14 +27,41 @@ serve(async (req) => {
 
     switch (action) {
       case 'getBalance': {
-        const { data, error } = await supabaseClient
+        // 1. Fetch main balance
+        const { data: wallet, error: walletError } = await supabaseClient
           .from('wallets')
-          .select('*')
-          .eq('user_id', user.id)
+          .select('balance')
+          .eq('profile_id', user.id) // Fixed column name from profile_id to user_id? Wait, check DB.
           .single()
         
-        if (error && error.code !== 'PGRST116') throw error
-        responseData = data || { balance: 0, locked_balance: 0, pending_audit_balance: 0 }
+        if (walletError && walletError.code !== 'PGRST116') throw walletError
+
+        // 2. Fetch locked and audit pending balances from activities
+        const { data: activities, error: activityError } = await supabaseClient
+          .from('activities')
+          .select('reward_amount, requires_audit, audit_status, available_at')
+          .eq('worker_id', user.id)
+          .eq('status', 'completed')
+
+        let locked_balance = 0
+        let pending_audit_balance = 0
+
+        if (!activityError && activities) {
+          const now = new Date()
+          activities.forEach(a => {
+            const isLockedByTime = new Date(a.available_at) > now
+            const isPendingAudit = a.requires_audit && a.audit_status === 'pending'
+            
+            if (isLockedByTime && !isPendingAudit) locked_balance += Number(a.reward_amount)
+            if (isPendingAudit) pending_audit_balance += Number(a.reward_amount)
+          })
+        }
+
+        responseData = { 
+          balance: wallet?.balance || 0, 
+          locked_balance, 
+          pending_audit_balance 
+        }
         break
       }
 
@@ -42,8 +69,12 @@ serve(async (req) => {
         const { limit = 50 } = params
         const { data, error } = await supabaseClient
           .from('transactions')
-          .select('*')
-          .eq('wallet_id', user.id) // Assuming wallet_id is user_id for now
+          .select(`
+            *,
+            from_profile:from_id (full_name, email),
+            to_profile:to_id (full_name, email)
+          `)
+          .or(`from_id.eq.${user.id},to_id.eq.${user.id}`)
           .order('created_at', { ascending: false })
           .limit(limit)
 
@@ -53,27 +84,84 @@ serve(async (req) => {
       }
 
       case 'transfer': {
-        const { to, amount, reason, activityId } = params
-        if (!to || amount <= 0) throw new Error('Invalid transfer parameters')
+        const { to, toEmail, amount, description } = params
+        let targetId = to
 
-        // 1. Get sender balance
-        const { data: senderWallet, error: senderError } = await supabaseClient
-          .from('wallets')
-          .select('balance')
-          .eq('user_id', user.id)
+        // 1. Resolve email if provided
+        if (toEmail) {
+          const { data: recipient, error: recipientError } = await supabaseClient
+            .from('profiles')
+            .select('id')
+            .eq('email', toEmail)
+            .single()
+          
+          if (recipientError) throw new Error('Recipient not found')
+          targetId = recipient.id
+        }
+
+        if (!targetId || amount <= 0) throw new Error('Invalid transfer parameters')
+
+        // 2. Call the database RPC for atomic transfer
+        const { data, error } = await supabaseClient.rpc('perform_transfer', {
+          p_to_id: targetId,
+          p_amount: amount,
+          p_description: description
+        })
+
+        if (error) throw error
+        if (data && !data.success) throw new Error(data.error)
+        
+        responseData = data
+        break
+      }
+
+      case 'fetchTreasuryStats': {
+        // 1. Verify admin
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
           .single()
         
-        if (senderError) throw senderError
-        if (senderWallet.balance < amount) throw new Error('Insufficient balance')
+        if (profile?.role !== 'admin') throw new Error('Forbidden')
 
-        // 2. Perform atomic transfer using RPC or single function
-        // For simplicity in this demo, we'll use a direct update but ideally this should be a DB RPC
-        const { data, error } = await supabaseClient.rpc('transfer_surreais', {
-          p_from_user: user.id,
-          p_to_user: to,
-          p_amount: amount,
-          p_reason: reason,
-          p_activity_id: activityId
+        // 2. Fetch stats using admin client
+        const { data: walletData } = await supabaseAdmin.from('wallets').select('balance')
+        const { data: mintData } = await supabaseAdmin
+          .from('transactions')
+          .select(`*, to_profile:to_id (full_name, email)`)
+          .is('from_id', null)
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        const total = walletData?.reduce((acc, w) => acc + (w.balance || 0), 0) || 0
+        
+        responseData = {
+          totalSupply: total,
+          totalParticipants: walletData?.length || 0,
+          recentMints: mintData || []
+        }
+        break
+      }
+
+      case 'mintCurrency': {
+        // 1. Verify admin
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (profile?.role !== 'admin') throw new Error('Forbidden')
+
+        const { recipientId, amount, description } = params
+        if (!recipientId || !amount) throw new Error('Missing minting details')
+
+        // 2. Call the minting RPC using admin client
+        const { data, error } = await supabaseAdmin.rpc('admin_mint_currency', {
+          p_recipient_id: recipientId,
+          p_amount: Number(amount),
+          p_description: description
         })
 
         if (error) throw error

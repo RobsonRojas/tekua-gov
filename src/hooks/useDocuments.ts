@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { apiClient } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
 
@@ -32,12 +33,9 @@ export function useDocuments() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: dbError } = await supabase
-        .from('documents')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error: apiError } = await apiClient.invoke('api-documents', 'fetchDocuments');
 
-      if (dbError) throw dbError;
+      if (apiError) throw new Error(apiError);
       setDocuments(data || []);
     } catch (err: any) {
       console.error('Error fetching documents:', err);
@@ -73,19 +71,18 @@ export function useDocuments() {
       // Simulate progress since supabase-js doesn't provide upload progress natively for small files easily
       setUploadProgress(50);
 
-      // 2. Insert metadata into documents table
-      const { error: dbError } = await supabase.from('documents').insert({
+      // 2. Insert metadata via API
+      const { error: apiError } = await apiClient.invoke('api-documents', 'registerDocument', {
         title: metadata.title,
         description: metadata.description,
         category: metadata.category,
-        file_path: filePath,
-        created_by: user.id
+        filePath: filePath
       });
 
-      if (dbError) {
+      if (apiError) {
         // Rollback storage upload if DB insert fails
         await supabase.storage.from('official-docs').remove([filePath]);
-        throw dbError;
+        throw new Error(apiError);
       }
 
       setUploadProgress(100);
@@ -107,18 +104,15 @@ export function useDocuments() {
     setLoading(true);
     setError(null);
     try {
-      // 1. Delete from DB
-      const { error: dbError } = await supabase
-        .from('documents')
-        .delete()
-        .eq('id', id);
+      // 1. Delete from DB via API (which also checks permissions)
+      const { data, error: apiError } = await apiClient.invoke('api-documents', 'deleteDocument', { id });
 
-      if (dbError) throw dbError;
+      if (apiError) throw new Error(apiError);
 
       // 2. Delete from Storage
       const { error: storageError } = await supabase.storage
         .from('official-docs')
-        .remove([filePath]);
+        .remove([data?.filePath || filePath]);
 
       if (storageError) throw storageError;
 

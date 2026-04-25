@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 
 interface ActivityCardProps {
@@ -73,22 +73,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
     setLoading(true);
     try {
       if (activity.status === 'open' && activity.type === 'task') {
-        // Claim task
-        const { error } = await supabase
-          .from('activities')
-          .update({ 
-            worker_id: user?.id, 
-            status: 'in_progress',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', activity.id);
-        if (error) throw error;
+        const { error } = await apiClient.invoke('api-work', 'claimTask', { activityId: activity.id });
+        if (error) throw new Error(error);
       } else if (activity.status === 'pending_validation') {
-        // Confirm/Validate
-        const { error } = await supabase.rpc('confirm_activity', {
-          p_activity_id: activity.id
-        });
-        if (error) throw error;
+        const { error } = await apiClient.invoke('api-work', 'confirmActivity', { activityId: activity.id });
+        if (error) throw new Error(error);
       }
       onRefresh();
     } catch (err) {

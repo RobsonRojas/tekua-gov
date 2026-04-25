@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import i18n from 'i18next';
+import { apiClient } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useThemeContext } from './ThemeContext';
 import type { PaletteMode } from '@mui/material';
@@ -108,11 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      const { data, error } = await apiClient.invoke('api-members', 'getProfile');
 
       if (!error && data) {
         setProfile(data);
@@ -143,12 +140,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       i18n.changeLanguage(lng);
       
       if (user) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ preferred_language: lng })
-          .eq('id', user.id);
+        const { error } = await apiClient.invoke('api-members', 'updateProfile', {
+          updates: { preferred_language: lng }
+        });
         
-        if (error) throw error;
+        if (error) throw new Error(error);
         setProfile((prev: any) => prev ? { ...prev, preferred_language: lng } : null);
       }
     } catch (error) {
@@ -161,12 +157,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setThemeMode(themeMode as PaletteMode);
       
       if (user) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ preferred_theme: themeMode })
-          .eq('id', user.id);
+        const { error } = await apiClient.invoke('api-members', 'updateProfile', {
+          updates: { preferred_theme: themeMode }
+        });
         
-        if (error) throw error;
+        if (error) throw new Error(error);
         setProfile((prev: any) => prev ? { ...prev, preferred_theme: themeMode } : null);
       }
     } catch (error) {

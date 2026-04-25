@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { chatWithGemini } from '../lib/gemini';
 import ReactMarkdown from 'react-markdown';
 
@@ -59,13 +59,11 @@ const AIAgent: React.FC = () => {
 
   const fetchContext = async () => {
     try {
-      const { data, error } = await supabase
-        .from('documents')
-        .select('title, description, category');
+      const { data, error } = await apiClient.invoke('api-documents', 'getAIContext');
       
-      if (error) throw error;
+      if (error) throw new Error(error);
 
-      const contextText = data.map(doc => {
+      const contextText = data.map((doc: any) => {
         const title = doc.title[lang] || doc.title.pt || doc.title.en;
         const desc = doc.description?.[lang] || doc.description?.pt || doc.description?.en || '';
         return `[Category: ${doc.category}] Title: ${title}. Description: ${desc}`;

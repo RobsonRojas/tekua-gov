@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Paper, List, ListItem, ListItemButton, ListItemText, Chip, Container, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, Skeleton } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -32,25 +32,17 @@ const Voting: React.FC = () => {
 
   const fetchTopics = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('discussion_topics')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await apiClient.invoke('api-governance', 'fetchTopics');
     
-    if (data) setTopics(data);
+    if (!error && data) setTopics(data);
     setLoading(false);
   };
 
   const handleCreateTopic = async () => {
-    const { error } = await supabase
-      .from('discussion_topics')
-      .insert([
-        { 
-          title: { [i18n.language]: newTopicTitle, pt: newTopicTitle, en: newTopicTitle },
-          content: { [i18n.language]: newTopicContent, pt: newTopicContent, en: newTopicContent },
-          status: 'open'
-        }
-      ]);
+    const { error } = await apiClient.invoke('api-governance', 'createTopic', {
+      title: { [i18n.language]: newTopicTitle, pt: newTopicTitle, en: newTopicTitle },
+      content: { [i18n.language]: newTopicContent, pt: newTopicContent, en: newTopicContent }
+    });
     
     if (!error) {
       setOpenDialog(false);

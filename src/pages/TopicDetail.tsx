@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Paper, CircularProgress, Container, TextField, Divider, Avatar } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 
 interface Topic {
@@ -48,31 +48,13 @@ const TopicDetail: React.FC = () => {
   const fetchTopicData = async () => {
     setLoading(true);
     
-    // Fetch Topic
-    const { data: topicData } = await supabase.from('discussion_topics').select('*').eq('id', id).single();
-    if (topicData) setTopic(topicData);
-
-    // Fetch Comments
-    const { data: commentsData } = await supabase
-      .from('topic_comments')
-      .select('*, profiles(full_name, avatar_url)')
-      .eq('topic_id', id)
-      .order('created_at', { ascending: true });
-    if (commentsData) setComments(commentsData as any);
-
-    // Fetch Votes Stats
-    const { data: votesData } = await supabase.from('topic_votes').select('option, user_id').eq('topic_id', id);
-    if (votesData) {
-      const stats = { yes: 0, no: 0, abstain: 0 };
-      let userVoted = false;
-      votesData.forEach(v => {
-        if (v.option === 'yes') stats.yes++;
-        if (v.option === 'no') stats.no++;
-        if (v.option === 'abstain') stats.abstain++;
-        if (user && v.user_id === user.id) userVoted = true;
-      });
-      setVoteStats(stats);
-      setHasVoted(userVoted);
+    const { data, error } = await apiClient.invoke('api-governance', 'fetchTopicDetail', { id });
+    
+    if (!error && data) {
+      setTopic(data.topic);
+      setComments(data.comments || []);
+      setVoteStats(data.stats || { yes: 0, no: 0, abstain: 0 });
+      setHasVoted(data.userVoted);
     }
 
     setLoading(false);
@@ -80,7 +62,7 @@ const TopicDetail: React.FC = () => {
 
   const handleVote = async (option: 'yes' | 'no' | 'abstain') => {
     if (!user || !id) return;
-    const { error } = await supabase.from('topic_votes').insert([{ topic_id: id, user_id: user.id, option }]);
+    const { error } = await apiClient.invoke('api-governance', 'castVote', { topicId: id, option });
     if (!error) {
       setHasVoted(true);
       fetchTopicData(); // refresh stats
@@ -96,11 +78,10 @@ const TopicDetail: React.FC = () => {
     if (i18n.language === 'pt') contentObj.en = newComment;
     else contentObj.pt = newComment;
 
-    const { error } = await supabase.from('topic_comments').insert([{ 
-      topic_id: id, 
-      user_id: user.id, 
+    const { error } = await apiClient.invoke('api-governance', 'addComment', { 
+      topicId: id, 
       content: contentObj 
-    }]);
+    });
     if (!error) {
       setNewComment('');
       fetchTopicData();

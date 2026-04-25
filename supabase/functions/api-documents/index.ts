@@ -18,12 +18,6 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    // Verify user
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
     if (authError || !user) throw new Error('Unauthorized')
 
@@ -32,65 +26,78 @@ serve(async (req) => {
     let responseData: any = null
 
     switch (action) {
-      case 'fetchLogs': {
-        const { limit = 50, filter = 'all' } = params
-        let query = supabaseClient
-          .from('audit_logs')
+      case 'fetchDocuments': {
+        const { data, error } = await supabaseClient
+          .from('documents')
           .select('*')
-          .eq('actor_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(limit)
-
-        if (filter !== 'all') {
-          query = query.eq('action', filter)
-        }
-
-        const { data, error } = await query
+        
         if (error) throw error
         responseData = data
         break
       }
 
-      case 'fetchAdminLogs': {
-        // Check if admin
+      case 'registerDocument': {
+        const { title, description, category, filePath } = params
+        if (!title || !category || !filePath) throw new Error('Missing document details')
+
+        const { data, error } = await supabaseClient
+          .from('documents')
+          .insert([{ 
+            title, 
+            description, 
+            category, 
+            file_path: filePath,
+            created_by: user.id,
+            created_at: new Date().toISOString()
+          }])
+          .select()
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'deleteDocument': {
+        const { id } = params
+        if (!id) throw new Error('Missing document ID')
+
+        // 1. Get file path first
+        const { data: doc, error: docError } = await supabaseClient
+          .from('documents')
+          .select('file_path, created_by')
+          .eq('id', id)
+          .single()
+        
+        if (docError || !doc) throw new Error('Document not found')
+
+        // 2. Only owner or admin can delete
         const { data: profile } = await supabaseClient
           .from('profiles')
           .select('role')
           .eq('id', user.id)
           .single()
 
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
-
-        const { limit = 100, page = 0, pageSize = 20, filters = {} } = params
-        let query = supabaseAdmin
-          .from('audit_logs')
-          .select('*, profiles:actor_id(full_name, email)', { count: 'exact' })
-
-        if (filters.actionType && filters.actionType !== 'all') {
-          query = query.eq('action', filters.actionType)
+        if (doc.created_by !== user.id && profile?.role !== 'admin') {
+          throw new Error('Forbidden')
         }
 
-        const { data, error, count } = await query
-          .order('created_at', { ascending: false })
-          .range(page * pageSize, (page + 1) * pageSize - 1)
+        // 3. Delete from DB
+        const { error: deleteError } = await supabaseClient
+          .from('documents')
+          .delete()
+          .eq('id', id)
 
-        if (error) throw error
-        responseData = { logs: data, count }
+        if (deleteError) throw deleteError
+        responseData = { success: true, filePath: doc.file_path }
         break
       }
 
-      case 'logActivity': {
-        const { action: actionType, description, metadata = {} } = params
+      case 'getAIContext': {
         const { data, error } = await supabaseClient
-          .from('audit_logs')
-          .insert({
-            actor_id: user.id,
-            action: actionType,
-            description,
-            metadata
-          })
-          .select()
-
+          .from('documents')
+          .select('title, description, category')
+        
         if (error) throw error
         responseData = data
         break
@@ -107,7 +114,7 @@ serve(async (req) => {
   } catch (error: any) {
     return new Response(JSON.stringify({ data: null, error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: error.message === 'Unauthorized' ? 401 : (error.message === 'Forbidden' ? 403 : 400),
+      status: 400,
     })
   }
 })

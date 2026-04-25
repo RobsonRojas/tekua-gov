@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 
 const CreateTask: React.FC = () => {
@@ -72,22 +72,15 @@ const CreateTask: React.FC = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('activities')
-        .insert({
-          title: { pt: title, en: title },
-          description: { pt: description, en: description },
-          type: 'task',
-          requester_id: user.id,
-          reward_amount: Number(rewardAmount),
-          status: 'open',
-          validation_method: 'requester_approval',
-          geo_required: geoRequired,
-          // location is stored in activity_evidence later, but maybe we want a reference here?
-          // Framework says activities table doesn't have location, but activity_evidence does.
-        });
+      const { error } = await apiClient.invoke('api-work', 'createActivity', {
+        title,
+        description,
+        type: 'task',
+        rewardAmount: Number(rewardAmount),
+        geoRequired: geoRequired
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
 
       setMessage({ type: 'success', text: t('common.success') });
       setTimeout(() => navigate('/tasks-board'), 500);

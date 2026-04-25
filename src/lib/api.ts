@@ -5,7 +5,14 @@ export interface ApiResponse<T = any> {
   error: string | null;
 }
 
-export type ApiDomain = 'api-audit' | 'api-wallet' | 'api-governance' | 'api-members' | 'api-work';
+export type ApiDomain = 
+  | 'api-audit' 
+  | 'api-wallet' 
+  | 'api-governance' 
+  | 'api-members' 
+  | 'api-work' 
+  | 'api-documents' 
+  | 'api-notifications';
 
 class ApiClient {
   /**

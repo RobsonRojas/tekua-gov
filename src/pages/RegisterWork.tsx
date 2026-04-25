@@ -22,7 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { logActivity } from '../utils/activityLogger';
 
@@ -52,14 +52,11 @@ const RegisterWork: React.FC = () => {
   const fetchMembers = async () => {
     setLoadingMembers(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .neq('id', user?.id)
-        .order('full_name');
+      const { data, error } = await apiClient.invoke('api-members', 'fetchUsers');
       
-      if (error) throw error;
-      setMembers(data || []);
+      if (error) throw new Error(error);
+      // Filter out self if necessary, though api-members usually returns all
+      setMembers(data?.filter((m: any) => m.id !== user?.id) || []);
     } catch (err) {
       console.error('Error fetching members:', err);
     } finally {
@@ -113,9 +110,15 @@ const RegisterWork: React.FC = () => {
         return;
       }
 
-      const { error } = await supabase.rpc('submit_activity', submissionData);
+      const { error } = await apiClient.invoke('api-work', 'submitActivity', {
+        title: submissionData.p_title,
+        description: submissionData.p_description.pt,
+        rewardAmount: submissionData.p_reward_amount,
+        evidenceUrl: submissionData.p_evidence_url,
+        requesterId: submissionData.p_requester_id
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
 
       logActivity(user.id, 'task', {
         pt: `Trabalho registrado: ${description.substring(0, 30)}...`,

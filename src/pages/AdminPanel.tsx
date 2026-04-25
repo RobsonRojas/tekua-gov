@@ -43,7 +43,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import DocumentManager from '../components/admin/DocumentManager';
 import FinancialIntegrity from '../components/admin/FinancialIntegrity';
 import PayoutAudit from '../components/admin/PayoutAudit';
@@ -65,12 +65,8 @@ const AdminPanel: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('full_name', { ascending: true });
-
-      if (error) throw error;
+      const { data, error } = await apiClient.invoke('api-members', 'fetchUsers');
+      if (error) throw new Error(error);
       setUsers(data || []);
     } catch (err: any) {
       console.error('Error fetching users:', err);
@@ -82,14 +78,10 @@ const AdminPanel: React.FC = () => {
 
   const fetchConfig = async () => {
     try {
-      const { data, error } = await supabase
-        .from('governance_settings')
-        .select('value')
-        .eq('key', 'min_contribution_confirmations')
-        .single();
-      
-      if (data && !error) {
-        setThreshold(Number(data.value));
+      const { data, error } = await apiClient.invoke('api-governance', 'fetchSettings');
+      if (!error && data) {
+        // Handle singleton config structure
+        setThreshold(data.min_contribution_confirmations || 3);
       }
     } catch (err) {
       console.error('Error fetching config:', err);
@@ -104,12 +96,11 @@ const AdminPanel: React.FC = () => {
   const handleSaveConfig = async () => {
     setSavingConfig(true);
     try {
-      const { error } = await supabase
-        .from('governance_settings')
-        .update({ value: JSON.stringify(threshold), updated_at: new Date() })
-        .eq('key', 'min_contribution_confirmations');
+      const { error } = await apiClient.invoke('api-governance', 'saveConfig', {
+        config: { min_contribution_confirmations: threshold }
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       setMessage({ type: 'success', text: t('common.success') });
     } catch (err: any) {
       console.error('Error saving config:', err);
@@ -138,11 +129,12 @@ const AdminPanel: React.FC = () => {
     try {
       const newRole = selectedUser.role === 'admin' ? 'member' : 'admin';
       
-      const { error: _error } = await supabase.functions.invoke('update-user-role', {
-        body: { userId: selectedUser.id, role: newRole }
+      const { error } = await apiClient.invoke('api-members', 'manageAdmin', {
+        targetUserId: selectedUser.id,
+        role: newRole
       });
 
-      if (_error) throw _error;
+      if (error) throw new Error(error);
       
       setMessage({ type: 'success', text: t('admin.updateRoleSuccess', { name: selectedUser.full_name, role: newRole }) });
       fetchUsers();

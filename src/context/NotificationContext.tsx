@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { apiClient } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
@@ -35,15 +36,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (!user) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const { data, error } = await apiClient.invoke('api-notifications', 'fetchNotifications');
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0);
+      setUnreadCount(data?.filter((n: any) => !n.is_read).length || 0);
     } catch (err) {
       console.error('Error fetching notifications:', err);
     } finally {
@@ -84,11 +81,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const markAsRead = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', id);
-      if (error) throw error;
+      const { error } = await apiClient.invoke('api-notifications', 'markAsRead', { id });
+      if (error) throw new Error(error);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
@@ -99,12 +93,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const markAllAsRead = async () => {
     if (!user) return;
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-      if (error) throw error;
+      const { error } = await apiClient.invoke('api-notifications', 'markAllAsRead');
+      if (error) throw new Error(error);
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       setUnreadCount(0);
     } catch (err) {
@@ -114,11 +104,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const deleteNotification = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      const { error } = await apiClient.invoke('api-notifications', 'deleteNotification', { id });
+      if (error) throw new Error(error);
       const wasUnread = !notifications.find(n => n.id === id)?.is_read;
       setNotifications(prev => prev.filter(n => n.id !== id));
       if (wasUnread) setUnreadCount(prev => Math.max(0, prev - 1));

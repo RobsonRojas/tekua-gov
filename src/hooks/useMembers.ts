@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 
 export function useMembers() {
   const [members, setMembers] = useState<any[]>([]);
@@ -10,12 +10,9 @@ export function useMembers() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: dbError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('full_name', { ascending: true });
+      const { data, error: apiError } = await apiClient.invoke('api-members', 'fetchUsers');
 
-      if (dbError) throw dbError;
+      if (apiError) throw new Error(apiError);
       setMembers(data || []);
     } catch (err: any) {
       console.error('Error fetching members:', err);
@@ -31,12 +28,22 @@ export function useMembers() {
 
   const updateMember = async (userId: string, updates: any) => {
     try {
-      const { error: dbError } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', userId);
+      // If it's a role update, use manageAdmin
+      if (updates.role) {
+        const { error } = await apiClient.invoke('api-members', 'manageAdmin', {
+          targetUserId: userId,
+          role: updates.role
+        });
+        if (error) throw new Error(error);
+      } else {
+        // For other updates, we need an admin version of updateProfile
+        const { error } = await apiClient.invoke('api-members', 'adminUpdateProfile', {
+          targetUserId: userId,
+          updates
+        });
+        if (error) throw new Error(error);
+      }
 
-      if (dbError) throw dbError;
       await fetchMembers();
       return true;
     } catch (err: any) {

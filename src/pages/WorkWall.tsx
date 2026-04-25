@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import ActivityCard from '../components/ActivityCard';
 import ActivityCardSkeleton from '../components/Skeletons/ActivityCardSkeleton';
@@ -36,32 +36,11 @@ const WorkWall: React.FC = () => {
   const fetcher = useCallback(async () => {
     if (!user) return { data: [], error: null };
     
-    const { data, error } = await supabase
-      .from('activities')
-      .select(`
-        *,
-        requester:profiles!requester_id (id, full_name),
-        worker:profiles!worker_id (id, full_name),
-        confirmations:activity_confirmations (count),
-        evidence:activity_evidence (evidence_url)
-      `)
-      .order('created_at', { ascending: false });
+    const { data, error } = await apiClient.invoke('api-work', 'fetchActivities');
 
     if (error) return { data: null, error };
 
-    const { data: userConfirms } = await supabase
-      .from('activity_confirmations')
-      .select('activity_id')
-      .eq('user_id', user.id);
-    
-    const confirmedIds = new Set(userConfirms?.map(c => c.activity_id) || []);
-
-    const refinedData = data?.map(item => ({
-      ...item,
-      user_has_confirmed: confirmedIds.has(item.id)
-    })) || [];
-
-    return { data: refinedData, error: null };
+    return { data: data || [], error: null };
   }, [user]);
 
   const { data: rawActivities, loading, isOfflineData, refetch } = useQueryWithCache(
@@ -76,12 +55,12 @@ const WorkWall: React.FC = () => {
     if (!rawActivities || !user) return;
 
     let filtered = rawActivities;
-    const confirmedIds = new Set(rawActivities.filter(a => a.user_has_confirmed).map(c => c.id));
+    const confirmedIds = new Set(rawActivities.filter((a: any) => a.user_has_confirmed).map((c: any) => c.id));
 
     if (tabIndex === 1) { // My Involvement
-      filtered = rawActivities.filter(c => c.worker_id === user.id || c.requester_id === user.id);
+      filtered = rawActivities.filter((c: any) => c.worker_id === user.id || c.requester_id === user.id);
     } else if (tabIndex === 2) { // To Validate
-      filtered = rawActivities.filter(c => c.worker_id !== user.id && !confirmedIds.has(c.id) && c.status === 'pending_validation');
+      filtered = rawActivities.filter((c: any) => c.worker_id !== user.id && !confirmedIds.has(c.id) && c.status === 'pending_validation');
     }
 
     setActivities(filtered);

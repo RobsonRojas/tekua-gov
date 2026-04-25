@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 
 interface Profile {
   id: string;
@@ -68,34 +68,17 @@ const AdminTreasury: React.FC = () => {
   const fetchStats = useCallback(async () => {
     setLoadingStats(true);
     try {
-      // 1. Total Supply
-      const { data: walletData, error: walletError } = await supabase
-        .from('wallets')
-        .select('balance');
-      if (walletError) throw walletError;
-      const total = walletData.reduce((acc, w) => acc + (w.balance || 0), 0);
-      setTotalSupply(total);
-      setTotalParticipants(walletData.length);
+      // 1. Stats via API
+      const { data: stats, error: statsError } = await apiClient.invoke('api-wallet', 'fetchTreasuryStats');
+      if (statsError) throw new Error(statsError);
+      
+      setTotalSupply(stats.totalSupply);
+      setTotalParticipants(stats.totalParticipants);
+      setRecentMints(stats.recentMints || []);
 
-      // 2. Recent Minting Transactions (from_id is NULL)
-      const { data: mintData, error: mintError } = await supabase
-        .from('transactions')
-        .select(`
-          *,
-          to_profile:to_id (full_name, email)
-        `)
-        .is('from_id', null)
-        .order('created_at', { ascending: false })
-        .limit(10);
-      if (mintError) throw mintError;
-      setRecentMints(mintData || []);
-
-      // 3. User lists for autocomplete
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .order('full_name');
-      if (profileError) throw profileError;
+      // 2. User lists via api-members
+      const { data: profileData, error: profileError } = await apiClient.invoke('api-members', 'fetchUsers');
+      if (profileError) throw new Error(profileError);
       setProfiles(profileData || []);
 
     } catch (err) {
@@ -117,14 +100,13 @@ const AdminTreasury: React.FC = () => {
     setMintStatus(null);
 
     try {
-      const { data, error } = await supabase.rpc('admin_mint_currency', {
-        p_recipient_id: recipient.id,
-        p_amount: parseFloat(amount),
-        p_description: description
+      const { error } = await apiClient.invoke('api-wallet', 'mintCurrency', {
+        recipientId: recipient.id,
+        amount: parseFloat(amount),
+        description: description
       });
 
-      if (error) throw error;
-      if (data && !data.success) throw new Error(data.error);
+      if (error) throw new Error(error);
 
       setMintStatus({ type: 'success', text: `Sucesso! ${amount} Surreais emitidos para ${recipient.full_name}.` });
       setAmount('');

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { apiClient } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
 
@@ -97,25 +98,14 @@ const SubmitTaskProof: React.FC = () => {
         .from('task-evidence')
         .getPublicUrl(filePath);
 
-      // 2. Insert evidence record
-      const { error: evidenceError } = await supabase
-        .from('activity_evidence')
-        .insert({
-          activity_id: id,
-          worker_id: user.id,
-          evidence_url: publicUrl,
-          location: location ? `POINT(${location.lng} ${location.lat})` : null
-        });
+      // 2. Insert evidence and update status via API
+      const { error: apiError } = await apiClient.invoke('api-work', 'submitProof', {
+        activityId: id,
+        evidenceUrl: publicUrl,
+        location: location ? `POINT(${location.lng} ${location.lat})` : null
+      });
 
-      if (evidenceError) throw evidenceError;
-
-      // 3. Update activity status
-      const { error: activityError } = await supabase
-        .from('activities')
-        .update({ status: 'pending_validation' })
-        .eq('id', id);
-
-      if (activityError) throw activityError;
+      if (apiError) throw new Error(apiError);
 
       setMessage({ type: 'success', text: t('work.success') });
       setTimeout(() => navigate('/tasks-board'), 2000);

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import ActivityCard from '../components/ActivityCard';
 
 const TasksBoard: React.FC = () => {
@@ -32,19 +32,12 @@ const TasksBoard: React.FC = () => {
   const fetchActivities = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('activities')
-        .select(`
-          *,
-          requester:profiles!requester_id (id, full_name, email),
-          worker:profiles!worker_id (id, full_name, email),
-          confirmations:activity_confirmations (count)
-        `)
-        .eq('type', 'task')
-        .neq('status', 'completed')
-        .order('created_at', { ascending: false });
+      const { data, error } = await apiClient.invoke('api-work', 'fetchActivities', { 
+        type: 'task', 
+        excludeStatus: 'completed' 
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       setActivities(data || []);
     } catch (err) {
       console.error('Error fetching tasks:', err);

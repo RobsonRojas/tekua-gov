@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../../lib/supabase';
+import { apiClient } from '../../../../lib/api';
 
 export interface ActivityReportItem {
   id: string;
@@ -38,50 +38,12 @@ export const useActivityReports = (filters: ReportFilters) => {
     setError(null);
 
     try {
-      let query = supabase
-        .from('activities')
-        .select(`
-          id,
-          created_at,
-          title,
-          description,
-          reward_amount,
-          status,
-          type,
-          worker_id,
-          requester_id,
-          worker:profiles!worker_id (full_name),
-          requester:profiles!requester_id (full_name)
-        `)
-        .order('created_at', { ascending: false });
+      const { data: results, error: apiError } = await apiClient.invoke('api-work', 'fetchActivities', {
+        ...filters,
+        limit: 1000 // Reports usually want more data
+      });
 
-      if (filters.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
-      }
-
-      if (filters.type && filters.type !== 'all') {
-        query = query.eq('type', filters.type);
-      }
-
-      if (filters.startDate) {
-        query = query.gte('created_at', filters.startDate);
-      }
-
-      if (filters.endDate) {
-        query = query.lte('created_at', filters.endDate);
-      }
-
-      if (filters.minAmount !== undefined) {
-        query = query.gte('reward_amount', filters.minAmount);
-      }
-
-      if (filters.maxAmount !== undefined) {
-        query = query.lte('reward_amount', filters.maxAmount);
-      }
-
-      const { data: results, error: fetchError } = await query;
-
-      if (fetchError) throw fetchError;
+      if (apiError) throw new Error(apiError);
 
       setData(results as any[] || []);
     } catch (err: any) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 
 export function usePushNotifications() {
@@ -76,16 +76,15 @@ export function usePushNotifications() {
         throw new Error('Invalid subscription format.');
       }
 
-      // Save to Supabase
-      const { error: dbError } = await supabase.from('push_subscriptions').upsert({
-        user_id: user.id,
+      // Save to Supabase via API
+      const { error: apiError } = await apiClient.invoke('api-notifications', 'subscribePush', {
         endpoint: subJSON.endpoint,
-        auth_key: subJSON.keys.auth,
-        p256dh_key: subJSON.keys.p256dh
-      }, { onConflict: 'user_id, endpoint' });
+        authKey: subJSON.keys.auth,
+        p256dhKey: subJSON.keys.p256dh
+      });
 
-      if (dbError) {
-        throw dbError;
+      if (apiError) {
+        throw new Error(apiError);
       }
 
       setIsSubscribing(false);

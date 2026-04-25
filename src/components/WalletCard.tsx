@@ -11,7 +11,7 @@ import { Wallet as WalletIcon, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/useAuth';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 
 const WalletCard: React.FC = () => {
   const { t } = useTranslation();
@@ -24,13 +24,9 @@ const WalletCard: React.FC = () => {
     const fetchBalance = async () => {
       if (!user) return;
       try {
-        const { data, error } = await supabase
-          .from('wallets')
-          .select('balance')
-          .eq('profile_id', user.id)
-          .single();
+        const { data, error } = await apiClient.invoke('api-wallet', 'getBalance');
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) throw new Error(error);
         setBalance(data?.balance || 0);
       } catch (err) {
         console.error('Error fetching dashboard balance:', err);

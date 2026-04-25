@@ -14,7 +14,7 @@ import {
   Alert
 } from '@mui/material';
 import { Check, X } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
 
 const PayoutAudit: React.FC = () => {
@@ -27,14 +27,9 @@ const PayoutAudit: React.FC = () => {
   const fetchPendingAudits = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('activities')
-        .select('*, profiles:worker_id(full_name, email)')
-        .eq('requires_audit', true)
-        .eq('audit_status', 'pending')
-        .order('created_at', { ascending: true });
+      const { data, error } = await apiClient.invoke('api-work', 'fetchPendingPayouts');
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       setActivities(data || []);
     } catch (err: any) {
       console.error('Error fetching pending audits:', err);
@@ -51,12 +46,12 @@ const PayoutAudit: React.FC = () => {
   const handleAudit = async (id: string, status: 'approved' | 'rejected') => {
     setProcessing(id);
     try {
-      const { error } = await supabase.rpc('approve_payout', {
-        p_activity_id: id,
-        p_status: status
+      const { error } = await apiClient.invoke('api-work', 'auditPayout', {
+        activityId: id,
+        status: status
       });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       
       setActivities(prev => prev.filter(a => a.id !== id));
     } catch (err: any) {

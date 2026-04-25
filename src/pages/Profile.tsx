@@ -30,7 +30,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import SecurityTab from './components/SecurityTab';
 import ActivityTab from './components/ActivityTab';
 import { logActivity } from '../utils/activityLogger';
@@ -82,12 +82,8 @@ const Profile: React.FC = () => {
 
   const fetchBalance = async () => {
     if (!authUser) return;
-    const { data } = await supabase
-      .from('wallets')
-      .select('balance')
-      .eq('profile_id', authUser.id)
-      .single();
-    if (data) setBalance(data.balance);
+    const { data, error } = await apiClient.invoke('api-wallet', 'getBalance');
+    if (!error && data) setBalance(data.balance);
   };
 
   const handleUpdateProfile = async () => {
@@ -97,12 +93,11 @@ const Profile: React.FC = () => {
     setMessage(null);
     
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ full_name: fullName, updated_at: new Date().toISOString() })
-        .eq('id', authUser.id);
+      const { error } = await apiClient.invoke('api-members', 'updateProfile', {
+        fullName
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       
       logActivity(authUser.id, 'profile_update', {
         pt: 'Perfil atualizado',

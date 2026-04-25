@@ -1,5 +1,5 @@
 import { getPendingActions, removePendingAction, type PendingAction } from './db';
-import { supabase } from './supabase';
+import { apiClient } from './api';
 
 let isSyncing = false;
 
@@ -28,24 +28,29 @@ export const processSyncQueue = async () => {
 
 const executeAction = async (action: PendingAction) => {
   switch (action.type) {
-    case 'vote':
-      const { error: voteError } = await supabase
-        .from('votes')
-        .insert(action.data);
-      if (voteError) throw voteError;
+    case 'vote': {
+      const { error } = await apiClient.invoke('api-governance', 'castVote', action.data);
+      if (error) throw new Error(error);
       break;
+    }
 
-    case 'submit_task':
-      const { error: taskError } = await supabase
-        .from('task_submissions')
-        .insert(action.data);
-      if (taskError) throw taskError;
+    case 'submit_task': {
+      const { error } = await apiClient.invoke('api-work', 'submitActivity', {
+        title: action.data.p_title,
+        description: action.data.p_description?.pt || action.data.p_description,
+        rewardAmount: action.data.p_reward_amount,
+        evidenceUrl: action.data.p_evidence_url,
+        requesterId: action.data.p_requester_id
+      });
+      if (error) throw new Error(error);
       break;
+    }
 
-    case 'transfer':
-      const { error: transferError } = await supabase.rpc('perform_transfer', action.data);
-      if (transferError) throw transferError;
+    case 'transfer': {
+      const { error } = await apiClient.invoke('api-wallet', 'transfer', action.data);
+      if (error) throw new Error(error);
       break;
+    }
 
     default:
       console.warn(`[Sync] Unknown action type: ${action.type}`);

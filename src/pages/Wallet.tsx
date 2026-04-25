@@ -34,7 +34,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 
 interface Transaction {
   id: string;
@@ -75,55 +75,21 @@ const Wallet: React.FC = () => {
     else setLoading(true);
 
     try {
-      // 1. Fetch Balance
-      const { data: walletData, error: walletError } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('profile_id', user.id)
-        .single();
+      // 1. Fetch Balance & Transactions & Activity Info from API
+      const [walletRes, transRes] = await Promise.all([
+        apiClient.invoke('api-wallet', 'getBalance'),
+        apiClient.invoke('api-wallet', 'fetchTransactions', { limit: 50 })
+      ]);
 
-      if (walletError && walletError.code !== 'PGRST116') throw walletError;
-      setBalance(walletData?.balance || 0);
+      if (walletRes.error) throw new Error(walletRes.error);
+      if (transRes.error) throw new Error(transRes.error);
 
-      // 2. Fetch Transactions with profile info
-      const { data: transData, error: transError } = await supabase
-        .from('transactions')
-        .select(`
-          *,
-          from_profile:from_id (full_name, email),
-          to_profile:to_id (full_name, email)
-        `)
-        .or(`from_id.eq.${user.id},to_id.eq.${user.id}`)
-        .order('created_at', { ascending: false });
+      setBalance(walletRes.data?.balance || 0);
+      setLockedBalance(walletRes.data?.locked_balance || 0);
+      setAuditPendingBalance(walletRes.data?.pending_audit_balance || 0);
+      setTransactions(transRes.data || []);
 
-      if (transError) throw transError;
-      setTransactions(transData || []);
-
-      // 3. Fetch Locked and Audit Pending balances
-      const { data: activityData, error: activityError } = await supabase
-        .from('activities')
-        .select('reward_amount, requires_audit, audit_status, available_at')
-        .eq('worker_id', user.id)
-        .eq('status', 'completed');
-
-      if (!activityError && activityData) {
-        const now = new Date();
-        let locked = 0;
-        let audit = 0;
-        
-        activityData.forEach(a => {
-          const isLockedByTime = new Date(a.available_at) > now;
-          const isPendingAudit = a.requires_audit && a.audit_status === 'pending';
-          
-          if (isLockedByTime && !isPendingAudit) locked += Number(a.reward_amount);
-          if (isPendingAudit) audit += Number(a.reward_amount);
-        });
-        
-        setLockedBalance(locked);
-        setAuditPendingBalance(audit);
-      }
-
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching wallet data:', err);
     } finally {
       setLoading(false);
@@ -140,26 +106,14 @@ const Wallet: React.FC = () => {
     setTransferLoading(true);
 
     try {
-      // 1. Find recipient by email
-      const { data: recipientData, error: recipientError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', recipientEmail.trim())
-        .single();
-
-      if (recipientError) {
-        throw new Error(t('auth.user_not_found'));
-      }
-
-      // 2. Call RPC
-      const { data, error: rpcError } = await supabase.rpc('perform_transfer', {
-        p_to_id: recipientData.id,
-        p_amount: parseFloat(amount),
-        p_description: description
+      // Call the unified transfer API (which handles email resolution and balance checks server-side)
+      const { error } = await apiClient.invoke('api-wallet', 'transfer', {
+        toEmail: recipientEmail.trim(),
+        amount: parseFloat(amount),
+        description
       });
 
-      if (rpcError) throw rpcError;
-      if (data && !data.success) throw new Error(data.error);
+      if (error) throw new Error(error);
 
       setTransferSuccess(true);
       setOpenTransfer(false);
