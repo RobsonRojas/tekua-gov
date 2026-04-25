@@ -26,26 +26,60 @@ class ApiClient {
     action: string,
     params: Record<string, any> = {}
   ): Promise<ApiResponse<T>> {
+    console.log(`ApiClient: invoking [${domain}:${action}] via native fetch`, { params });
     try {
-      const { data, error } = await supabase.functions.invoke(domain, {
-        body: { action, params }
-      });
+      // Get session for auth token with timeout to prevent hanging in Brave
+      console.log('ApiClient: fetching session with timeout...');
+      
+      let session = null;
+      try {
+        // Race session fetch against a 500ms timeout
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500))
+        ]) as any;
+        
+        session = sessionResult.data?.session;
+        console.log('ApiClient: session result:', !!session);
+      } catch (timeoutErr) {
+        console.warn('ApiClient: Session fetch timed out or failed, using anon key fallback');
+      }
+      
+      const token = session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-      if (error) {
-        console.error(`API Error [${domain}:${action}]:`, error);
-        return { 
-          data: null, 
-          error: typeof error === 'string' ? error : (error.message || 'Unknown API error')
-        };
+      if (!baseUrl) {
+        throw new Error('VITE_SUPABASE_URL is not defined');
       }
 
-      // The function response should also follow { data, error } pattern
-      if (data && 'error' in data && data.error) {
-        return { data: null, error: data.error };
+      const response = await fetch(`${baseUrl}/functions/v1/${domain}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY // Required for Supabase Edge Functions
+        },
+        body: JSON.stringify({ action, params })
+      });
+
+      console.log(`ApiClient: [${domain}:${action}] fetch status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API Fetch Error [${domain}:${action}]:`, errorText);
+        return { data: null, error: `HTTP ${response.status}: ${errorText}` };
+      }
+
+      const result = await response.json();
+      console.log(`ApiClient: [${domain}:${action}] result:`, result);
+
+      // The function response should follow { data, error } pattern
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        return { data: null, error: result.error };
       }
 
       return { 
-        data: data && 'data' in data ? data.data : data, 
+        data: result && typeof result === 'object' && 'data' in result ? result.data : result, 
         error: null 
       };
     } catch (err: any) {

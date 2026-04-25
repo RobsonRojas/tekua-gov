@@ -34,6 +34,7 @@ const ActivityTab: React.FC = () => {
   const [filter, setFilter] = useState<string>('all');
 
   useEffect(() => {
+    console.log('ActivityTab: useEffect triggered', { hasUser: !!user, filter });
     if (user) {
       fetchLogs();
     } else {
@@ -42,6 +43,7 @@ const ActivityTab: React.FC = () => {
   }, [user, filter]);
 
   const fetchLogs = async () => {
+    console.log('ActivityTab: fetchLogs called');
     if (!user) {
       setLoading(false);
       return;
@@ -50,13 +52,18 @@ const ActivityTab: React.FC = () => {
     setError(null);
     
     try {
+      console.log('ActivityTab: invoking api-audit');
       const { data, error } = await apiClient.invoke<any[]>('api-audit', 'fetchLogs', {
         limit: 50,
         filter
       });
         
-      if (error) throw new Error(error);
+      if (error) {
+        console.error('ActivityTab: API error', error);
+        throw new Error(error);
+      }
 
+      console.log('ActivityTab: received data', data?.length);
       setLogs((data || []).map((log: any) => ({
         id: log.id,
         user_id: log.actor_id,
@@ -65,7 +72,7 @@ const ActivityTab: React.FC = () => {
         created_at: log.created_at
       })));
     } catch (err: any) {
-      console.error('Error fetching activity logs:', err);
+      console.error('ActivityTab: fetchLogs catch', err);
       setError(err.message || 'Erro ao carregar o histórico de atividades. Tente atualizar a página.');
     } finally {
       setLoading(false);
