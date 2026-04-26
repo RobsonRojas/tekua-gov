@@ -16,7 +16,7 @@ Atualmente, o fluxo de trabalho no sistema é iniciado pelo trabalhador que regi
 ## Decisions
 
 - **Nova Rota**: `/create-demand` para o formulário de criação.
-- **Action da API**: Nova action `submitActivity` na Edge Function `api-work` que suporte o status 'open'.
+- **Action da API**: Utilizar a action `createActivity` na Edge Function `api-work` que suporte o status 'open'.
 - **Modelo de Dados**: Utilizar a tabela `activities` com `worker_id` nulo e `status = 'open'`.
 
 ## Risks / Trade-offs
