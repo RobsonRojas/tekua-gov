@@ -30,5 +30,12 @@ All Edge Functions SHALL return a standardized error response if a database oper
 
 #### Scenario: Database error propagation
 - **WHEN** a database constraint is violated during an edge function operation
-- **THEN** the function SHALL return a JSON response containing an `error` field with a descriptive message and a null `data` field
+- **THEN** o sistema SHALL retornar uma resposta JSON contendo um campo `error` com uma mensagem descritiva e um campo `data` nulo.
+
+### Requirement: Demand Creation Action
+A Edge Function `api-work` SHALL prover uma ação para criação de demandas por membros.
+
+#### Scenario: Invoke createDemand
+- **WHEN** o frontend invoca a ação `createDemand` com os parâmetros necessários
+- **THEN** a Edge Function SHALL validar o JWT do usuário e inserir a nova atividade na tabela `activities`.
 
