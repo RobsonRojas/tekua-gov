@@ -101,7 +101,10 @@
     "all": "All",
     "cancel": "Cancel",
     "startDate": "Start Date",
-    "endDate": "End Date"
+    "endDate": "End Date",
+    "showFilters": "Show Filters",
+    "hideFilters": "Hide Filters",
+    "clear": "Clear"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",

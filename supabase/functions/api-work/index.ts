@@ -40,7 +40,9 @@ serve(async (req) => {
           minAmount,
           maxAmount,
           startDate,
-          endDate
+          endDate,
+          requesterId,
+          workerId
         } = params
         
         // 1. Build query
@@ -51,7 +53,7 @@ serve(async (req) => {
             requester:profiles!requester_id (id, full_name),
             worker:profiles!worker_id (id, full_name),
             confirmations:activity_confirmations (count),
-            evidence:activity_evidence (file_path)
+            evidence:activity_evidence (evidence_url)
           `)
         
         if (type && type !== 'all') query = query.eq('type', type)
@@ -61,6 +63,8 @@ serve(async (req) => {
         if (maxAmount !== undefined) query = query.lte('reward_amount', maxAmount)
         if (startDate) query = query.gte('created_at', startDate)
         if (endDate) query = query.lte('created_at', endDate)
+        if (requesterId) query = query.eq('requester_id', requesterId)
+        if (workerId) query = query.eq('worker_id', workerId)
 
         const { data: activities, error: activitiesError } = await query
           .order('created_at', { ascending: false })
@@ -100,8 +104,7 @@ serve(async (req) => {
             requester_id: user.id,
             status: 'open',
             geo_required: geoRequired,
-            validation_method: 'requester_approval',
-            created_at: new Date().toISOString()
+            validation_method: 'requester_approval'
           })
           .select()
 
@@ -119,10 +122,9 @@ serve(async (req) => {
           .from('activity_evidence')
           .insert({ 
             activity_id: activityId, 
-            user_id: user.id, 
+            worker_id: user.id, 
             evidence_url: evidenceUrl,
-            location: location,
-            created_at: new Date().toISOString()
+            location: location
           })
 
         if (evidenceError) throw evidenceError
@@ -175,9 +177,11 @@ serve(async (req) => {
             updated_at: new Date().toISOString()
           })
           .eq('id', activityId)
+          .eq('status', 'open')
           .select()
 
         if (error) throw error
+        if (!data || data.length === 0) throw new Error('Task was already claimed or is no longer open')
         responseData = data
         break
       }

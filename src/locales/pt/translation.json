@@ -102,7 +102,10 @@
     "filter": "Filtrar",
     "cancel": "Cancelar",
     "startDate": "Data Início",
-    "endDate": "Data Fim"
+    "endDate": "Data Fim",
+    "showFilters": "Mostrar Filtros",
+    "hideFilters": "Ocultar Filtros",
+    "clear": "Limpar"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",

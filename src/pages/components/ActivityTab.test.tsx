@@ -2,7 +2,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ActivityTab from './ActivityTab';
 import { useAuth } from '../../context/useAuth';
-import { supabase } from '../../lib/supabase';
 import { apiClient } from '../../lib/api';
 
 // Mock dependencies

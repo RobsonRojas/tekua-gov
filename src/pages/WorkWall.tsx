@@ -23,6 +23,8 @@ import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import ActivityCard from '../components/ActivityCard';
 import ActivityCardSkeleton from '../components/Skeletons/ActivityCardSkeleton';
+import WorkFilters from '../components/WorkFilters';
+import type { WorkFilterValues } from '../components/WorkFilters';
 import { useQueryWithCache } from '../hooks/useQueryWithCache';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,21 +34,30 @@ const WorkWall: React.FC = () => {
   const { user } = useAuth();
 
   const [tabIndex, setTabIndex] = useState(0);
+  const [filters, setFilters] = useState<WorkFilterValues>({
+    requesterId: '',
+    workerId: '',
+    type: 'all'
+  });
 
   const fetcher = useCallback(async () => {
     if (!user) return { data: [], error: null };
     
-    const { data, error } = await apiClient.invoke('api-work', 'fetchActivities');
+    const { data, error } = await apiClient.invoke('api-work', 'fetchActivities', {
+      requesterId: filters.requesterId || undefined,
+      workerId: filters.workerId || undefined,
+      type: filters.type !== 'all' ? filters.type : undefined
+    });
 
     if (error) return { data: null, error };
 
     return { data: data || [], error: null };
-  }, [user]);
+  }, [user, filters]);
 
-  const { data: rawActivities, loading, isOfflineData, refetch } = useQueryWithCache(
-    'work-wall-activities',
+  const { data: rawActivities, loading, error, isOfflineData, refetch } = useQueryWithCache(
+    `work-wall-activities-${JSON.stringify(filters)}`,
     fetcher,
-    [user]
+    [user, filters]
   );
 
   const [activities, setActivities] = useState<any[]>([]);
@@ -55,12 +66,14 @@ const WorkWall: React.FC = () => {
     if (!rawActivities || !user) return;
 
     let filtered = rawActivities;
-    const confirmedIds = new Set(rawActivities.filter((a: any) => a.user_has_confirmed).map((c: any) => c.id));
-
-    if (tabIndex === 1) { // My Involvement
-      filtered = rawActivities.filter((c: any) => c.worker_id === user.id || c.requester_id === user.id);
-    } else if (tabIndex === 2) { // To Validate
-      filtered = rawActivities.filter((c: any) => c.worker_id !== user.id && !confirmedIds.has(c.id) && c.status === 'pending_validation');
+    if (tabIndex === 1) { // Abertas
+      filtered = rawActivities.filter((a: any) => a.status === 'open');
+    } else if (tabIndex === 2) { // Em Execução
+      filtered = rawActivities.filter((a: any) => a.status === 'in_progress');
+    } else if (tabIndex === 3) { // Para Validar
+      filtered = rawActivities.filter((a: any) => a.status === 'pending_validation');
+    } else if (tabIndex === 4) { // Finalizadas
+      filtered = rawActivities.filter((a: any) => a.status === 'completed');
     }
 
     setActivities(filtered);
@@ -109,17 +122,36 @@ const WorkWall: React.FC = () => {
         </Alert>
       )}
 
+      <WorkFilters onFilterChange={setFilters} />
+      
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }}
+          action={
+            <Button color="inherit" size="small" onClick={() => refetch()}>
+              {t('common.retry') || 'Tentar Novamente'}
+            </Button>
+          }
+        >
+          {t('common.errorLoadingData') || 'Erro ao carregar dados:'} {error.message || error}
+        </Alert>
+      )}
+
       <Paper sx={{ mb: 4, borderRadius: 2 }}>
         <Tabs 
           value={tabIndex} 
           onChange={(_, val) => setTabIndex(val)} 
           indicatorColor="primary"
           textColor="primary"
-          variant="fullWidth"
+          variant="scrollable"
+          scrollButtons="auto"
         >
-          <Tab label={t('common.all') || t('admin.all') || 'All'} />
-          <Tab label={t('work.myInvolvement')} />
-          <Tab label={t('work.forValidating')} />
+          <Tab label={t('common.all') || 'Todos'} />
+          <Tab label={t('work.open') || 'Abertas'} />
+          <Tab label={t('work.in_progress') || 'Em Execução'} />
+          <Tab label={t('work.forValidating') || 'Para Validar'} />
+          <Tab label={t('work.completed') || 'Finalizadas'} />
         </Tabs>
       </Paper>
 
