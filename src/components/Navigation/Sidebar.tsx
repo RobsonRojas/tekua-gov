@@ -18,8 +18,7 @@ import {
   ChevronRight, 
   LogOut,
   Moon,
-  Sun,
-  Languages
+  Sun
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +36,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { profile, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeContext();
   const { navItems } = useNavigation();
