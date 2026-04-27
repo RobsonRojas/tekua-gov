@@ -4,7 +4,6 @@ import WorkWall from './WorkWall';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { BrowserRouter } from 'react-router-dom';
-import React from 'react';
 
 // Mock dependencies
 vi.mock('../lib/api', () => ({

@@ -275,5 +275,18 @@
     "thinking": "Thinking...",
     "error": "Sorry, an error occurred while processing your question.",
     "nav": "AI Assistant"
+  },
+  "offline": {
+    "banner": "You are in offline mode. Some actions will be synced when connected.",
+    "saved": "Data saved locally.",
+    "syncing": "Syncing pending data..."
+  },
+  "camera": {
+    "title": "Capture Evidence",
+    "takePicture": "Take Picture",
+    "flip": "Flip Camera",
+    "capture": "Capture",
+    "error": "Could not access camera. Please check permissions.",
+    "captureError": "Error capturing image."
   }
 }

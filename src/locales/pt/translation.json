@@ -281,5 +281,13 @@
     "banner": "Você está em modo offline. Algumas ações serão sincronizadas quando houver conexão.",
     "saved": "Dados salvos localmente.",
     "syncing": "Sincronizando dados pendentes..."
+  },
+  "camera": {
+    "title": "Capturar Evidência",
+    "takePicture": "Tirar Foto",
+    "flip": "Inverter Câmera",
+    "capture": "Capturar",
+    "error": "Não foi possível acessar a câmera. Verifique as permissões.",
+    "captureError": "Erro ao capturar imagem."
   }
 }

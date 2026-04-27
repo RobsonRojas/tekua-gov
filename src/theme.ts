@@ -1,5 +1,9 @@
 import type { ThemeOptions, PaletteMode } from '@mui/material';
 
+export const SIDEBAR_WIDTH = 260;
+export const SIDEBAR_COLLAPSED_WIDTH = 80;
+export const MOBILE_HEADER_HEIGHT = 64;
+
 export const getThemeOptions = (mode: PaletteMode): ThemeOptions => ({
   palette: {
     mode,

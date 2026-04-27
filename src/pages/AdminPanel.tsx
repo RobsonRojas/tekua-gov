@@ -1,31 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, 
-  Typography, 
-  Paper, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow,
-  Avatar,
-  Chip,
+  Button, 
+  TextField, 
+  InputAdornment, 
+  Menu, 
+  MenuItem, 
+  ListItemIcon, 
+  ListItemText, 
+  Divider, 
+  CircularProgress, 
+  Alert, 
+  Tooltip, 
+  Tabs, 
+  Tab, 
+  Stack,
+  Typography,
+  Paper,
   IconButton,
-  Button,
-  TextField,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  CircularProgress,
-  Alert,
-  Tooltip,
-  Tabs,
-  Tab,
-  Stack
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Avatar,
+  Chip
 } from '@mui/material';
 import { 
   Search, 
@@ -153,29 +153,10 @@ const AdminPanel: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h2" color="primary.main" gutterBottom>
-            {t('admin.title')}
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {t('admin.subtitle')}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Tooltip title={t('admin.refresh')}>
-            <IconButton onClick={fetchUsers} disabled={loading}>
-              <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
-            </IconButton>
-          </Tooltip>
-          <Button 
-            variant="contained" 
-            startIcon={<UserPlus size={20} />}
-            sx={{ py: 1.5, px: 3 }}
-          >
-            {t('admin.newMember')}
-          </Button>
-        </Box>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h2" color="primary.main" gutterBottom>
+          {t('layout.admin')}
+        </Typography>
       </Box>
 
       {message && (
@@ -205,6 +186,31 @@ const AdminPanel: React.FC = () => {
 
       {tabValue === 0 ? (
         <>
+          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="h4" color="primary.main" gutterBottom fontWeight={600}>
+                {t('admin.title')}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {t('admin.subtitle')}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Tooltip title={t('admin.refresh')}>
+                <IconButton onClick={fetchUsers} disabled={loading}>
+                  <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+                </IconButton>
+              </Tooltip>
+              <Button 
+                variant="contained" 
+                startIcon={<UserPlus size={20} />}
+                sx={{ py: 1.5, px: 3, borderRadius: '12px' }}
+              >
+                {t('admin.newMember')}
+              </Button>
+            </Box>
+          </Box>
+
           <Paper
             elevation={0}
             sx={{
@@ -328,7 +334,7 @@ const AdminPanel: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton onClick={(e) => handleMenuOpen(e, user)}>
+                        <IconButton onClick={(e: React.MouseEvent<HTMLElement>) => handleMenuOpen(e, user)}>
                           <MoreVertical size={20} color="#94a3b8" />
                         </IconButton>
                       </TableCell>

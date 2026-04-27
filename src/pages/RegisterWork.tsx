@@ -18,8 +18,10 @@ import {
   Work as WorkIcon, 
   ArrowBack as ArrowBackIcon,
   Send as SendIcon,
-  NavigateNext as NavigateNextIcon
+  NavigateNext as NavigateNextIcon,
+  PhotoCamera as PhotoCameraIcon
 } from '@mui/icons-material';
+import CameraCapture from '../components/CameraCapture/CameraCapture';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
@@ -41,6 +43,7 @@ const RegisterWork: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
@@ -64,26 +67,29 @@ const RegisterWork: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const processAndUploadFile = async (file: File) => {
+    setUploadingFile(true);
+    try {
+      const { uploadFile, getFileUrl } = await import('../utils/storage');
+      const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+      const path = await uploadFile(file, {
+        bucket: 'task-evidence',
+        path: fileName
+      });
+      const url = await getFileUrl('task-evidence', path, true);
+      setEvidenceUrl(url);
+      setMessage({ type: 'success', text: 'Imagem carregada e otimizada com sucesso!' });
+    } catch (err: any) {
+      console.error('Error uploading file:', err);
+      setMessage({ type: 'error', text: 'Erro ao carregar imagem.' });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setUploadingFile(true);
-      try {
-        const { uploadFile, getFileUrl } = await import('../utils/storage');
-        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-        const path = await uploadFile(file, {
-          bucket: 'task-evidence',
-          path: fileName
-        });
-        const url = await getFileUrl('task-evidence', path, true);
-        setEvidenceUrl(url);
-        setMessage({ type: 'success', text: 'Imagem carregada e otimizada com sucesso!' });
-      } catch (err: any) {
-        console.error('Error uploading file:', err);
-        setMessage({ type: 'error', text: 'Erro ao carregar imagem.' });
-      } finally {
-        setUploadingFile(false);
-      }
+      processAndUploadFile(e.target.files[0]);
     }
   };
 
@@ -183,12 +189,12 @@ const RegisterWork: React.FC = () => {
                   placeholder="https://link_ou_upload"
                   helperText="Link para fotos ou clique no botão ao lado para carregar"
                 />
-                <Box sx={{ mt: 1 }}>
+                <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
                   <Button
                     variant="outlined"
                     component="label"
                     disabled={uploadingFile}
-                    sx={{ height: 56, minWidth: 100 }}
+                    sx={{ height: 56, minWidth: 90 }}
                   >
                     {uploadingFile ? <CircularProgress size={24} /> : 'Upload'}
                     <input
@@ -197,6 +203,15 @@ const RegisterWork: React.FC = () => {
                       accept="image/*"
                       onChange={handleFileUpload}
                     />
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setIsCameraOpen(true)}
+                    disabled={uploadingFile}
+                    sx={{ height: 56, minWidth: 90 }}
+                    color="secondary"
+                  >
+                    <PhotoCameraIcon />
                   </Button>
                 </Box>
               </Box>
@@ -271,6 +286,12 @@ const RegisterWork: React.FC = () => {
           </Grid>
         </form>
       </Paper>
+
+      <CameraCapture
+        open={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={processAndUploadFile}
+      />
 
       <Snackbar
         open={!!message}
