@@ -54,7 +54,8 @@
     }
   },
   "admin": {
-    "title": "Gerenciamento de Usuários",
+    "title": "Painel Administrativo",
+    "userManagement": "Gerenciamento de Usuários",
     "subtitle": "Visualize e gerencie os membros da associação e suas permissões.",
     "reports": "Relatórios de Contribuição",
     "financial": "Financeiro",

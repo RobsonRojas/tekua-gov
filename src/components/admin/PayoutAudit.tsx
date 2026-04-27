@@ -70,16 +70,30 @@ const PayoutAudit: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom fontWeight={600}>
-        {t('admin.payoutAudit', 'Auditoria de Payouts')}
-      </Typography>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" color="primary.main" gutterBottom fontWeight={600}>
+          {t('admin.payoutAudit', 'Auditoria de Pagamentos')}
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          {t('admin.payoutAuditDesc', 'Revise e aprove pagamentos pendentes de validação.')}
+        </Typography>
+      </Box>
       
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       
       {activities.length === 0 ? (
-        <Alert severity="info">{t('admin.noPendingAudits', 'Nenhum payout pendente de auditoria.')}</Alert>
+        <Alert severity="info" sx={{ borderRadius: '16px' }}>{t('admin.noPendingAudits', 'Nenhum payout pendente de auditoria.')}</Alert>
       ) : (
-        <TableContainer component={Paper} elevation={0} sx={{ bgcolor: 'transparent' }}>
+        <TableContainer 
+          component={Paper} 
+          elevation={0} 
+          sx={{ 
+            backgroundColor: 'background.paper', 
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            overflow: 'hidden'
+          }}
+        >
           <Table>
             <TableHead>
               <TableRow>

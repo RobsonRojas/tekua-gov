@@ -155,7 +155,7 @@ const AdminPanel: React.FC = () => {
     <Box>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h2" color="primary.main" gutterBottom>
-          {t('layout.admin')}
+          {t('admin.title')}
         </Typography>
       </Box>
 
@@ -176,7 +176,7 @@ const AdminPanel: React.FC = () => {
           textColor="primary"
           indicatorColor="primary"
         >
-          <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.title')} />
+          <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.userManagement')} />
           <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
           <Tab icon={<FileText size={18} />} iconPosition="start" label={t('docs.docsTitle', 'Documentação')} />
           <Tab icon={<DollarSign size={18} />} iconPosition="start" label={t('admin.financial')} />
@@ -189,7 +189,7 @@ const AdminPanel: React.FC = () => {
           <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography variant="h4" color="primary.main" gutterBottom fontWeight={600}>
-                {t('admin.title')}
+                {t('admin.userManagement')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 {t('admin.subtitle')}
@@ -346,23 +346,25 @@ const AdminPanel: React.FC = () => {
           </TableContainer>
         </>
       ) : tabValue === 1 ? (
-        <Paper 
-          elevation={0}
-          sx={{ 
-            p: 4, 
-            borderRadius: '24px', 
-            bgcolor: 'background.paper',
-            border: '1px solid rgba(255, 255, 255, 0.05)'
-          }}
-        >
-          <Typography variant="h5" gutterBottom fontWeight={600}>
-            {t('governance.config')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-            {t('governance.thresholdDesc')}
-          </Typography>
-          
-          <Stack spacing={3} sx={{ maxWidth: 400 }}>
+        <>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" color="primary.main" gutterBottom fontWeight={600}>
+              {t('governance.config')}
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              {t('governance.thresholdDesc')}
+            </Typography>
+          </Box>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 4, 
+              borderRadius: '24px', 
+              bgcolor: 'background.paper',
+              border: '1px solid rgba(255, 255, 255, 0.05)'
+            }}
+          >
+            <Stack spacing={3} sx={{ maxWidth: 400 }}>
             <TextField
               label={t('governance.threshold')}
               type="number"
@@ -383,42 +385,13 @@ const AdminPanel: React.FC = () => {
             </Button>
           </Stack>
         </Paper>
+        </>
       ) : tabValue === 2 ? (
-        <Paper 
-          elevation={0}
-          sx={{ 
-            p: 4, 
-            borderRadius: '24px', 
-            bgcolor: 'background.paper',
-            border: '1px solid rgba(255, 255, 255, 0.05)'
-          }}
-        >
-          <DocumentManager />
-        </Paper>
+        <DocumentManager />
       ) : tabValue === 3 ? (
-        <Paper 
-          elevation={0}
-          sx={{ 
-            p: 4, 
-            borderRadius: '24px', 
-            bgcolor: 'background.paper',
-            border: '1px solid rgba(255, 255, 255, 0.05)'
-          }}
-        >
-          <FinancialIntegrity />
-        </Paper>
+        <FinancialIntegrity />
       ) : tabValue === 4 ? (
-        <Paper 
-          elevation={0}
-          sx={{ 
-            p: 4, 
-            borderRadius: '24px', 
-            bgcolor: 'background.paper',
-            border: '1px solid rgba(255, 255, 255, 0.05)'
-          }}
-        >
-          <PayoutAudit />
-        </Paper>
+        <PayoutAudit />
       ) : null}
 
       <Menu

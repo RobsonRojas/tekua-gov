@@ -54,7 +54,8 @@
     }
   },
   "admin": {
-    "title": "User Management",
+    "title": "Administrative Panel",
+    "userManagement": "User Management",
     "subtitle": "View and manage association members and their permissions.",
     "reports": "Contribution Reports",
     "financial": "Financial",

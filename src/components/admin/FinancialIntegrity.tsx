@@ -100,7 +100,8 @@ const FinancialIntegrity: React.FC = () => {
           component={Paper} 
           elevation={0}
           sx={{ 
-            borderRadius: '24px', 
+            backgroundColor: 'background.paper', 
+            borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             overflow: 'hidden'
           }}

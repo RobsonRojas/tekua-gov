@@ -62,7 +62,16 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete, onView
 
   return (
     <>
-      <TableContainer component={Paper} sx={{ bgcolor: 'background.paper' }}>
+      <TableContainer 
+        component={Paper} 
+        elevation={0}
+        sx={{ 
+          backgroundColor: 'background.paper', 
+          borderRadius: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          overflow: 'hidden'
+        }}
+      >
         <Table>
           <TableHead>
             <TableRow>
