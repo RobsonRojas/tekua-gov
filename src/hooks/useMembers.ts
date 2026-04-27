@@ -52,11 +52,30 @@ export function useMembers() {
     }
   };
 
+  const inviteMember = async (email: string, fullName: string, role: string) => {
+    try {
+      const { error } = await apiClient.invoke('api-members', 'inviteMember', {
+        email,
+        full_name: fullName,
+        role
+      });
+
+      if (error) throw new Error(error);
+      
+      await fetchMembers();
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error inviting member:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
   return {
     members,
     loading,
     error,
     refreshMembers: fetchMembers,
-    updateMember
+    updateMember,
+    inviteMember
   };
 }

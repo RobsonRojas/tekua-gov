@@ -49,6 +49,7 @@ import DocumentManager from '../components/admin/DocumentManager';
 import FinancialIntegrity from '../components/admin/FinancialIntegrity';
 import PayoutAudit from '../components/admin/PayoutAudit';
 import ActivityHistoryTab from '../components/admin/ActivityHistoryTab';
+import NewMemberModal from '../components/admin/NewMemberModal';
 import { History } from 'lucide-react';
 
 const AdminPanel: React.FC = () => {
@@ -60,6 +61,7 @@ const AdminPanel: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [isNewMemberModalOpen, setIsNewMemberModalOpen] = useState(false);
   
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get('tab');
@@ -240,6 +242,7 @@ const AdminPanel: React.FC = () => {
               <Button 
                 variant="contained" 
                 startIcon={<UserPlus size={20} />}
+                onClick={() => setIsNewMemberModalOpen(true)}
                 sx={{ py: 1.5, px: 3, borderRadius: '12px' }}
               >
                 {t('admin.newMember')}
@@ -465,6 +468,15 @@ const AdminPanel: React.FC = () => {
           <ListItemText primary={t('admin.removeAccess')} />
         </MenuItem>
       </Menu>
+
+      <NewMemberModal 
+        open={isNewMemberModalOpen} 
+        onClose={() => setIsNewMemberModalOpen(false)}
+        onSuccess={() => {
+          setMessage({ type: 'success', text: t('common.success') });
+          fetchUsers();
+        }}
+      />
     </Box>
   );
 };
