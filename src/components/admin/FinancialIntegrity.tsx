@@ -108,10 +108,10 @@ const FinancialIntegrity: React.FC = () => {
           <Table>
             <TableHead sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>ID da Carteira</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Saldo Atual</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Soma do Ledger</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#ef4444' }}>Discrepância</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{t('admin.walletId')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{t('admin.currentBalance')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{t('admin.ledgerSum')}</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#ef4444' }}>{t('admin.discrepancy')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

@@ -57,7 +57,17 @@
     "title": "User Management",
     "subtitle": "View and manage association members and their permissions.",
     "reports": "Contribution Reports",
+    "financial": "Financial",
+    "financialIntegrity": "Financial Integrity",
+    "integrityDesc": "Summary of system integrity and balance.",
+    "noDiscrepancies": "No Discrepancies",
+    "noDiscrepanciesDesc": "The system detected no inconsistencies in balances.",
+    "payoutAudit": "Payout Audit",
     "refresh": "Refresh",
+    "walletId": "Wallet ID",
+    "currentBalance": "Current Balance",
+    "ledgerSum": "Ledger Sum",
+    "discrepancy": "Discrepancy",
     "newMember": "New Member",
     "loadError": "Error loading user list.",
     "updateRoleSuccess": "Role of {{name}} updated to {{role}}.",
@@ -104,7 +114,8 @@
     "endDate": "End Date",
     "showFilters": "Show Filters",
     "hideFilters": "Hide Filters",
-    "clear": "Clear"
+    "clear": "Clear",
+    "refresh": "Refresh"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",

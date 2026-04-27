@@ -179,8 +179,8 @@ const AdminPanel: React.FC = () => {
           <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.title')} />
           <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
           <Tab icon={<FileText size={18} />} iconPosition="start" label={t('docs.docsTitle', 'Documentação')} />
-          <Tab icon={<DollarSign size={18} />} iconPosition="start" label={t('admin.finance', 'Financeiro')} />
-          <Tab icon={<ShieldCheck size={18} />} iconPosition="start" label={t('admin.payoutAudit', 'Auditoria')} />
+          <Tab icon={<DollarSign size={18} />} iconPosition="start" label={t('admin.financial')} />
+          <Tab icon={<ShieldCheck size={18} />} iconPosition="start" label={t('admin.payoutAudit')} />
         </Tabs>
       </Paper>
 

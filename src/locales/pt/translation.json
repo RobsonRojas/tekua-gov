@@ -57,7 +57,17 @@
     "title": "Gerenciamento de Usuários",
     "subtitle": "Visualize e gerencie os membros da associação e suas permissões.",
     "reports": "Relatórios de Contribuição",
+    "financial": "Financeiro",
+    "financialIntegrity": "Integridade Financeira",
+    "integrityDesc": "Resumo da integridade e balanço do sistema.",
+    "noDiscrepancies": "Sem Discrepâncias",
+    "noDiscrepanciesDesc": "O sistema não detectou inconsistências nos saldos.",
+    "payoutAudit": "Auditoria de Pagamentos",
     "refresh": "Atualizar",
+    "walletId": "ID da Carteira",
+    "currentBalance": "Saldo Atual",
+    "ledgerSum": "Soma do Ledger",
+    "discrepancy": "Discrepância",
     "newMember": "Novo Membro",
     "loadError": "Erro ao carregar lista de usuários.",
     "updateRoleSuccess": "Cargo de {{name}} atualizado para {{role}}.",
@@ -105,7 +115,8 @@
     "endDate": "Data Fim",
     "showFilters": "Mostrar Filtros",
     "hideFilters": "Ocultar Filtros",
-    "clear": "Limpar"
+    "clear": "Limpar",
+    "refresh": "Atualizar"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",
