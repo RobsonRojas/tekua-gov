@@ -43,7 +43,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import DocumentManager from '../components/admin/DocumentManager';
 import FinancialIntegrity from '../components/admin/FinancialIntegrity';
@@ -54,6 +54,7 @@ import { History } from 'lucide-react';
 
 const AdminPanel: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -452,7 +453,10 @@ const AdminPanel: React.FC = () => {
           }
         }}
       >
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem onClick={() => {
+          if (selectedUser) navigate(`/profile/${selectedUser.id}`);
+          handleMenuClose();
+        }}>
           <ListItemIcon><UserIcon size={18} /></ListItemIcon>
           <ListItemText primary={t('admin.viewProfile')} />
         </MenuItem>

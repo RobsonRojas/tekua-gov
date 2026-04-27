@@ -55,6 +55,38 @@ serve(async (req) => {
         break
       }
 
+      case 'fetchUser': {
+        const { userId } = params
+        if (!userId) throw new Error('Missing userId')
+
+        // 1. Fetch requester profile to check role
+        const { data: requesterProfile } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        const isAdmin = requesterProfile?.role === 'admin'
+        
+        // 2. Security check: Only admins can fetch other users. 
+        // Members can only fetch themselves.
+        if (!isAdmin && userId !== user.id) {
+          throw new Error('Forbidden')
+        }
+
+        // 3. Fetch user. Use admin client if admin, to bypass RLS and see all details.
+        const query = isAdmin ? supabaseAdmin : supabaseClient
+        const { data, error } = await query
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
+        
+        if (error) throw error
+        responseData = data
+        break
+      }
+
       case 'fetchUsers': {
         // 1. Fetch requester profile to check role
         const { data: profile } = await supabaseClient

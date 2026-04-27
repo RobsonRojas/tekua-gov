@@ -24,7 +24,11 @@ export interface ActivityLog {
   created_at: string;
 }
 
-const ActivityTab: React.FC = () => {
+interface ActivityTabProps {
+  targetUserId?: string;
+}
+
+const ActivityTab: React.FC<ActivityTabProps> = ({ targetUserId }) => {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   
@@ -55,7 +59,8 @@ const ActivityTab: React.FC = () => {
       console.log('ActivityTab: invoking api-audit');
       const { data, error } = await apiClient.invoke<any[]>('api-audit', 'fetchLogs', {
         limit: 50,
-        filter
+        filter,
+        targetUserId
       });
         
       if (error) {

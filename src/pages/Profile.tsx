@@ -28,7 +28,7 @@ import {
   Wallet
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { apiClient } from '../lib/api';
 import SecurityTab from './components/SecurityTab';
@@ -65,6 +65,7 @@ function TabPanel(props: TabPanelProps) {
 const Profile: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { profile, user: authUser, loading: authLoading } = useAuth();
   
   const [fullName, setFullName] = useState('');
@@ -73,13 +74,47 @@ const Profile: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [balance, setBalance] = useState<number | null>(null);
+  const [targetProfile, setTargetProfile] = useState<any>(null);
+  const [loadingTarget, setLoadingTarget] = useState(false);
+
+  const isAdminView = !!id && id !== authUser?.id;
+  const currentProfile = isAdminView ? targetProfile : profile;
+  const isLoading = authLoading || (isAdminView && loadingTarget);
 
   useEffect(() => {
-    if (profile) {
+    if (isAdminView) {
+      fetchTargetProfile();
+    } else if (profile) {
       setFullName(profile.full_name || '');
       fetchBalance();
     }
-  }, [profile]);
+  }, [id, profile, authUser]);
+
+  const fetchTargetProfile = async () => {
+    if (!id) return;
+    setLoadingTarget(true);
+    try {
+      const { data, error } = await apiClient.invoke('api-members', 'fetchUser', { userId: id });
+      if (error) throw new Error(error);
+      setTargetProfile(data);
+      setFullName(data?.full_name || '');
+      
+      // Fetch balance for target user if requester is admin
+      if (profile?.role === 'admin') {
+        const { data: balanceData } = await apiClient.invoke('api-wallet', 'getBalance', { targetUserId: id });
+        if (balanceData) setBalance(balanceData.balance);
+      }
+    } catch (err: any) {
+      console.error('Error fetching target profile:', err);
+      setMessage({ type: 'error', text: err.message });
+      // If unauthorized, redirect to own profile
+      if (err.message === 'Forbidden') {
+        navigate('/profile');
+      }
+    } finally {
+      setLoadingTarget(false);
+    }
+  };
 
   const fetchBalance = async () => {
     if (!authUser) return;
@@ -120,7 +155,7 @@ const Profile: React.FC = () => {
     setMessage(null); // Clear messages when switching tabs
   };
 
-  if (authLoading && !profile) {
+  if (isLoading && !currentProfile) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
         <CircularProgress />
@@ -134,7 +169,7 @@ const Profile: React.FC = () => {
         <Typography variant="h2" color="primary.main">
           {t('profile.title')}
         </Typography>
-        {tabValue === 0 && (
+        {tabValue === 0 && !isAdminView && (
           <Button 
             variant="contained" 
             disabled={updating}
@@ -172,21 +207,25 @@ const Profile: React.FC = () => {
             iconPosition="start" 
             label={t('profile.security_tab.infoTab')} 
           />
-          <Tab 
-            icon={<Settings size={18} />} 
-            iconPosition="start" 
-            label={t('profile.security_tab.tabTitle')} 
-          />
+          {!isAdminView && (
+            <Tab 
+              icon={<Settings size={18} />} 
+              iconPosition="start" 
+              label={t('profile.security_tab.tabTitle')} 
+            />
+          )}
           <Tab 
             icon={<Calendar size={18} />} 
             iconPosition="start" 
             label={t('profile.activity')} 
           />
-          <Tab 
-            icon={<Shield size={18} />} 
-            iconPosition="start" 
-            label={t('lgpd.privacyTab', 'Privacidade')} 
-          />
+          {!isAdminView && (
+            <Tab 
+              icon={<Shield size={18} />} 
+              iconPosition="start" 
+              label={t('lgpd.privacyTab', 'Privacidade')} 
+            />
+          )}
         </Tabs>
       </Box>
 
@@ -209,7 +248,7 @@ const Profile: React.FC = () => {
                 badgeContent={
                   <Box 
                     sx={{ 
-                      bgcolor: profile?.role === 'admin' ? 'primary.main' : 'secondary.main', 
+                      bgcolor: currentProfile?.role === 'admin' ? 'primary.main' : 'secondary.main', 
                       p: 0.5, 
                       borderRadius: '50%',
                       border: '4px solid #1e293b'
@@ -426,7 +465,7 @@ const Profile: React.FC = () => {
             border: '1px solid rgba(255, 255, 255, 0.05)',
           }}
         >
-          <ActivityTab />
+          <ActivityTab targetUserId={id} />
         </Paper>
       </TabPanel>
 

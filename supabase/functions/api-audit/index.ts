@@ -33,11 +33,29 @@ serve(async (req) => {
 
     switch (action) {
       case 'fetchLogs': {
-        const { limit = 50, filter = 'all' } = params
-        let query = supabaseClient
+        const { limit = 50, filter = 'all', targetUserId } = params
+        
+        let actorId = user.id
+        let useAdminClient = false
+
+        if (targetUserId && targetUserId !== user.id) {
+          // Verify requester is admin
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+          
+          if (profile?.role !== 'admin') throw new Error('Forbidden')
+          actorId = targetUserId
+          useAdminClient = true
+        }
+
+        const client = useAdminClient ? supabaseAdmin : supabaseClient
+        let query = client
           .from('audit_logs')
           .select('*')
-          .eq('actor_id', user.id)
+          .eq('actor_id', actorId)
           .order('created_at', { ascending: false })
           .limit(limit)
 
