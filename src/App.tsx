@@ -5,6 +5,7 @@ import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { useTranslation } from 'react-i18next';
+import ConsentGuard from './components/auth/ConsentGuard';
 import router from './router';
 
 const App: React.FC = () => {
@@ -19,7 +20,9 @@ const App: React.FC = () => {
       <CssBaseline />
       <AuthProvider>
         <NotificationProvider>
-          <RouterProvider router={router} />
+          <ConsentGuard>
+            <RouterProvider router={router} />
+          </ConsentGuard>
         </NotificationProvider>
       </AuthProvider>
     </ThemeContextProvider>

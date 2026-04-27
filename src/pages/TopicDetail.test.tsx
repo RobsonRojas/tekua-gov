@@ -37,7 +37,7 @@ describe('TopicDetail Page', () => {
   });
 
   const mockSetup = (hasVoted = false, status = 'open') => {
-    vi.mocked(useAuth).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue({ acceptTerms: vi.fn(),
       user: { id: 'test-user-id' },
     } as any);
 

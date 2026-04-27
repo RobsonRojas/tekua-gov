@@ -33,6 +33,7 @@ import { useAuth } from '../context/useAuth';
 import { apiClient } from '../lib/api';
 import SecurityTab from './components/SecurityTab';
 import ActivityTab from './components/ActivityTab';
+import PrivacyTab from './components/PrivacyTab';
 import { logActivity } from '../utils/activityLogger';
 
 interface TabPanelProps {
@@ -180,6 +181,11 @@ const Profile: React.FC = () => {
             icon={<Calendar size={18} />} 
             iconPosition="start" 
             label={t('profile.activity')} 
+          />
+          <Tab 
+            icon={<Shield size={18} />} 
+            iconPosition="start" 
+            label={t('lgpd.privacyTab', 'Privacidade')} 
           />
         </Tabs>
       </Box>
@@ -421,6 +427,20 @@ const Profile: React.FC = () => {
           }}
         >
           <ActivityTab />
+        </Paper>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={3}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            backgroundColor: 'background.paper',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+          }}
+        >
+          <PrivacyTab />
         </Paper>
       </TabPanel>
     </Box>

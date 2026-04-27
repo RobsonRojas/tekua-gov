@@ -32,6 +32,7 @@ describe('ThemeToggleButton', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       updateTheme: vi.fn(),
+      acceptTerms: vi.fn(),
     } as any);
 
     render(<ThemeToggleButton />);
@@ -49,6 +50,7 @@ describe('ThemeToggleButton', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       updateTheme: vi.fn(),
+      acceptTerms: vi.fn(),
     } as any);
 
     render(<ThemeToggleButton />);
@@ -68,6 +70,7 @@ describe('ThemeToggleButton', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       updateTheme: updateThemeMock,
+      acceptTerms: vi.fn(),
     } as any);
 
     render(<ThemeToggleButton />);
@@ -90,6 +93,7 @@ describe('ThemeToggleButton', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { id: 'test-user' },
       updateTheme: updateThemeMock,
+      acceptTerms: vi.fn(),
     } as any);
 
     render(<ThemeToggleButton />);

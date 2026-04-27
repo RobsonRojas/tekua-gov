@@ -43,6 +43,7 @@ describe('Profile Page', () => {
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
       updateTheme: vi.fn(),
+      acceptTerms: vi.fn(),
     });
     
     renderProfile();
@@ -58,6 +59,7 @@ describe('Profile Page', () => {
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
       updateTheme: vi.fn(),
+      acceptTerms: vi.fn(),
     });
 
     renderProfile();
@@ -75,6 +77,7 @@ describe('Profile Page', () => {
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
       updateTheme: vi.fn(),
+      acceptTerms: vi.fn(),
     });
 
     renderProfile();

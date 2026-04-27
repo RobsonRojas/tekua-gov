@@ -12,7 +12,8 @@ export type ApiDomain =
   | 'api-members' 
   | 'api-work' 
   | 'api-documents' 
-  | 'api-notifications';
+  | 'api-notifications'
+  | 'api-privacy';
 
 class ApiClient {
   /**

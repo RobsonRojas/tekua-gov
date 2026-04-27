@@ -14,6 +14,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateLanguage: (lang: string) => Promise<void>;
   updateTheme: (theme: string) => Promise<void>;
+  acceptTerms: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -169,12 +170,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const acceptTerms = async () => {
+    try {
+      if (user) {
+        const { error } = await apiClient.invoke('api-members', 'updateProfile', {
+          updates: { 
+            accepted_terms_at: new Date().toISOString(),
+            terms_version: '1.0' // Current version
+          }
+        });
+        
+        if (error) throw new Error(error);
+        
+        // Refresh profile locally
+        setProfile((prev: any) => prev ? { 
+          ...prev, 
+          accepted_terms_at: new Date().toISOString(),
+          terms_version: '1.0'
+        } : null);
+      }
+    } catch (error) {
+      console.error('Error accepting terms:', error);
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signOut, updateLanguage, updateTheme }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signOut, updateLanguage, updateTheme, acceptTerms }}>
       {children}
     </AuthContext.Provider>
   );

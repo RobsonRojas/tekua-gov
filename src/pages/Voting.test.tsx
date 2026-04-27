@@ -33,7 +33,7 @@ describe('Voting Page', () => {
   });
 
   it('renders topics correctly and hides create button for normal members', async () => {
-    vi.mocked(useAuth).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue({ acceptTerms: vi.fn(),
       profile: { role: 'member' },
     } as any);
 
@@ -41,7 +41,7 @@ describe('Voting Page', () => {
       { id: '1', title: { pt: 'Tópico 1' }, status: 'open', created_at: new Date().toISOString() },
     ];
 
-    vi.mocked(supabase.from).mockReturnValue({
+    vi.mocked(supabase.from).mockReturnValue({ acceptTerms: vi.fn(),
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: mockTopics, error: null }),
     } as any);
@@ -65,11 +65,11 @@ describe('Voting Page', () => {
   });
 
   it('shows create button for admin and can open dialog', async () => {
-    vi.mocked(useAuth).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue({ acceptTerms: vi.fn(),
       profile: { role: 'admin' },
     } as any);
 
-    vi.mocked(supabase.from).mockReturnValue({
+    vi.mocked(supabase.from).mockReturnValue({ acceptTerms: vi.fn(),
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: [], error: null }),
     } as any);

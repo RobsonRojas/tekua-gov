@@ -49,7 +49,7 @@ describe('ResetPassword Page', () => {
       profile: {},
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
-      updateTheme: vi.fn()
+      updateTheme: vi.fn(), acceptTerms: vi.fn()
     });
 
     await renderWithProviders(<ResetPassword />);
@@ -70,7 +70,7 @@ describe('ResetPassword Page', () => {
       profile: null,
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
-      updateTheme: vi.fn()
+      updateTheme: vi.fn(), acceptTerms: vi.fn()
     });
 
     await renderWithProviders(<ResetPassword />);
@@ -88,7 +88,7 @@ describe('ResetPassword Page', () => {
       profile: {},
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
-      updateTheme: vi.fn()
+      updateTheme: vi.fn(), acceptTerms: vi.fn()
     });
 
     const { container } = await renderWithProviders(<ResetPassword />);
@@ -119,7 +119,7 @@ describe('ResetPassword Page', () => {
       profile: {},
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
-      updateTheme: vi.fn()
+      updateTheme: vi.fn(), acceptTerms: vi.fn()
     });
     const mockUpdate = vi.mocked(supabase.auth.updateUser).mockResolvedValue({ data: {}, error: null } as any);
 

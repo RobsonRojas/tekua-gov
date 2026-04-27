@@ -2,9 +2,17 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { AuthProvider } from './AuthContext';
 import { useAuth } from './useAuth';
 import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import i18n from 'i18next';
 import React from 'react';
+
+// Mocking apiClient
+vi.mock('../lib/api', () => ({
+  apiClient: {
+    invoke: vi.fn().mockResolvedValue({ data: null, error: null })
+  }
+}));
 
 // Mocking i18next
 vi.mock('i18next', () => ({
@@ -79,6 +87,29 @@ describe('AuthContext', () => {
     });
 
     expect(i18n.changeLanguage).toHaveBeenCalledWith('pt');
-    expect(supabase.from('profiles').update).toHaveBeenCalledWith({ preferred_language: 'pt' });
+    expect(apiClient.invoke).toHaveBeenCalledWith('api-members', 'updateProfile', expect.objectContaining({
+      updates: { preferred_language: 'pt' }
+    }));
+  });
+
+  it('should handle acceptTerms', async () => {
+    vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
+      data: { session: { user: { id: 'test-user' } } as any },
+      error: null
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.acceptTerms();
+    });
+
+    expect(apiClient.invoke).toHaveBeenCalledWith('api-members', 'updateProfile', expect.objectContaining({
+      updates: expect.objectContaining({ terms_version: '1.0' })
+    }));
   });
 });
