@@ -1,4 +1,7 @@
 {
+  "app": {
+    "title": "Tekuá Governança"
+  },
   "login": {
     "title": "Tekua",
     "subtitle": "Entre para acessar os serviços de governança.",
