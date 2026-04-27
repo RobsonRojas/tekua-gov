@@ -108,7 +108,7 @@ const CreateDemand: React.FC = () => {
             <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
-                label={t('work.description')}
+                label={t('work.demandDescription')}
                 multiline
                 rows={4}
                 value={description}

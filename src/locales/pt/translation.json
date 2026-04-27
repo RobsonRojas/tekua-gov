@@ -178,6 +178,7 @@
     "mural": "Mural de Trabalho",
     "register": "Registrar Trabalho",
     "description": "Descreva o que você fez",
+    "demandDescription": "Descreva a demanda (o que precisa ser feito)",
     "evidence": "Evidência (URL)",
     "suggested": "Valor Sugerido ($S)",
     "beneficiary": "Beneficiário",

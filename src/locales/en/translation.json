@@ -177,6 +177,7 @@
     "mural": "Work Wall",
     "register": "Register Work",
     "description": "Describe what you did",
+    "demandDescription": "Describe the demand (what needs to be done)",
     "evidence": "Evidence (URL)",
     "suggested": "Requested Amount ($S)",
     "beneficiary": "Beneficiary",
