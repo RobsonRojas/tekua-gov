@@ -43,10 +43,13 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import DocumentManager from '../components/admin/DocumentManager';
 import FinancialIntegrity from '../components/admin/FinancialIntegrity';
 import PayoutAudit from '../components/admin/PayoutAudit';
+import ActivityHistoryTab from '../components/admin/ActivityHistoryTab';
+import { History } from 'lucide-react';
 
 const AdminPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -58,9 +61,41 @@ const AdminPanel: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
-  const [tabValue, setTabValue] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get('tab');
+
+  const tabMap: Record<string, number> = {
+    'users': 0,
+    'config': 1,
+    'docs': 2,
+    'financial': 3,
+    'payouts': 4,
+    'activity': 5
+  };
+
+  const reverseTabMap: Record<number, string> = {
+    0: 'users',
+    1: 'config',
+    2: 'docs',
+    3: 'financial',
+    4: 'payouts',
+    5: 'activity'
+  };
+
+  const [tabValue, setTabValue] = useState(currentTab ? (tabMap[currentTab] ?? 0) : 0);
   const [threshold, setThreshold] = useState<number>(3);
   const [savingConfig, setSavingConfig] = useState(false);
+
+  useEffect(() => {
+    if (currentTab && tabMap[currentTab] !== undefined) {
+      setTabValue(tabMap[currentTab]);
+    }
+  }, [currentTab]);
+
+  const handleTabChange = (_: any, newValue: number) => {
+    setTabValue(newValue);
+    setSearchParams({ tab: reverseTabMap[newValue] });
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -172,7 +207,7 @@ const AdminPanel: React.FC = () => {
       <Paper sx={{ mb: 4, borderRadius: '16px', bgcolor: 'background.paper', overflow: 'hidden' }}>
         <Tabs 
           value={tabValue} 
-          onChange={(_, val) => setTabValue(val)}
+          onChange={handleTabChange}
           textColor="primary"
           indicatorColor="primary"
         >
@@ -181,6 +216,7 @@ const AdminPanel: React.FC = () => {
           <Tab icon={<FileText size={18} />} iconPosition="start" label={t('docs.docsTitle', 'Documentação')} />
           <Tab icon={<DollarSign size={18} />} iconPosition="start" label={t('admin.financial')} />
           <Tab icon={<ShieldCheck size={18} />} iconPosition="start" label={t('admin.payoutAudit')} />
+          <Tab icon={<History size={18} />} iconPosition="start" label={t('audit.title')} />
         </Tabs>
       </Paper>
 
@@ -392,6 +428,8 @@ const AdminPanel: React.FC = () => {
         <FinancialIntegrity />
       ) : tabValue === 4 ? (
         <PayoutAudit />
+      ) : tabValue === 5 ? (
+        <ActivityHistoryTab />
       ) : null}
 
       <Menu

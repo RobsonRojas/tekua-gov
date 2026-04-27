@@ -36,7 +36,7 @@ export const useNavigation = () => {
       icon: <WalletIcon size={20} />,
     },
     {
-      path: '/admin/activity',
+      path: '/admin-panel?tab=activity',
       label: t('profile.activity'),
       icon: <History size={20} />,
       adminOnly: true,

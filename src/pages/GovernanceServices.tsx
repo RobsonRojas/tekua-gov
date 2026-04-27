@@ -11,10 +11,8 @@ import {
 import { 
   Vote, 
   FileText, 
-  History, 
   ChevronRight,
-  Home as HomeIcon,
-  ShieldCheck
+  Home as HomeIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +24,7 @@ const GovernanceServices: React.FC = () => {
   const services = [
     {
       title: t('voting.title'),
-      description: t('voting.noTopics'), // Generic desc for now
+      description: t('voting.noTopics'),
       icon: <Vote size={32} />,
       color: '#6366f1',
       path: '/voting'
@@ -44,20 +42,6 @@ const GovernanceServices: React.FC = () => {
       icon: <FileText size={32} />,
       color: '#f59e0b',
       path: '/documents'
-    },
-    {
-      title: t('audit.title'),
-      description: t('audit.description'),
-      icon: <ShieldCheck size={32} />,
-      color: '#10b981',
-      path: '/admin/activity' // Only admins can see this, but hub lists it
-    },
-    {
-      title: t('profile.activity'),
-      description: t('profile.activityDesc'),
-      icon: <History size={32} />,
-      color: '#a855f7',
-      path: '/profile' // Users see their own history here
     }
   ];
 

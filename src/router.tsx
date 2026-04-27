@@ -19,7 +19,6 @@ const CreateDemand = lazy(() => import('./pages/CreateDemand'));
 const ReportsDashboard = lazy(() => import('./pages/Dashboard/Reports/index'));
 const Voting = lazy(() => import('./pages/Voting'));
 const TopicDetail = lazy(() => import('./pages/TopicDetail'));
-const AdminActivityHistory = lazy(() => import('./pages/AdminActivityHistory'));
 const MemberManagement = lazy(() => import('./pages/MemberManagement'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const GovernanceServices = lazy(() => import('./pages/GovernanceServices'));
@@ -108,16 +107,6 @@ export const router = createBrowserRouter([
           <ProtectedRoute adminOnly>
             <Suspense fallback={<LoadingFallback />}>
               <AdminTreasury />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'admin/activity',
-        element: (
-          <ProtectedRoute adminOnly>
-            <Suspense fallback={<LoadingFallback />}>
-              <AdminActivityHistory />
             </Suspense>
           </ProtectedRoute>
         ),
