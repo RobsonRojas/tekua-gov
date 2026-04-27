@@ -1,6 +1,6 @@
 # Spec - i18n-interface
 
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Tradução da Aba Financeiro no Painel Admin
 Os rótulos e títulos na aba Financeiro do Painel Administrativo **DEVERÃO (SHALL)** ser exibidos no idioma selecionado.
