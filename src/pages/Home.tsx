@@ -28,7 +28,7 @@ const Home: React.FC = () => {
       icon: <Users size={32} />, 
       color: '#6366f1',
       path: '/admin/members',
-      disabled: !isAdmin
+      adminOnly: true
     },
     { 
       title: t('home.cardGovTitle'), 
@@ -58,7 +58,7 @@ const Home: React.FC = () => {
       color: '#f59e0b',
       path: '/documents'
     },
-  ];
+  ].filter(card => !card.adminOnly || isAdmin);
 
   return (
     <Box>
@@ -118,9 +118,8 @@ const Home: React.FC = () => {
               <Button 
                 endIcon={<ChevronRight size={18} />} 
                 onClick={() => navigate(card.path)}
-                disabled={card.disabled}
                 sx={{ 
-                  color: card.disabled ? 'text.disabled' : card.color, 
+                  color: card.color, 
                   fontWeight: 600,
                   p: 0,
                   '&:hover': { background: 'transparent', opacity: 0.8 } 

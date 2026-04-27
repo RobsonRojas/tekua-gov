@@ -11,6 +11,19 @@ afterEach(() => {
 // Mock Supabase or other global providers here if needed
 vi.mock('@asamuzakjp/css-color', () => ({}));
 vi.mock('@csstools/css-calc', () => ({}));
+vi.mock('@mui/icons-material/NotificationsActive', () => ({
+  default: () => null
+}));
+
+// Mock usePushNotifications
+vi.mock('../hooks/usePushNotifications', () => ({
+  usePushNotifications: () => ({
+    permission: 'granted',
+    subscribeUser: vi.fn(),
+    isSubscribing: false,
+    error: null,
+  }),
+}));
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
@@ -67,6 +80,7 @@ vi.mock('lucide-react', () => {
     Wallet: IconMock('Wallet'),
     ArrowUpRight: IconMock('ArrowUpRight'),
     ArrowDownLeft: IconMock('ArrowDownLeft'),
+    ArrowRight: IconMock('ArrowRight'),
     History: IconMock('History'),
     Send: IconMock('Send'),
     RefreshCw: IconMock('RefreshCw'),
@@ -97,6 +111,9 @@ vi.mock('lucide-react', () => {
     MoreHorizontal: IconMock('MoreHorizontal'),
     Eye: IconMock('Eye'),
     EyeOff: IconMock('EyeOff'),
+    Gavel: IconMock('Gavel'),
+    LayoutPanelLeft: IconMock('LayoutPanelLeft'),
+    Sparkles: IconMock('Sparkles'),
   };
 });
 
