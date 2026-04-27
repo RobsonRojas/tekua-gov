@@ -128,7 +128,9 @@
     "showFilters": "Show Filters",
     "hideFilters": "Hide Filters",
     "clear": "Clear",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "send": "Send",
+    "sending": "Sending..."
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",

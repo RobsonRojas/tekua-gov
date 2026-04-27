@@ -129,7 +129,9 @@
     "showFilters": "Mostrar Filtros",
     "hideFilters": "Ocultar Filtros",
     "clear": "Limpar",
-    "refresh": "Atualizar"
+    "refresh": "Atualizar",
+    "send": "Enviar",
+    "sending": "Enviando..."
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",
