@@ -20,6 +20,11 @@ O sistema SHALL permitir que administradores visualizem e gerenciem os perfis de
 - **WHEN** um usuário comum (papel "Member") visualiza o Dashboard.
 - **THEN** o card "Gerenciamento de Membros" SHALL NOT estar visível.
 
+#### Scenario: Acesso ao Detalhe do Perfil
+- **GIVEN** que o administrador está visualizando a lista de membros.
+- **WHEN** o administrador clica na opção "Ver Perfil" no menu de ações de um usuário.
+- **THEN** o sistema SHALL redirecionar o administrador para a página de perfil do usuário selecionado.
+
 
 ### Requirement: Modificação de Permissões
 O sistema SHALL permitir que administradores alterem o nível de acesso (Role) de outros membros.
