@@ -21,12 +21,12 @@ export const useNavigation = () => {
 
   const navItems = useMemo<NavItem[]>(() => [
     {
-      path: '/dashboard',
+      path: '/',
       label: t('layout.dashboard'),
       icon: <LayoutDashboard size={20} />,
     },
     {
-      path: '/tasks',
+      path: '/work-wall',
       label: t('work.mural'),
       icon: <MuralIcon size={20} />,
     },
@@ -36,17 +36,18 @@ export const useNavigation = () => {
       icon: <WalletIcon size={20} />,
     },
     {
-      path: '/history',
+      path: '/admin/activity',
       label: t('profile.activity'),
       icon: <History size={20} />,
+      adminOnly: true,
     },
     {
-      path: '/ia-assistant',
+      path: '/ai-agent',
       label: t('ai.nav'),
       icon: <Bot size={20} />,
     },
     {
-      path: '/admin',
+      path: '/admin-panel',
       label: t('layout.admin'),
       icon: <Settings size={20} />,
       adminOnly: true,
