@@ -40,7 +40,7 @@ const ContributionTable: React.FC<ContributionTableProps> = ({ data }) => {
     return (
       <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
         <Typography variant="body1" color="text.secondary">
-          {t('work.noItems') || 'Nenhum resultado encontrado.'}
+          {t('work.noItems')}
         </Typography>
       </Paper>
     );
@@ -51,12 +51,12 @@ const ContributionTable: React.FC<ContributionTableProps> = ({ data }) => {
       <Table stickyHeader aria-label="activity reports table">
         <TableHead>
           <TableRow>
-            <TableCell sx={{ fontWeight: 'bold' }}>{t('admin.date') || 'Data'}</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }}>{t('work.type') || 'Tipo'}</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }}>{t('work.contributor') || 'Membro'}</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }}>{t('docs.title') || 'Título'}</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }} align="right">{t('work.amount') || 'Valor'}</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }} align="center">{t('work.status') || 'Status'}</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>{t('admin.date')}</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>{t('work.type')}</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>{t('work.contributor')}</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>{t('work.taskTitle')}</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }} align="right">{t('work.amount')}</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }} align="center">{t('work.status')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

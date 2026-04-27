@@ -55,7 +55,7 @@ const ReportsDashboard: React.FC = () => {
       <Box sx={{ mt: 4, mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" component="h1" fontWeight={700} color="primary">
-            {t('admin.reports') || 'Relatórios de Resultados'}
+            {t('admin.reports')}
           </Typography>
           
           <Button
@@ -65,7 +65,7 @@ const ReportsDashboard: React.FC = () => {
             disabled={loading || data.length === 0}
             onClick={() => downloadCSV(data)}
           >
-            {t('admin.exportCSV') || 'Exportar CSV'}
+            {t('admin.exportCSV')}
           </Button>
         </Box>
 

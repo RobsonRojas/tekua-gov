@@ -77,7 +77,7 @@ const ReportingCharts: React.FC<ReportingChartsProps> = ({ data }) => {
         <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, borderRadius: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom fontWeight={600}>
-              {t('admin.statusDistribution') || 'Status'}
+              {t('admin.statusDistribution')}
             </Typography>
             <Box sx={{ flexGrow: 1, minHeight: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -96,7 +96,7 @@ const ReportingCharts: React.FC<ReportingChartsProps> = ({ data }) => {
                     ))}
                   </Pie>
                   <Tooltip />
-                  <Legend verticalAlign="bottom" height={36}/>
+                  <Legend verticalAlign="bottom" height={48} wrapperStyle={{ paddingTop: '20px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </Box>
@@ -106,7 +106,7 @@ const ReportingCharts: React.FC<ReportingChartsProps> = ({ data }) => {
         <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, borderRadius: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom fontWeight={600}>
-              {t('admin.typeDistribution') || 'Tipo de Atividade'}
+              {t('admin.typeDistribution')}
             </Typography>
             <Box sx={{ flexGrow: 1, minHeight: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -126,7 +126,7 @@ const ReportingCharts: React.FC<ReportingChartsProps> = ({ data }) => {
                     ))}
                   </Pie>
                   <Tooltip />
-                  <Legend verticalAlign="bottom" height={36}/>
+                  <Legend verticalAlign="bottom" height={48} wrapperStyle={{ paddingTop: '20px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </Box>
@@ -137,7 +137,7 @@ const ReportingCharts: React.FC<ReportingChartsProps> = ({ data }) => {
           <Paper sx={{ p: 3, borderRadius: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6" fontWeight={600}>
-                {t('admin.topContributors') || 'Top 5 Membros'}
+                {t('admin.topContributors')}
               </Typography>
               <ToggleButtonGroup
                 size="small"

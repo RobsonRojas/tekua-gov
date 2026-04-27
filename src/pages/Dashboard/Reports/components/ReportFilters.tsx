@@ -35,7 +35,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <FilterIcon sx={{ mr: 1, color: 'primary.main' }} />
         <Typography variant="h6" fontWeight={600}>
-          {t('admin.filters') || 'Filtros'}
+          {t('admin.filters')}
         </Typography>
       </Box>
       
@@ -44,18 +44,18 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
           <TextField
             select
             fullWidth
-            label={t('work.status') || 'Status'}
+            label={t('work.status')}
             name="status"
             value={filters.status || 'all'}
             onChange={handleChange}
             size="small"
           >
-            <MenuItem value="all">{t('common.all') || 'Todos'}</MenuItem>
-            <MenuItem value="open">{t('work.open') || 'Aberta'}</MenuItem>
-            <MenuItem value="in_progress">{t('work.in_progress') || 'Em Progresso'}</MenuItem>
-            <MenuItem value="pending_validation">{t('work.pending') || 'Pendente'}</MenuItem>
-            <MenuItem value="completed">{t('work.completed') || 'Concluída'}</MenuItem>
-            <MenuItem value="rejected">{t('work.rejected') || 'Rejeitada'}</MenuItem>
+            <MenuItem value="all">{t('common.all')}</MenuItem>
+            <MenuItem value="open">{t('work.open')}</MenuItem>
+            <MenuItem value="in_progress">{t('work.in_progress')}</MenuItem>
+            <MenuItem value="pending_validation">{t('work.pending')}</MenuItem>
+            <MenuItem value="completed">{t('work.completed')}</MenuItem>
+            <MenuItem value="rejected">{t('work.rejected')}</MenuItem>
           </TextField>
         </Grid>
 
@@ -63,15 +63,15 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
           <TextField
             select
             fullWidth
-            label={t('work.type') || 'Tipo'}
+            label={t('work.type')}
             name="type"
             value={filters.type || 'all'}
             onChange={handleChange}
             size="small"
           >
-            <MenuItem value="all">{t('common.all') || 'Todos'}</MenuItem>
-            <MenuItem value="task">{t('work.task') || 'Tarefa'}</MenuItem>
-            <MenuItem value="contribution">{t('work.contribution') || 'Contribuição'}</MenuItem>
+            <MenuItem value="all">{t('common.all')}</MenuItem>
+            <MenuItem value="task">{t('work.task')}</MenuItem>
+            <MenuItem value="contribution">{t('work.contribution')}</MenuItem>
           </TextField>
         </Grid>
         
@@ -79,7 +79,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
           <TextField
             fullWidth
             type="date"
-            label={t('admin.startDate') || 'Data Inicial'}
+            label={t('admin.startDate')}
             name="startDate"
             value={filters.startDate || ''}
             onChange={handleChange}
@@ -92,7 +92,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
           <TextField
             fullWidth
             type="date"
-            label={t('admin.endDate') || 'Data Final'}
+            label={t('admin.endDate')}
             name="endDate"
             value={filters.endDate || ''}
             onChange={handleChange}
@@ -105,7 +105,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
           <TextField
             fullWidth
             type="number"
-            label={t('admin.minAmount') || 'Valor Mín'}
+            label={t('admin.minAmount')}
             name="minAmount"
             value={filters.minAmount || ''}
             onChange={handleChange}
@@ -125,7 +125,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({ filters, onFilterChange, 
             startIcon={<ClearIcon />}
             size="large"
           >
-            {t('admin.clear') || 'Limpar'}
+            {t('admin.clear')}
           </Button>
         </Grid>
       </Grid>
