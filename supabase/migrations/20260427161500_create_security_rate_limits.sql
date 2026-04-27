@@ -22,13 +22,20 @@ ALTER TABLE public.security_rate_limits ENABLE ROW LEVEL SECURITY;
 -- No policies mean no access for non-superusers/service_role.
 
 -- 4. Cleanup Job (requires pg_cron)
--- Note: This assumes pg_cron is enabled in the database.
--- If not, it will fail silently or need to be scheduled externally.
-SELECT cron.schedule(
-    'cleanup-security-rate-limits',
-    '0 * * * *', -- Every hour
-    $$ DELETE FROM public.security_rate_limits WHERE created_at < now() - interval '24 hours' $$
-);
+-- Enable the extension if it doesn't exist (requires superuser)
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Schedule the job conditionally
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+        PERFORM cron.schedule(
+            'cleanup-security-rate-limits',
+            '0 * * * *', -- Every hour
+            $$ DELETE FROM public.security_rate_limits WHERE created_at < now() - interval '24 hours' $$
+        );
+    END IF;
+END $$;
 
 -- Comment on table
 COMMENT ON TABLE public.security_rate_limits IS 'Stores request frequency logs for application-level rate limiting in Edge Functions.';
