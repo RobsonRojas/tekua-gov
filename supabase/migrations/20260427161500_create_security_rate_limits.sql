@@ -26,7 +26,7 @@ ALTER TABLE public.security_rate_limits ENABLE ROW LEVEL SECURITY;
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- Schedule the job conditionally
-DO $$
+DO $do$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
         PERFORM cron.schedule(
@@ -35,7 +35,7 @@ BEGIN
             $$ DELETE FROM public.security_rate_limits WHERE created_at < now() - interval '24 hours' $$
         );
     END IF;
-END $$;
+END $do$;
 
 -- Comment on table
 COMMENT ON TABLE public.security_rate_limits IS 'Stores request frequency logs for application-level rate limiting in Edge Functions.';
