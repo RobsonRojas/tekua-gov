@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
+import SanitizedHTML from '../components/common/SanitizedHTML';
 
 interface Topic {
   id: string;
@@ -104,7 +105,7 @@ const TopicDetail: React.FC = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h4" gutterBottom>{getLocalized(topic.title)}</Typography>
-        <Box sx={{ mt: 2, mb: 4 }} dangerouslySetInnerHTML={{ __html: getLocalized(topic.content) }} />
+        <SanitizedHTML className="topic-content" html={getLocalized(topic.content)} />
         
         <Divider sx={{ my: 3 }} />
         
