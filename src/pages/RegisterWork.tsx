@@ -21,7 +21,7 @@ import {
   NavigateNext as NavigateNextIcon,
   PhotoCamera as PhotoCameraIcon
 } from '@mui/icons-material';
-import CameraCapture from '../components/CameraCapture/CameraCapture';
+import CameraCapture from '../components/CameraCapture';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';

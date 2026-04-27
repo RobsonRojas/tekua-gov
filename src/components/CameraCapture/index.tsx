@@ -17,7 +17,7 @@ import {
   FlipCameraIos as FlipCameraIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { getWatermarkData, addWatermarkToImage } from '../../utils/imageWatermark';
+import { getWatermarkData, addWatermarkToImage } from '../../utils/imageUtils';
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void;
