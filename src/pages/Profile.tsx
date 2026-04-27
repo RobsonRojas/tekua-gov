@@ -270,15 +270,15 @@ const Profile: React.FC = () => {
                     boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
                   }}
                 >
-                  {profile?.full_name?.charAt(0) || authUser?.email?.charAt(0) || '?'}
+                  {currentProfile?.full_name?.charAt(0) || currentProfile?.email?.charAt(0) || '?'}
                 </Avatar>
               </Badge>
 
               <Typography variant="h3" gutterBottom>
-                {profile?.full_name || t('profile.defaultName')}
+                {currentProfile?.full_name || t('profile.defaultName')}
               </Typography>
               <Typography variant="body1" color="text.secondary" gutterBottom sx={{ textTransform: 'capitalize' }}>
-                {profile?.role === 'admin' ? 'Admin' : t('profile.member')}
+                {currentProfile?.role === 'admin' ? 'Admin' : t('profile.member')}
               </Typography>
               
               <Box 
@@ -358,7 +358,7 @@ const Profile: React.FC = () => {
                     />
                   ) : (
                     <Typography variant="body1" fontWeight={500}>
-                      {profile?.full_name || t('profile.notInformed')}
+                      {currentProfile?.full_name || t('profile.notInformed')}
                     </Typography>
                   )}
                 </Grid>
@@ -368,7 +368,7 @@ const Profile: React.FC = () => {
                     {t('profile.corporateEmail')}
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {authUser?.email}
+                    {currentProfile?.email}
                   </Typography>
                 </Grid>
 
@@ -381,7 +381,7 @@ const Profile: React.FC = () => {
                     {t('profile.role')}
                   </Typography>
                   <Typography variant="body1" fontWeight={500} sx={{ textTransform: 'capitalize' }}>
-                    {profile?.role === 'admin' ? 'Admin' : t('profile.member')}
+                    {currentProfile?.role === 'admin' ? 'Admin' : t('profile.member')}
                   </Typography>
                 </Grid>
 
@@ -390,8 +390,8 @@ const Profile: React.FC = () => {
                     {t('profile.memberSince')}
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {(profile?.created_at || authUser?.created_at) 
-                      ? new Date(profile?.created_at || authUser?.created_at as string).toLocaleDateString() 
+                    {currentProfile?.created_at
+                      ? new Date(currentProfile?.created_at).toLocaleDateString() 
                       : t('profile.na')}
                   </Typography>
                 </Grid>
