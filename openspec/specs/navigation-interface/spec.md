@@ -26,7 +26,7 @@ The system SHALL ensure all navigation items in the sidebar and mobile drawer po
 
 #### Scenario: Activity History Navigation
 - **WHEN** an administrator clicks on the "Histórico de Atividades" menu item
-- **THEN** the system SHALL navigate to the `/admin/activity` route
+- **THEN** the system SHALL navigate to the `/admin-panel?tab=activity` route
 
 ### Requirement: Responsive Navigation Support
 The navigation system SHALL adapt to different screen sizes to maintain usability.
