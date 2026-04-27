@@ -1,30 +1,24 @@
 import { describe, it, expect, vi } from 'vitest';
 import { logActivity } from './activityLogger';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 
-vi.mock('../lib/supabase', () => ({
-  supabase: {
-    from: vi.fn(),
+vi.mock('../lib/api', () => ({
+  apiClient: {
+    invoke: vi.fn(),
   },
 }));
 
 describe('activityLogger', () => {
-  it('inserts a log into the database', async () => {
-    const mockInsert = vi.fn().mockResolvedValue({ error: null });
-    (supabase.from as any).mockReturnValue({
-      insert: mockInsert,
+  it('invokes the api-audit function to log activity', async () => {
+    vi.mocked(apiClient.invoke).mockResolvedValue({ data: { success: true }, error: null });
+
+    await logActivity('user-123', 'auth', { pt: 'Teste' }, { meta: 'data' });
+
+    expect(apiClient.invoke).toHaveBeenCalledWith('api-audit', 'logActivity', {
+      userId: 'user-123',
+      action: 'auth',
+      description: { pt: 'Teste' },
+      metadata: { meta: 'data' }
     });
-
-    await logActivity('user-123', 'auth', { pt: 'Teste' });
-
-    expect(supabase.from).toHaveBeenCalledWith('audit_logs');
-    expect(mockInsert).toHaveBeenCalledWith([
-      {
-        user_id: 'user-123',
-        action_type: 'auth',
-        description: { pt: 'Teste' },
-        ip_address: null,
-      }
-    ]);
   });
 });

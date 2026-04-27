@@ -3,20 +3,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ForgotPassword from './ForgotPassword';
 import { supabase } from '../lib/supabase';
 import { BrowserRouter } from 'react-router-dom';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '../lib/i18n'; // Assuming i18n is exported from src/lib/i18n.ts
 
-// Mock supabase
-vi.mock('../lib/supabase', () => ({
-  supabase: {
-    auth: {
-      resetPasswordForEmail: vi.fn(),
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      changeLanguage: vi.fn(),
+      language: 'pt-BR',
     },
-  },
+  }),
 }));
 
-// Mock useAuth
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../context/useAuth', () => ({
   useAuth: () => ({
     updateLanguage: vi.fn(),
   }),
@@ -24,11 +22,9 @@ vi.mock('../context/AuthContext', () => ({
 
 const renderWithProviders = (component: React.ReactNode) => {
   return render(
-    <I18nextProvider i18n={i18n}>
-      <BrowserRouter>
-        {component}
-      </BrowserRouter>
-    </I18nextProvider>
+    <BrowserRouter>
+      {component}
+    </BrowserRouter>
   );
 };
 
@@ -37,19 +33,23 @@ describe('ForgotPassword Page', () => {
     vi.clearAllMocks();
   });
 
+  it('only imports the component', () => {
+    expect(ForgotPassword).toBeDefined();
+  });
+
   it('renders the forgot password form', () => {
     renderWithProviders(<ForgotPassword />);
-    expect(screen.getByText(/Recuperar Senha|Recover Password/i)).toBeDefined();
-    expect(screen.getByLabelText(/Endereço de Email|Email Address/i)).toBeDefined();
-    expect(screen.getByRole('button', { name: /Enviar Link|Send Link/i })).toBeDefined();
+    expect(screen.getByText(/forgotPassword.title/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/forgotPassword.email/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /forgotPassword.submit/i })).toBeInTheDocument();
   });
 
   it('calls supabase.auth.resetPasswordForEmail on submit', async () => {
     const mockReset = vi.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: {}, error: null } as any);
     renderWithProviders(<ForgotPassword />);
 
-    const emailInput = screen.getByLabelText(/Endereço de Email|Email Address/i);
-    const submitButton = screen.getByRole('button', { name: /Enviar Link|Send Link/i });
+    const emailInput = screen.getByLabelText(/forgotPassword.email/i);
+    const submitButton = screen.getByRole('button', { name: /forgotPassword.submit/i });
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.click(submitButton);
@@ -60,7 +60,7 @@ describe('ForgotPassword Page', () => {
       }));
     });
 
-    expect(screen.getByText(/Link enviado|Link sent/i)).toBeDefined();
+    expect(screen.getByText(/forgotPassword.success/i)).toBeInTheDocument();
   });
 
   it('shows error message on failure', async () => {
@@ -71,14 +71,14 @@ describe('ForgotPassword Page', () => {
     
     renderWithProviders(<ForgotPassword />);
 
-    const emailInput = screen.getByLabelText(/Endereço de Email|Email Address/i);
-    const submitButton = screen.getByRole('button', { name: /Enviar Link|Send Link/i });
+    const emailInput = screen.getByLabelText(/forgotPassword.email/i);
+    const submitButton = screen.getByRole('button', { name: /forgotPassword.submit/i });
 
     fireEvent.change(emailInput, { target: { value: 'invalid@example.com' } });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Invalid email/i)).toBeDefined();
+      expect(screen.getByText(/Invalid email/i)).toBeInTheDocument();
     });
   });
 });

@@ -2,17 +2,17 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import Voting from './Voting';
+import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
-import { supabase } from '../lib/supabase';
 
 // Mock dependencies
 vi.mock('../context/useAuth', () => ({
   useAuth: vi.fn(),
 }));
 
-vi.mock('../lib/supabase', () => ({
-  supabase: {
-    from: vi.fn(),
+vi.mock('../lib/api', () => ({
+  apiClient: {
+    invoke: vi.fn(),
   },
 }));
 
@@ -41,10 +41,7 @@ describe('Voting Page', () => {
       { id: '1', title: { pt: 'Tópico 1' }, status: 'open', created_at: new Date().toISOString() },
     ];
 
-    vi.mocked(supabase.from).mockReturnValue({ acceptTerms: vi.fn(),
-      select: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: mockTopics, error: null }),
-    } as any);
+    vi.mocked(apiClient.invoke).mockResolvedValue({ data: mockTopics, error: null });
 
     render(
       <MemoryRouter>
@@ -69,10 +66,7 @@ describe('Voting Page', () => {
       profile: { role: 'admin' },
     } as any);
 
-    vi.mocked(supabase.from).mockReturnValue({ acceptTerms: vi.fn(),
-      select: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: [], error: null }),
-    } as any);
+    vi.mocked(apiClient.invoke).mockResolvedValue({ data: [], error: null });
 
     render(
       <MemoryRouter>

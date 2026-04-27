@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.use({ locale: 'pt-BR' });
+
 test.describe('Login Flow', () => {
   test('should show login page with all elements', async ({ page }) => {
     await page.goto('/login');

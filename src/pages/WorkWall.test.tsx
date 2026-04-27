@@ -41,10 +41,10 @@ describe('WorkWall Component', () => {
       </BrowserRouter>
     );
 
-    // Should call fetchActivities
-    expect(apiClient.invoke).toHaveBeenCalledWith('api-work', 'fetchActivities', expect.any(Object));
-
-    // Wait for the activities to be displayed
+    // Wait for the activities to be fetched and displayed
+    await waitFor(() => {
+      expect(apiClient.invoke).toHaveBeenCalledWith('api-work', 'fetchActivities', expect.any(Object));
+    });
     await waitFor(() => {
       expect(screen.getByText('Tarefa 1')).toBeDefined();
       expect(screen.getByText('Tarefa 2')).toBeDefined();
