@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/useAuth';
 import { useThemeContext } from '../../context/ThemeContext';
 import { useNavigation } from '../../hooks/useNavigation';
+import LanguageSelector from '../LanguageSelector';
 import { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from '../../theme';
 
 interface SidebarProps {
@@ -44,11 +45,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
-  };
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'pt' ? 'en' : 'pt';
-    i18n.changeLanguage(newLang);
   };
 
   const filteredNavItems = navItems.filter(item => 
@@ -179,11 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
               </IconButton>
             </Tooltip>
             {open && (
-              <Tooltip title="Alterar Idioma">
-                <IconButton onClick={toggleLanguage} size="small">
-                  <Languages size={20} />
-                </IconButton>
-              </Tooltip>
+              <LanguageSelector />
             )}
           </Box>
 

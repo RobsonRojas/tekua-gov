@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
 import { 
-  IconButton, 
+  Button,
+  Box, 
   Menu, 
   MenuItem, 
   ListItemIcon, 
   ListItemText,
-  Tooltip
+  Tooltip,
+  Typography
 } from '@mui/material';
-import { Languages, Check } from 'lucide-react';
+import { Languages, Check, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/useAuth';
 
 const LanguageSelector: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { updateLanguage } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   
   const languages = [
-    { code: 'pt', label: 'Português', flag: '🇧🇷' },
-    { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'pt', label: 'Português', flag: '🇧🇷', short: 'PT' },
+    { code: 'en', label: 'English', flag: '🇺🇸', short: 'EN' },
   ];
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -38,17 +40,33 @@ const LanguageSelector: React.FC = () => {
 
   return (
     <>
-      <Tooltip title="Alterar Idioma / Change Language">
-        <IconButton 
-          onClick={handleOpen} 
+      <Tooltip title={t('theme.switchToDark') ? "Alterar Idioma" : "Change Language"}>
+        <Button
+          onClick={handleOpen}
           color="inherit"
+          startIcon={<Languages size={18} />}
+          endIcon={<ChevronDown size={14} style={{ opacity: 0.5 }} />}
           sx={{ 
+            px: 2,
+            py: 0.75,
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontSize: '0.875rem',
+            fontWeight: 600,
             bgcolor: 'rgba(255, 255, 255, 0.05)',
-            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            '&:hover': { 
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'primary.main',
+              '& .MuiButton-startIcon': { color: 'primary.main' }
+            },
+            transition: 'all 0.2s ease-in-out'
           }}
         >
-          <Languages size={20} />
-        </IconButton>
+          <Typography variant="body2" sx={{ fontWeight: 700, ml: 0.5 }}>
+            {currentLanguage.short}
+          </Typography>
+        </Button>
       </Tooltip>
       <Menu
         anchorEl={anchorEl}

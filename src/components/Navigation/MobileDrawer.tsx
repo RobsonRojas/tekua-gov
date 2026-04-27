@@ -16,6 +16,7 @@ import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '../../hooks/useNavigation';
 import { useAuth } from '../../context/useAuth';
+import LanguageSelector from '../LanguageSelector';
 
 interface MobileDrawerProps {
   open: boolean;
@@ -104,6 +105,10 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
           </ListItemButton>
         </ListItem>
       </List>
+
+      <Box sx={{ p: 2, mt: 'auto', borderTop: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', justifyContent: 'center' }}>
+        <LanguageSelector />
+      </Box>
     </Drawer>
   );
 };
