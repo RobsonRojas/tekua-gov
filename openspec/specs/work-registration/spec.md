@@ -43,3 +43,10 @@ The Mural de Trabalho SHALL provide immediate visual feedback when an activity s
 - **WHEN** a user clicks "Assumir Tarefa" on an open activity.
 - **THEN** the system SHALL immediately update the card's status to "Em Execução" upon successful API confirmation, without requiring a manual page refresh.
 
+### Requirement: Global Notification on Publication
+O sistema SHALL notificar proativamente a comunidade sobre a criação de novas demandas.
+
+#### Scenario: Global alert on demand creation
+- **WHEN** uma nova demanda é publicada com sucesso.
+- **THEN** o sistema SHALL disparar uma notificação push "Nova Oportunidade de Trabalho" para todos os membros ativos.
+

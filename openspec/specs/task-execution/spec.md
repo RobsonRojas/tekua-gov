@@ -2,9 +2,7 @@
 
 ## Purpose
 Permitir que membros da comunidade assumam a responsabilidade por demandas abertas, acompanhem seu progresso e as submetam para validação.
-
 ## Requirements
-
 ### Requirement: Task Claiming
 O sistema SHALL permitir que um membro autenticado assuma uma demanda com status 'open'.
 
@@ -19,3 +17,15 @@ O sistema SHALL permitir que o executor (worker) transicione a tarefa para o sta
 #### Scenario: Submitting task for validation
 - **WHEN** o executor fornece a evidência de conclusão
 - **THEN** o sistema SHALL mudar o status da tarefa para 'pending_validation'.
+
+### Requirement: Task State Change Events
+O sistema SHALL emitir eventos de sistema rastreáveis sempre que o estado de uma tarefa for alterado.
+
+#### Scenario: Emit event on claim
+- **WHEN** um membro clica em "Assumir Tarefa".
+- **THEN** o sistema SHALL garantir que a mudança de status dispare o gatilho de notificação para o solicitante.
+
+#### Scenario: Emit event on validation request
+- **WHEN** o executor submete a tarefa para validação.
+- **THEN** o sistema SHALL garantir que o gatilho de notificação seja disparado para as partes interessadas.
+
