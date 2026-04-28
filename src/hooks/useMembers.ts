@@ -28,21 +28,11 @@ export function useMembers() {
 
   const updateMember = async (userId: string, updates: any) => {
     try {
-      // If it's a role update, use manageAdmin
-      if (updates.role) {
-        const { error } = await apiClient.invoke('api-members', 'manageAdmin', {
-          targetUserId: userId,
-          role: updates.role
-        });
-        if (error) throw new Error(error);
-      } else {
-        // For other updates, we need an admin version of updateProfile
-        const { error } = await apiClient.invoke('api-members', 'adminUpdateProfile', {
-          targetUserId: userId,
-          updates
-        });
-        if (error) throw new Error(error);
-      }
+      const { error } = await apiClient.invoke('api-members', 'adminUpdateProfile', {
+        targetUserId: userId,
+        updates
+      });
+      if (error) throw new Error(error);
 
       await fetchMembers();
       return true;

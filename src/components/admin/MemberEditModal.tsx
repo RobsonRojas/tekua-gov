@@ -10,7 +10,8 @@ import {
   Box,
   Typography,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Stack
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useMembers } from '../../hooks/useMembers';
@@ -115,8 +116,5 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
     </Dialog>
   );
 };
-
-// Need to import Stack from MUI
-import { Stack } from '@mui/material';
 
 export default MemberEditModal;
