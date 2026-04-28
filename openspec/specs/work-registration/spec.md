@@ -36,4 +36,10 @@ O Mural de Trabalho SHALL prover filtros para refinar a lista de atividades por 
 - **WHEN** o usuário seleciona um membro no filtro de "Demandante"
 - **THEN** o sistema SHALL exibir apenas as atividades criadas por esse membro (`requester_id`).
 
+### Requirement: Responsive Activity Updates
+The Mural de Trabalho SHALL provide immediate visual feedback when an activity status changes, ensuring that the user's local state is synchronized with the backend confirmation.
+
+#### Scenario: Immediate Feedback on Taking a Task
+- **WHEN** a user clicks "Assumir Tarefa" on an open activity.
+- **THEN** the system SHALL immediately update the card's status to "Em Execução" upon successful API confirmation, without requiring a manual page refresh.
 
