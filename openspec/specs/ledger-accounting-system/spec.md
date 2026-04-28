@@ -21,3 +21,11 @@ O sistema MUST garantir que as entradas do ledger sejam imutáveis após a cria�
 - **WHEN** Uma transferência incorreta é identificada.
 - **THEN** O administrador não edita o registro original.
 - **AND** O sistema cria uma nova transação de ledger com valores invertidos para anular o efeito da anterior.
+
+### Requirement: Segurança de Acesso ao Ledger
+O sistema SHALL restringir o acesso direto à tabela de `ledger_entries` através de Row Level Security (RLS) para prevenir que usuários visualizem ou manipulem registros financeiros de terceiros.
+
+#### Scenario: Bloqueio de leitura de ledger por terceiros
+- **WHEN** Um usuário autenticado tenta consultar as entradas de ledger de outro membro via API.
+- **THEN** O banco de dados SHALL retornar zero resultados ou negar o acesso, a menos que o usuário seja o proprietário da wallet vinculada ou um administrador.
+
