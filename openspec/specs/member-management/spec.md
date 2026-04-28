@@ -38,14 +38,13 @@ O sistema SHALL permitir que administradores enviem convites para novos membros 
 - **WHEN** o administrador tenta convidar um email que já está cadastrado ou possui formato inválido.
 - **THEN** o sistema SHALL exibir uma mensagem de erro clara explicando o motivo da falha.
 
-
 ### Requirement: Modificação de Permissões
+O sistema SHALL permitir que administradores alterem o nível de acesso (Role) e as informações básicas de perfil de outros membros de forma atômica e persistente.
 
-O sistema SHALL permitir que administradores alterem o nível de acesso (Role) de outros membros.
-
-#### Scenario: Promoção a Administrador
-- **WHEN** o administrador clica em "Editar Papel" de um membro e seleciona "Admin".
-- **THEN** o sistema atualiza o registro no Supabase e concede as permissões de administração a esse membro.
+#### Scenario: Promoção a Administrador e Atualização de Dados
+- **WHEN** o administrador edita um membro, alterando seu papel para "Admin" e atualizando seu nome completo.
+- **THEN** o sistema SHALL atualizar ambos os campos no banco de dados em uma única operação ou garantir que ambas as mudanças sejam persistidas.
+- **THEN** o sistema SHALL recarregar a lista de membros para refletir as alterações imediatamente na interface.
 
 #### Scenario: Restrição de Acesso Comum
 - **WHEN** um usuário com papel "Member" tenta acessar a URL `/admin-panel` ou a gestão de membros.
