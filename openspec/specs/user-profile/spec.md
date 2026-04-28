@@ -4,11 +4,11 @@
 TBD - created by archiving change portal-governanca-tekua. Update Purpose after archive.
 ## Requirements
 ### Requirement: Profile Visualization
-Authenticated users SHALL be able to view and manage their personal profile details.
+Authenticated users SHALL be able to view and manage their personal profile details, including their position within the organization's board if applicable.
 
 #### Scenario: View Profile
 - **GIVEN** An authenticated user visits the profile page.
-- **THEN** The user's full name, email, role, and joined date are displayed accurately.
+- **THEN** The user's full name, email, role, board position (cargos), and joined date are displayed accurately.
 
 #### Scenario: Edit Profile Name
 - **GIVEN** An authenticated user enters a new name and clicks "Salvar".
@@ -17,13 +17,12 @@ Authenticated users SHALL be able to view and manage their personal profile deta
 #### Scenario: Admin View Other User Profile
 - **GIVEN** An authenticated user with "admin" role.
 - **WHEN** The admin visits the profile page with a target user ID (`/profile/:id`).
-- **THEN** The system SHALL fetch and display the full name, email, role, and joined date of the target user.
+- **THEN** The system SHALL fetch and display the full name, email, role, board position, and joined date of the target user.
 
 #### Scenario: Unauthorized Access to Other User Profile
 - **GIVEN** An authenticated user with "member" role.
 - **WHEN** The user visits the profile page with another user's ID (`/profile/:other_id`).
 - **THEN** The system SHALL redirect the user back to their own profile and display an access error.
-
 
 ### Requirement: Profile Data Accuracy (Testing)
 Profile data management SHALL be tested to ensure accuracy and data integrity.
@@ -39,5 +38,4 @@ A página de perfil SHALL incluir uma aba ou seção dedicada à privacidade e p
 - **GIVEN** que o usuário está em sua página de perfil.
 - **WHEN** o usuário seleciona a aba "Privacidade".
 - **THEN** o sistema SHALL exibir opções para baixar dados e excluir a conta.
-
 
