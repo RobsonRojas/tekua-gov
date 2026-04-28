@@ -36,6 +36,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [localStatus, setLocalStatus] = useState(activity.status);
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   const title = activity.title?.[lang] || activity.title?.pt || 'Untitled';
@@ -72,12 +73,15 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
   const handleAction = async () => {
     setLoading(true);
     try {
-      if (activity.status === 'open' && activity.type === 'task') {
+      if (localStatus === 'open' && activity.type === 'task') {
         const { error } = await apiClient.invoke('api-work', 'claimTask', { activityId: activity.id });
         if (error) throw new Error(error);
-      } else if (activity.status === 'pending_validation') {
+        setLocalStatus('in_progress');
+      } else if (localStatus === 'pending_validation') {
         const { error } = await apiClient.invoke('api-work', 'confirmActivity', { activityId: activity.id });
         if (error) throw new Error(error);
+        // We don't know the exact new status (could be completed or still pending_validation)
+        // so we rely on the refresh, but for 'claimTask' it's definitely 'in_progress'
       }
       onRefresh();
     } catch (err) {
@@ -125,10 +129,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
       <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Chip 
-            label={t(`work.${activity.status}`)} 
+            label={t(`work.${localStatus}`)} 
             size="small" 
-            color={getStatusColor(activity.status) as any}
-            icon={getStatusIcon(activity.status)}
+            color={getStatusColor(localStatus) as any}
+            icon={getStatusIcon(localStatus)}
             sx={{ borderRadius: '8px', fontWeight: 600 }}
           />
           <Stack direction="row" spacing={1} alignItems="center">
@@ -200,7 +204,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
         </Stack>
 
         <Box sx={{ mt: 'auto' }}>
-          {activity.status === 'open' && activity.type === 'task' && (
+          {localStatus === 'open' && activity.type === 'task' && (
             <Button 
               fullWidth 
               variant="contained" 
@@ -213,7 +217,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
             </Button>
           )}
 
-          {activity.status === 'in_progress' && isWorker && (
+          {localStatus === 'in_progress' && isWorker && (
             <Button 
               fullWidth 
               variant="contained" 
@@ -226,7 +230,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
             </Button>
           )}
 
-          {activity.status === 'pending_validation' && (
+          {localStatus === 'pending_validation' && (
             <Tooltip title={isWorker ? t('work.ownWorkError') : ''}>
               <Box>
                 <Button 

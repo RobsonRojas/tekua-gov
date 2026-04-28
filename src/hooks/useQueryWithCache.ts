@@ -12,6 +12,7 @@ export function useQueryWithCache<T>(
   const [isOfflineData, setIsOfflineData] = useState(false);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [lastTrigger, setLastTrigger] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -19,11 +20,16 @@ export function useQueryWithCache<T>(
     const fetchData = async () => {
       setLoading(true);
       
-      // 1. Try to get from cache first for immediate UI
-      const cached = await getCachedData(cacheKey);
-      if (cached && mounted) {
-        setData(cached);
-        setIsOfflineData(true);
+      const shouldSkipCache = refreshTrigger > lastTrigger;
+      let cached = null;
+
+      // 1. Try to get from cache first for immediate UI (unless skipping)
+      if (!shouldSkipCache) {
+        cached = await getCachedData(cacheKey);
+        if (cached && mounted) {
+          setData(cached);
+          setIsOfflineData(true);
+        }
       }
 
       // 2. Fetch from network
@@ -37,6 +43,7 @@ export function useQueryWithCache<T>(
           setError(null);
           setIsOfflineData(false);
           setLoading(false);
+          setLastTrigger(refreshTrigger);
           
           // 3. Update cache with fresh data
           if (remoteData) {
