@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 import TopicCardSkeleton from '../components/Skeletons/TopicCardSkeleton';
 
 interface Topic {
@@ -125,8 +123,15 @@ const Voting: React.FC = () => {
             onChange={(e) => setNewTopicTitle(e.target.value)}
             sx={{ mb: 2 }}
           />
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>{t('voting.topicContent', 'Conteúdo da Pauta')}</Typography>
-          <ReactQuill theme="snow" value={newTopicContent} onChange={setNewTopicContent} />
+          <TextField
+            label={t('voting.topicContent', 'Conteúdo da Pauta')}
+            fullWidth
+            multiline
+            rows={12}
+            value={newTopicContent}
+            onChange={(e) => setNewTopicContent(e.target.value)}
+            helperText={t('voting.markdownSupport', 'Suporta formatação Markdown')}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>{t('common.cancel', 'Cancelar')}</Button>

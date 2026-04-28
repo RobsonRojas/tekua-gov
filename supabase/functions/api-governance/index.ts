@@ -35,11 +35,21 @@ serve(async (req) => {
         const { data, error } = await supabaseClient
           .from('governance_settings')
           .select('*')
-          .eq('id', 'current') // Assuming singleton
+          .eq('id', 'current')
           .single()
         
         if (error && error.code !== 'PGRST116') throw error
-        responseData = data
+        
+        // Return defaults if missing
+        responseData = data || {
+          id: 'current',
+          voting_duration_days: 7,
+          quorum_percentage: 50,
+          min_contribution_confirmations: 3,
+          min_reward_amount: 1.00,
+          max_reward_amount: 1000.00,
+          auto_approve_small_tasks: false
+        }
         break
       }
 
