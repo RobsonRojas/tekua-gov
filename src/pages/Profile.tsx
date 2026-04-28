@@ -279,6 +279,7 @@ const Profile: React.FC = () => {
               </Typography>
               <Typography variant="body1" color="text.secondary" gutterBottom sx={{ textTransform: 'capitalize' }}>
                 {currentProfile?.role === 'admin' ? 'Admin' : t('profile.member')}
+                {currentProfile?.is_board_member && ` | ${t('profile.board')}`}
               </Typography>
               
               <Box 
@@ -384,6 +385,17 @@ const Profile: React.FC = () => {
                     {currentProfile?.role === 'admin' ? 'Admin' : t('profile.member')}
                   </Typography>
                 </Grid>
+
+                {currentProfile?.is_board_member && (
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      {t('profile.boardRole')}
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600} color="primary.light">
+                      {currentProfile?.board_role || t('profile.isBoardMember')}
+                    </Typography>
+                  </Grid>
+                )}
 
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>

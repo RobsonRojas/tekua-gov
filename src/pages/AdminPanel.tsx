@@ -353,12 +353,22 @@ const AdminPanel: React.FC = () => {
                       </TableCell>
                       <TableCell>{user.email || t('profile.na')}</TableCell>
                       <TableCell>
-                        <Chip 
-                          label={user.role === 'admin' ? 'Admin' : t('profile.member')} 
-                          size="small" 
-                          variant="outlined" 
-                          sx={{ textTransform: 'capitalize', color: 'primary.light', borderColor: 'rgba(99, 102, 241, 0.3)' }} 
-                        />
+                        <Stack spacing={0.5} alignItems="flex-start">
+                          <Chip 
+                            label={user.role === 'admin' ? 'Admin' : t('profile.member')} 
+                            size="small" 
+                            variant="outlined" 
+                            sx={{ textTransform: 'capitalize', color: 'primary.light', borderColor: 'rgba(99, 102, 241, 0.3)' }} 
+                          />
+                          {user.is_board_member && (
+                            <Chip 
+                              label={user.board_role || 'Diretoria'} 
+                              size="small" 
+                              color="secondary"
+                              sx={{ fontSize: '0.65rem', height: '18px' }} 
+                            />
+                          )}
+                        </Stack>
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

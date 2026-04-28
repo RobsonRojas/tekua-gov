@@ -135,12 +135,22 @@ const MemberManagement: React.FC = () => {
                   </TableCell>
                   <TableCell>{member.email}</TableCell>
                   <TableCell>
-                    <Chip 
-                      label={member.role === 'admin' ? 'Administrador' : 'Membro'} 
-                      color={member.role === 'admin' ? 'secondary' : 'default'}
-                      size="small"
-                      variant="outlined"
-                    />
+                    <Stack spacing={0.5} alignItems="flex-start">
+                      <Chip 
+                        label={member.role === 'admin' ? 'Administrador' : 'Membro'} 
+                        color={member.role === 'admin' ? 'secondary' : 'default'}
+                        size="small"
+                        variant="outlined"
+                      />
+                      {member.is_board_member && (
+                        <Chip 
+                          label={member.board_role || 'Diretoria'} 
+                          color="primary"
+                          size="small"
+                          sx={{ fontSize: '0.65rem' }}
+                        />
+                      )}
+                    </Stack>
                   </TableCell>
                   <TableCell>
                     <Chip 

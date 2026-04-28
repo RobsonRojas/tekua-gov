@@ -114,7 +114,7 @@ serve(async (req) => {
         if (!updates) throw new Error('Missing updates')
 
         // Filter out protected fields
-        const protectedFields = ['role', 'id', 'created_at']
+        const protectedFields = ['role', 'id', 'created_at', 'is_board_member', 'board_role']
         const cleanUpdates: any = {}
         Object.keys(updates).forEach(key => {
           if (!protectedFields.includes(key)) {
@@ -207,7 +207,9 @@ serve(async (req) => {
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
           data: { 
             full_name: full_name || '',
-            role: role || 'member'
+            role: role || 'member',
+            is_board_member: params.is_board_member || false,
+            board_role: params.board_role || null
           }
         })
 
