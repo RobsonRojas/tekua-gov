@@ -9,21 +9,37 @@ export const chatWithGemini = async (
   messages: Message[], 
   systemInstruction?: string
 ) => {
-  const { data, error } = await supabase.functions.invoke('ai-handler', {
-    body: { messages, systemInstruction },
+  const token = (await supabase.auth.getSession()).data.session?.access_token;
+  const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+  if (!baseUrl) {
+    throw new Error('VITE_SUPABASE_URL is not defined');
+  }
+
+  const response = await fetch(`${baseUrl}/functions/v1/ai-handler`, {
+    method: 'POST',
     headers: {
-      accept: 'text/event-stream',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      'Accept': 'text/event-stream',
     },
+    body: JSON.stringify({ messages, systemInstruction }),
   });
 
-  if (error) {
-    throw new Error(error.message || 'Error calling AI Agent');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `HTTP Error ${response.status}`);
+  }
+
+  if (!response.body) {
+    throw new Error('Response body is null');
   }
 
   // Handle the event stream from tool calling loop
   return {
     async *[Symbol.asyncIterator]() {
-      const reader = data.getReader();
+      const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
@@ -37,9 +53,11 @@ export const chatWithGemini = async (
           buffer = lines.pop() || '';
 
           for (const line of lines) {
-            if (!line.trim()) continue;
+            const trimmedLine = line.trim();
+            if (!trimmedLine) continue;
+            
             try {
-              const event = JSON.parse(line);
+              const event = JSON.parse(trimmedLine);
               if (event.type === 'tool') {
                 yield { type: 'tool', name: event.name };
               } else if (event.type === 'text') {
@@ -47,8 +65,13 @@ export const chatWithGemini = async (
               } else if (event.type === 'error') {
                 throw new Error(event.message);
               }
-            } catch (e) {
-              console.error('Error parsing event line:', e, line);
+            } catch (e: any) {
+              // If it's an error from the stream, propagate it
+              if (e.message && e.message.includes('JSON')) {
+                 console.error('gemini.ts: JSON parse error in stream line:', trimmedLine);
+              } else {
+                 throw e;
+              }
             }
           }
         }

@@ -12,19 +12,21 @@ serve(async (req) => {
   }
 
   try {
+    // 1. Verify environment
     const API_KEY = Deno.env.get('GEMINI_API_KEY')
     if (!API_KEY) {
-      return new Response(JSON.stringify({ error: 'GEMINI_API_KEY is not set' }), {
+      console.error('ai-handler: GEMINI_API_KEY is missing');
+      return new Response(JSON.stringify({ error: 'Configuração de IA incompleta (API Key ausente). Contate o administrador.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       })
     }
 
-    // 1. Verify authentication
+    // 2. Verify authentication
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'No authorization header' }), {
-        headers: corsHeaders,
+      return new Response(JSON.stringify({ error: 'Autenticação necessária.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
       })
     }
@@ -36,31 +38,41 @@ serve(async (req) => {
     )
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    if (authError || !user) throw new Error('Unauthorized')
+    if (authError || !user) {
+      console.error('ai-handler: Auth error', authError);
+      return new Response(JSON.stringify({ error: 'Sessão expirada ou inválida.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
 
-    // 2. Rate Limiting
+    // 3. Rate Limiting
     const rateLimit = await checkRateLimit(supabaseClient, {
       key: `ai:chat:${user.id}`,
-      limit: 10, // 10 messages per minute
+      limit: 15, // Increased slightly for better UX
       windowSeconds: 60
     });
 
     if (!rateLimit.allowed) {
-      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
-        headers: corsHeaders,
+      return new Response(JSON.stringify({ error: 'Limite de mensagens atingido. Aguarde um momento antes de tentar novamente.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 429,
       })
     }
 
-    const { messages, systemInstruction: documentContext } = await req.json()
+    const body = await req.json().catch(() => ({}));
+    const { messages, systemInstruction: documentContext } = body;
 
-    if (!messages || !Array.isArray(messages)) {
-      throw new Error('Messages array is required')
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response(JSON.stringify({ error: 'Histórico de mensagens inválido ou vazio.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      })
     }
 
-    // 3. Basic sanitization and safety filters
+    // 4. Basic sanitization and safety filters
     const lastMessageObj = messages[messages.length - 1]
-    let lastMessage = lastMessageObj.content
+    let lastMessage = lastMessageObj.content || ''
 
     // Simple sanitization: remove potential script tags or extremely long repetitive patterns
     lastMessage = lastMessage.replace(/<script.*?>.*?<\/script>/gi, '')
@@ -201,11 +213,11 @@ serve(async (req) => {
               if (functions[fnName]) {
                 fnResult = await functions[fnName](args);
               } else {
-                fnResult = { error: `Ferramenta ${fnName} não encontrada.` };
+                fnResult = { error: `Desculpe, a ferramenta '${fnName}' não está disponível no momento.` };
               }
             } catch (err: any) {
-              console.error(`Error executing tool ${fnName}:`, err);
-              fnResult = { error: err.message };
+              console.error(`ai-handler: Tool execution error [${fnName}]`, err);
+              fnResult = { error: `Erro ao executar ferramenta ${fnName}: ${err.message}` };
             }
 
             // Send result back to model
@@ -227,8 +239,8 @@ serve(async (req) => {
           sendEvent({ type: 'text', content: finalText })
 
         } catch (e: any) {
-          console.error('Processing error:', e)
-          sendEvent({ type: 'error', message: e.message })
+          console.error('ai-handler: Stream processing error:', e)
+          sendEvent({ type: 'error', message: e.message || 'Erro interno no processamento da IA.' })
         } finally {
           controller.close()
         }
@@ -240,8 +252,8 @@ serve(async (req) => {
     })
 
   } catch (error: any) {
-    console.error('Error in ai-handler:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('ai-handler: Critical handler error:', error)
+    return new Response(JSON.stringify({ error: error.message || 'Erro inesperado no servidor de IA.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })

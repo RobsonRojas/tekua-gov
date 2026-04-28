@@ -131,12 +131,18 @@ const AIAgent: React.FC = () => {
           ]);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Gemini Error:', err);
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        content: t('ai.error') || 'Sorry, I encountered an error processing your request.' 
-      }]);
+      const errorMessage = err.message || t('ai.error') || 'Sorry, I encountered an error processing your request.';
+      
+      setMessages(prev => [
+        ...prev.slice(0, -1),
+        { 
+          role: 'model', 
+          content: `❌ **Erro:** ${errorMessage}`,
+          tools: []
+        }
+      ]);
     } finally {
       setLoading(false);
     }
