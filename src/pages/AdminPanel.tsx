@@ -25,7 +25,12 @@ import {
   TableCell,
   TableBody,
   Avatar,
-  Chip
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import { 
   Search, 
@@ -50,6 +55,7 @@ import FinancialIntegrity from '../components/admin/FinancialIntegrity';
 import PayoutAudit from '../components/admin/PayoutAudit';
 import ActivityHistoryTab from '../components/admin/ActivityHistoryTab';
 import NewMemberModal from '../components/admin/NewMemberModal';
+import { useAuth } from '../context/useAuth';
 import { History } from 'lucide-react';
 
 const AdminPanel: React.FC = () => {
@@ -63,6 +69,8 @@ const AdminPanel: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [isNewMemberModalOpen, setIsNewMemberModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { user: authUser } = useAuth();
   
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get('tab');
@@ -181,6 +189,30 @@ const AdminPanel: React.FC = () => {
       setMessage({ type: 'error', text: err.message || t('admin.updateRoleError') });
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async () => {
+    if (!selectedUser) return;
+    
+    setActionLoading(true);
+    setIsDeleteDialogOpen(false);
+    
+    try {
+      const { error } = await apiClient.invoke('api-members', 'removeMember', {
+        targetUserId: selectedUser.id
+      });
+
+      if (error) throw new Error(error);
+      
+      setMessage({ type: 'success', text: t('admin.removeMemberSuccess', { name: selectedUser.full_name || selectedUser.email }) });
+      fetchUsers();
+    } catch (err: any) {
+      console.error('Error removing member:', err);
+      setMessage({ type: 'error', text: err.message || t('admin.removeMemberError') });
+    } finally {
+      setActionLoading(false);
+      setSelectedUser(null);
     }
   };
 
@@ -477,11 +509,57 @@ const AdminPanel: React.FC = () => {
           <ListItemText primary={selectedUser?.role === 'admin' ? t('admin.removeAdmin') : t('admin.makeAdmin')} />
         </MenuItem>
         <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
-        <MenuItem onClick={handleMenuClose} sx={{ color: '#ef4444' }}>
+        <MenuItem 
+          onClick={() => {
+            handleMenuClose();
+            setIsDeleteDialogOpen(true);
+          }} 
+          sx={{ color: '#ef4444' }}
+          disabled={selectedUser?.id === authUser?.id}
+        >
           <ListItemIcon><UserMinus size={18} color="#ef4444" /></ListItemIcon>
           <ListItemText primary={t('admin.removeAccess')} />
         </MenuItem>
       </Menu>
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            bgcolor: 'background.paper',
+            backgroundImage: 'none'
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          {t('admin.confirmRemoveTitle')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('admin.confirmRemoveDesc', { name: selectedUser?.full_name || selectedUser?.email })}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)}
+            variant="outlined"
+            sx={{ borderRadius: '8px' }}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button 
+            onClick={handleRemoveMember}
+            variant="contained"
+            color="error"
+            autoFocus
+            sx={{ borderRadius: '8px' }}
+          >
+            {t('admin.removeAccess')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <NewMemberModal 
         open={isNewMemberModalOpen} 

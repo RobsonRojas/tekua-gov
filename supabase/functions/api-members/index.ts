@@ -190,6 +190,30 @@ serve(async (req) => {
         break
       }
 
+      case 'removeMember': {
+        const { targetUserId } = params
+        if (!targetUserId) throw new Error('Missing targetUserId')
+
+        // 1. Verify requester is admin
+        const { data: requesterProfile } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (requesterProfile?.role !== 'admin') throw new Error('Forbidden')
+
+        // 2. Prevent self-deletion
+        if (targetUserId === user.id) throw new Error('You cannot remove your own access')
+
+        // 3. Delete user from Auth (this will cascade to profiles)
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(targetUserId)
+        if (deleteError) throw deleteError
+
+        responseData = { success: true }
+        break
+      }
+
       case 'inviteMember': {
         const { email, role, full_name } = params
         if (!email) throw new Error('Missing email')
@@ -215,10 +239,7 @@ serve(async (req) => {
 
         if (inviteError) throw inviteError
 
-        // 3. Update profile role if specified (inviteUserByEmail might not trigger trigger immediately)
-        // Note: Usually a trigger handles profile creation, but we want to ensure the role is set.
-        // We'll wait a bit or assume the trigger works. For safety, we can return the invite info.
-        
+        // 3. Update profile role if specified
         responseData = inviteData
         break
       }

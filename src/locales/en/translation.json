@@ -100,7 +100,11 @@
     "clear": "Clear",
     "minAmount": "Min Amount",
     "startDate": "Start Date",
-    "endDate": "End Date"
+    "endDate": "End Date",
+    "removeMemberSuccess": "Access for {{name}} removed successfully.",
+    "removeMemberError": "Error removing access. Check permissions.",
+    "confirmRemoveTitle": "Remove Access permanently?",
+    "confirmRemoveDesc": "Are you sure you want to remove access for {{name}}? This action will permanently delete the account and profile and cannot be undone."
   },
   "layout": {
     "dashboard": "Dashboard",

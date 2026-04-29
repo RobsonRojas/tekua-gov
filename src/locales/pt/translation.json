@@ -100,7 +100,11 @@
     "clear": "Limpar",
     "minAmount": "Valor Mínimo",
     "startDate": "Data Início",
-    "endDate": "Data Fim"
+    "endDate": "Data Fim",
+    "removeMemberSuccess": "Acesso de {{name}} removido com sucesso.",
+    "removeMemberError": "Erro ao remover acesso. Verifique as permissões.",
+    "confirmRemoveTitle": "Remover Acesso permanentemente?",
+    "confirmRemoveDesc": "Tem certeza que deseja remover o acesso de {{name}}? Esta ação excluirá a conta e o perfil permanentemente e não pode ser desfeita."
   },
   "layout": {
     "dashboard": "Dashboard",
