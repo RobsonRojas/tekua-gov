@@ -6,8 +6,8 @@ Para facilitar a comunicação e o compartilhamento de tarefas entre os usuário
 
 - Adição de um botão ou ícone de "Compartilhar" em cada card de tarefa no mural de trabalho.
 - Implementação de funcionalidade para copiar uma URL única da tarefa para a área de transferência ao clicar no botão de compartilhamento.
-- Implementação de deep linking/roteamento para que o acesso à URL única abra o mural de trabalho e foque ou abra automaticamente os detalhes da tarefa específica.
-- Atualização da UI para lidar com o destaque ou abertura de modal quando um ID de tarefa estiver presente na URL.
+- Implementação de deep linking/roteamento para que o acesso à URL única redirecione para uma página dedicada de detalhes da tarefa ou abra um modal de visualização completa.
+- Atualização da UI para incluir uma página ou componente de visualização detalhada de tarefa (`TaskDetail`).
 
 ## Capabilities
 

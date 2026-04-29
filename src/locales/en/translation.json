@@ -133,7 +133,11 @@
     "clear": "Clear",
     "refresh": "Refresh",
     "send": "Send",
-    "sending": "Sending..."
+    "sending": "Sending...",
+    "share": "Share",
+    "errorLoadingData": "Error loading data:",
+    "back": "Back",
+    "retry": "Retry"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",
@@ -234,7 +238,14 @@
     "demandCreated": "Demand created successfully!",
     "reward": "Reward Amount (Surreal)",
     "publish": "Publish Demand",
-    "title": "Demand Title"
+    "title": "Demand Title",
+    "viewEvidence": "View Evidence",
+    "linkCopied": "Task link copied!",
+    "participants": "Participants",
+    "validation": "Validation",
+    "executor": "Executor",
+    "history": "Validation History",
+    "confirmedThis": "confirmed this activity"
   },
   "governance": {
     "config": "Governance Configuration",

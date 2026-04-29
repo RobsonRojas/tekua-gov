@@ -18,7 +18,7 @@ import {
   Mms as MuralIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import ActivityCard from '../components/ActivityCard';
@@ -31,7 +31,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 const WorkWall: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
+  
+  const taskId = searchParams.get('task');
 
   const [tabIndex, setTabIndex] = useState(0);
   const [filters, setFilters] = useState<WorkFilterValues>({
@@ -41,7 +44,7 @@ const WorkWall: React.FC = () => {
   });
 
   const fetcher = useCallback(async () => {
-    if (!user) return { data: [], error: null };
+    if (!user || authLoading) return { data: [], error: null };
     
     const { data, error } = await apiClient.invoke('api-work', 'fetchActivities', {
       requesterId: filters.requesterId || undefined,
@@ -57,7 +60,7 @@ const WorkWall: React.FC = () => {
   const { data: rawActivities, loading, error, isOfflineData, refetch } = useQueryWithCache(
     `work-wall-activities-${JSON.stringify(filters)}`,
     fetcher,
-    [user, filters]
+    [user, filters, authLoading]
   );
 
   const [activities, setActivities] = useState<any[]>([]);
@@ -78,6 +81,12 @@ const WorkWall: React.FC = () => {
 
     setActivities(filtered);
   }, [rawActivities, tabIndex, user]);
+
+  useEffect(() => {
+    if (taskId) {
+      navigate(`/tasks/${taskId}`, { replace: true });
+    }
+  }, [taskId, navigate]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -178,10 +187,12 @@ const WorkWall: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
+                  id={`activity-${activity.id}`}
                 >
                   <ActivityCard 
                     activity={activity} 
                     onRefresh={refetch}
+                    highlighted={taskId === activity.id}
                   />
                 </motion.div>
               </Grid>

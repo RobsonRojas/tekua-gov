@@ -9,7 +9,10 @@ import {
   Avatar, 
   Stack, 
   Tooltip,
-  LinearProgress
+  LinearProgress,
+  IconButton,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { 
   User, 
@@ -19,7 +22,8 @@ import {
   AlertCircle,
   PlayCircle,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  Share2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -29,14 +33,16 @@ import { useAuth } from '../context/useAuth';
 interface ActivityCardProps {
   activity: any;
   onRefresh: () => void;
+  highlighted?: boolean;
 }
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
+const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highlighted }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState(activity.status);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   const title = activity.title?.[lang] || activity.title?.pt || 'Untitled';
@@ -91,6 +97,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
     }
   };
 
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/tasks/${activity.id}`;
+    navigator.clipboard.writeText(url);
+    setSnackbarOpen(true);
+  };
+
   const evidenceUrl = activity.evidence?.[0]?.evidence_url;
 
   return (
@@ -99,15 +112,18 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
       display: 'flex', 
       flexDirection: 'column', 
       borderRadius: '24px',
-      border: '1px solid rgba(255, 255, 255, 0.05)',
+      border: highlighted ? '2px solid' : '1px solid rgba(255, 255, 255, 0.05)',
+      borderColor: highlighted ? 'primary.main' : 'rgba(255, 255, 255, 0.05)',
       bgcolor: 'background.paper',
-      transition: 'transform 0.2s, border-color 0.2s',
-      overflow: 'hidden',
-      '&:hover': {
-        transform: 'translateY(-4px)',
-        borderColor: 'primary.main'
-      }
-    }}>
+      transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
+      boxShadow: highlighted ? '0 0 15px rgba(var(--mui-palette-primary-mainChannel), 0.3)' : 'none',
+    overflow: 'hidden',
+    cursor: 'pointer',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      borderColor: 'primary.main'
+    }
+  }} onClick={() => navigate(`/tasks/${activity.id}`)}>
       {evidenceUrl && (
         <Box sx={{ height: 180, position: 'relative', overflow: 'hidden' }}>
           <Box
@@ -135,12 +151,27 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
             icon={getStatusIcon(localStatus)}
             sx={{ borderRadius: '8px', fontWeight: 600 }}
           />
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Trophy size={16} color="#f59e0b" />
-            <Typography variant="subtitle2" fontWeight={700} color="primary.main">
-              {activity.reward_amount} $S
-            </Typography>
-          </Stack>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Trophy size={16} color="#f59e0b" />
+              <Typography variant="subtitle2" fontWeight={700} color="primary.main">
+                {activity.reward_amount} $S
+              </Typography>
+            </Stack>
+            <Tooltip title={t('common.share') || 'Compartilhar'}>
+              <IconButton 
+                size="small" 
+                onClick={handleShare}
+                sx={{ 
+                  color: 'text.secondary', 
+                  p: 0.5,
+                  '&:hover': { color: 'primary.main', bgcolor: 'primary.mainChannel' } 
+                }}
+              >
+                <Share2 size={16} />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
 
         <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 1 }}>
@@ -150,7 +181,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
           {description}
         </Typography>
 
-        {evidenceUrl && (
+        {evidenceUrl && evidenceUrl.startsWith('http') && (
           <Box sx={{ mb: 2 }}>
              <Typography 
                variant="caption" 
@@ -159,6 +190,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
                href={evidenceUrl} 
                target="_blank" 
                rel="noopener noreferrer"
+               onClick={(e) => e.stopPropagation()}
                sx={{ textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}
              >
                <PlayCircle size={14} /> {t('work.viewEvidence') || 'Ver Evidência'}
@@ -248,6 +280,17 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh }) => {
           )}
         </Box>
       </CardContent>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%', borderRadius: '12px' }}>
+          {t('work.linkCopied') || 'Link da tarefa copiado!'}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 };

@@ -134,7 +134,11 @@
     "clear": "Limpar",
     "refresh": "Atualizar",
     "send": "Enviar",
-    "sending": "Enviando..."
+    "sending": "Enviando...",
+    "share": "Compartilhar",
+    "errorLoadingData": "Erro ao carregar dados:",
+    "back": "Voltar",
+    "retry": "Tentar Novamente"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",
@@ -235,7 +239,14 @@
     "demandCreated": "Demanda criada com sucesso!",
     "reward": "Valor da Recompensa (Surreal)",
     "publish": "Publicar Demanda",
-    "title": "Título da Demanda"
+    "title": "Título da Demanda",
+    "viewEvidence": "Ver Evidência",
+    "linkCopied": "Link da tarefa copiado!",
+    "participants": "Participantes",
+    "validation": "Validação",
+    "executor": "Executor",
+    "history": "Histórico de Validação",
+    "confirmedThis": "confirmou esta atividade"
   },
   "governance": {
     "config": "Configuração de Governança",

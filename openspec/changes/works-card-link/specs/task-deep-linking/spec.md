@@ -4,8 +4,8 @@
 O sistema SHALL suportar o acesso direto a uma tarefa específica através de parâmetros na URL.
 
 #### Scenario: Acesso via parâmetro de URL
-- **WHEN** um usuário acessa a URL do mural com o parâmetro `task_id`.
-- **THEN** o sistema SHALL abrir automaticamente os detalhes da tarefa correspondente ou destacá-la na interface.
+- **WHEN** um usuário acessa a URL com o parâmetro de tarefa ou rota direta.
+- **THEN** o sistema SHALL abrir uma página ou modal de detalhes com informações completas da tarefa (título, descrição, evidências, histórico).
 
 ### Requirement: Destaque Visual de Tarefa Vinculada
 O sistema SHALL destacar visualmente a tarefa que foi acessada via deep link para facilitar sua localização.

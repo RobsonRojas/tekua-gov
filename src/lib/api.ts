@@ -34,10 +34,10 @@ class ApiClient {
       
       let session = null;
       try {
-        // Race session fetch against a 500ms timeout
+        // Race session fetch against a 3000ms timeout
         const sessionResult = await Promise.race([
           supabase.auth.getSession(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
         ]) as any;
         
         session = sessionResult.data?.session;

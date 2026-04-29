@@ -27,6 +27,7 @@ const CreateTask = lazy(() => import('./pages/CreateTask'));
 const SubmitTaskProof = lazy(() => import('./pages/SubmitTaskProof'));
 const AIAgent = lazy(() => import('./pages/AIAgent'));
 const Notifications = lazy(() => import('./pages/Notifications'));
+const TaskDetail = lazy(() => import('./pages/TaskDetail'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -198,6 +199,14 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <CreateTask />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'tasks/:id',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <TaskDetail />
           </Suspense>
         ),
       },

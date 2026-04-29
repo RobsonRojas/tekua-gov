@@ -87,6 +87,39 @@ serve(async (req) => {
         break
       }
 
+      case 'fetchActivityDetail': {
+        const { id } = params
+        if (!id) throw new Error('Missing activity ID')
+
+        const { data: activity, error } = await supabaseClient
+          .from('activities')
+          .select(`
+            *,
+            requester:profiles!requester_id (id, full_name, avatar_url),
+            worker:profiles!worker_id (id, full_name, avatar_url),
+            confirmations:activity_confirmations (*, profile:profiles(full_name, avatar_url)),
+            evidence:activity_evidence (*)
+          `)
+          .eq('id', id)
+          .single()
+
+        if (error) throw error
+        
+        // Check if user has confirmed this specific activity
+        const { data: userConfirm } = await supabaseClient
+          .from('activity_confirmations')
+          .select('id')
+          .eq('activity_id', id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        responseData = {
+          ...activity,
+          user_has_confirmed: !!userConfirm
+        }
+        break
+      }
+
       case 'createActivity': {
         const { title, description, rewardAmount, type = 'task', geoRequired = false } = params
         if (!title || !description) throw new Error('Missing activity title or description')

@@ -27,13 +27,13 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const fetchNotifications = useCallback(async () => {
-    if (!user) return;
+    if (!user || authLoading) return;
     setLoading(true);
     try {
       const { data, error } = await apiClient.invoke('api-notifications', 'fetchNotifications');
@@ -77,7 +77,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchNotifications]);
+  }, [user, authLoading, fetchNotifications]);
 
   const markAsRead = async (id: string) => {
     try {
