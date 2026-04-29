@@ -20,12 +20,9 @@ import {
   ArrowLeft, 
   Share2, 
   Trophy, 
-  Clock, 
   CheckCircle2, 
-  AlertCircle,
   PlayCircle,
   User,
-  ExternalLink,
   MapPin
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -186,7 +183,7 @@ const TaskDetail: React.FC = () => {
 
           <Grid container spacing={4}>
             {/* Participants */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 {t('work.participants') || 'Participantes'}
               </Typography>
@@ -224,7 +221,7 @@ const TaskDetail: React.FC = () => {
             </Grid>
 
             {/* Validation Progress */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 {t('work.validation') || 'Validação'}
               </Typography>
@@ -256,7 +253,7 @@ const TaskDetail: React.FC = () => {
               </Typography>
               <Grid container spacing={2}>
                 {activity.evidence.map((ev: any) => (
-                  <Grid item xs={12} sm={6} key={ev.id}>
+                  <Grid size={{ xs: 12, sm: 6 }} key={ev.id}>
                     <Paper 
                       sx={{ 
                         p: 2, 
