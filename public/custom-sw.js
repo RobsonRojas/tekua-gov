@@ -2,6 +2,34 @@ importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox
 
 if (workbox) {
   workbox.precaching.precacheAndRoute(self.__WB_MANIFEST || []);
+
+  // Cache images
+  workbox.routing.registerRoute(
+    ({request}) => request.destination === 'image',
+    new workbox.strategies.CacheFirst({
+      cacheName: 'images',
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 50,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+        }),
+      ],
+    })
+  );
+
+  // Cache fonts
+  workbox.routing.registerRoute(
+    ({request}) => request.destination === 'font',
+    new workbox.strategies.CacheFirst({
+      cacheName: 'fonts',
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 10,
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 1 Year
+        }),
+      ],
+    })
+  );
 }
 
 self.addEventListener('push', function (event) {
@@ -13,8 +41,9 @@ self.addEventListener('push', function (event) {
   const title = data.title || 'Nova Notificação Tekua';
   const options = {
     body: data.body || 'Você tem uma nova mensagem.',
-    icon: '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+    icon: '/pwa-192x192.png',
+    badge: '/favicon.ico',
+    vibrate: [100, 50, 100],
     data: {
       url: data.url || '/'
     }

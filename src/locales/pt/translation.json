@@ -122,7 +122,13 @@
     "cardGovDesc": "Acesse ferramentas de votação, atas de reuniões e documentos oficiais.",
     "cardDocTitle": "Documentação",
     "cardDocDesc": "Leia o estatuto e as diretrizes da associação Tekua.",
-    "access": "Acessar"
+    "access": "Acessar",
+    "install": "Instalar Aplicativo"
+  },
+  "pwa": {
+    "install": "Instalar Aplicativo",
+    "ready": "Aplicativo pronto para uso offline!",
+    "newContent": "Novo conteúdo disponível, clique para atualizar."
   },
   "common": {
     "loading": "Carregando...",

@@ -122,7 +122,13 @@
     "cardGovDesc": "Access voting tools, meeting minutes and official documents.",
     "cardDocTitle": "Documentation",
     "cardDocDesc": "Read the Tekua association statutes and guidelines.",
-    "access": "Access"
+    "access": "Access",
+    "install": "Install App"
+  },
+  "pwa": {
+    "install": "Install App",
+    "ready": "App ready for offline use!",
+    "newContent": "New content available, click to refresh."
   },
   "common": {
     "loading": "Loading...",

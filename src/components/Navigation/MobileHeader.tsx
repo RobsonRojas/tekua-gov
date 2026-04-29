@@ -40,20 +40,28 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick }) => {
           >
             <Menu />
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
+          <Box 
             component={RouterLink}
             to="/"
-            sx={{
-              fontWeight: 800,
-              letterSpacing: '.1rem',
-              color: 'primary.main',
-              textDecoration: 'none',
-            }}
+            sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', gap: 1.5 }}
           >
-            TEKUA
-          </Typography>
+            <Box 
+              component="img" 
+              src="/pwa-192x192.png" 
+              sx={{ width: 32, height: 32, borderRadius: '8px' }} 
+            />
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                fontWeight: 800,
+                letterSpacing: '.1rem',
+                color: 'primary.main',
+              }}
+            >
+              TEKUA
+            </Typography>
+          </Box>
         </Box>
         
         <NotificationCenter />

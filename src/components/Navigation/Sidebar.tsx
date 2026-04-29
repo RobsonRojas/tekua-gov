@@ -83,9 +83,16 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
           minHeight: 64
         }}>
           {open && (
-            <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', letterSpacing: 1 }}>
-              TEKUA
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box 
+                component="img" 
+                src="/pwa-192x192.png" 
+                sx={{ width: 36, height: 36, borderRadius: '8px' }} 
+              />
+              <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', letterSpacing: 1 }}>
+                TEKUA
+              </Typography>
+            </Box>
           )}
           <IconButton onClick={onToggle}>
             {open ? <ChevronLeft /> : <ChevronRight />}

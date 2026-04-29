@@ -212,7 +212,7 @@ const WorkWall: React.FC = () => {
         <Fab 
           color="secondary" 
           aria-label="add-demand" 
-          sx={{ position: 'fixed', bottom: 104, right: 32, display: { sm: 'none' } }}
+          sx={{ position: 'fixed', bottom: 160, right: 24, display: { sm: 'none' }, zIndex: 1100 }}
           onClick={() => navigate('/create-demand')}
         >
           <AddIcon />
@@ -223,7 +223,7 @@ const WorkWall: React.FC = () => {
         <Fab 
           color="primary" 
           aria-label="add" 
-          sx={{ position: 'fixed', bottom: 32, right: 32, display: { sm: 'none' } }}
+          sx={{ position: 'fixed', bottom: 90, right: 24, display: { sm: 'none' }, zIndex: 1100 }}
           onClick={() => navigate('/register-work')}
         >
           <AddIcon />

@@ -49,17 +49,27 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
         sx: { width: 280 }
       }}
     >
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Avatar sx={{ bgcolor: 'primary.main' }}>
-          {profile?.full_name?.charAt(0) || profile?.email?.charAt(0) || '?'}
-        </Avatar>
-        <Box>
-          <Typography variant="subtitle1" noWrap sx={{ fontWeight: 600 }}>
-            {profile?.full_name || 'User'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" noWrap>
-            {profile?.email}
-          </Typography>
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, bgcolor: 'primary.main', color: 'white' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box 
+            component="img" 
+            src="/pwa-192x192.png" 
+            sx={{ width: 48, height: 48, borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)' }} 
+          />
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>TEKUA</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+          <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}>
+            {profile?.full_name?.charAt(0) || profile?.email?.charAt(0) || '?'}
+          </Avatar>
+          <Box sx={{ overflow: 'hidden' }}>
+            <Typography variant="subtitle1" noWrap sx={{ fontWeight: 600 }}>
+              {profile?.full_name || 'User'}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.8 }} noWrap>
+              {profile?.email}
+            </Typography>
+          </Box>
         </Box>
       </Box>
       

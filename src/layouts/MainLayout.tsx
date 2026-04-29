@@ -13,6 +13,7 @@ import { useAuth } from '../context/useAuth';
 import Sidebar from '../components/Navigation/Sidebar';
 import MobileHeader from '../components/Navigation/MobileHeader';
 import MobileDrawer from '../components/Navigation/MobileDrawer';
+import BottomNav from '../components/layout/BottomNav';
 import OfflineBanner from '../components/OfflineBanner';
 import { MOBILE_HEADER_HEIGHT } from '../theme';
 
@@ -65,6 +66,7 @@ const MainLayout: React.FC = () => {
           flexDirection: 'column',
           minHeight: '100vh',
           pt: isMobile ? `${MOBILE_HEADER_HEIGHT}px` : 0,
+          pb: isMobile ? '70px' : 0, // Padding for BottomNav
           transition: (theme) => theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
@@ -74,7 +76,8 @@ const MainLayout: React.FC = () => {
         <Container 
           maxWidth="lg" 
           sx={{ 
-            py: 4,
+            py: isMobile ? 2 : 4,
+            px: isMobile ? 2 : 3,
             flexGrow: 1
           }}
         >
@@ -87,6 +90,7 @@ const MainLayout: React.FC = () => {
             py: 3, 
             px: 2, 
             mt: 'auto', 
+            mb: isMobile ? 2 : 0,
             borderTop: (theme) => `1px solid ${theme.palette.divider}`,
             background: 'background.paper'
           }}
@@ -98,6 +102,7 @@ const MainLayout: React.FC = () => {
           </Container>
         </Box>
       </Box>
+      <BottomNav />
     </Box>
   );
 };

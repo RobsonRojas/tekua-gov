@@ -49,19 +49,32 @@ export const getThemeOptions = (mode: PaletteMode): ThemeOptions => ({
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: { fontSize: '2.5rem', fontWeight: 700 },
-    h2: { fontSize: '2rem', fontWeight: 700 },
-    h3: { fontSize: '1.5rem', fontWeight: 600 },
+    h1: { 
+      fontSize: '2.5rem', 
+      fontWeight: 800,
+      '@media (max-width:600px)': {
+        fontSize: '1.8rem',
+      }
+    },
+    h2: { 
+      fontSize: '2rem', 
+      fontWeight: 800,
+      '@media (max-width:600px)': {
+        fontSize: '1.5rem',
+      }
+    },
+    h3: { fontSize: '1.5rem', fontWeight: 700 },
     button: { textTransform: 'none', fontWeight: 600 },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 16,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          padding: '8px 16px',
+          padding: '10px 20px',
+          borderRadius: '12px',
         },
         containedPrimary: {
           background: mode === 'dark' 
@@ -80,6 +93,25 @@ export const getThemeOptions = (mode: PaletteMode): ThemeOptions => ({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
+          borderRadius: '16px',
+        },
+      },
+    },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          '@media (max-width:600px)': {
+            paddingLeft: '16px',
+            paddingRight: '16px',
+          },
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          paddingTop: '12px',
+          paddingBottom: '12px',
         },
       },
     },

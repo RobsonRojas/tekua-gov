@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import WalletCard from '../components/WalletCard';
 import PushNotificationBanner from '../components/PushNotificationBanner';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { Download } from 'lucide-react';
 
 import { useAuth } from '../context/useAuth';
 
@@ -20,6 +22,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
+  const { isInstallable, installPWA } = usePWAInstall();
 
   const homeCards = [
     { 
@@ -62,13 +65,32 @@ const Home: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h1" gutterBottom align="center" color="primary.main">
+      <Box sx={{ mb: 6, textAlign: 'center' }}>
+        <Typography variant="h1" gutterBottom color="primary.main">
           {t('home.title')}
         </Typography>
-        <Typography variant="h5" align="center" color="text.secondary" sx={{ maxWidth: '800px', mx: 'auto', mb: 8 }}>
+        <Typography variant="h5" color="text.secondary" sx={{ maxWidth: '800px', mx: 'auto', mb: 4 }}>
           {t('home.subtitle')}
         </Typography>
+
+        {isInstallable && (
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            startIcon={<Download size={20} />}
+            onClick={installPWA}
+            sx={{ 
+              borderRadius: '30px', 
+              px: 4, 
+              py: 1.5,
+              fontSize: '1rem',
+              boxShadow: '0 10px 20px rgba(99, 102, 241, 0.3)'
+            }}
+          >
+            {t('pwa.install') || 'Instalar Aplicativo'}
+          </Button>
+        )}
       </Box>
 
       <PushNotificationBanner />

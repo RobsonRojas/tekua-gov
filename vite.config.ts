@@ -16,12 +16,15 @@ export default defineConfig({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Tekua Governance Portal',
-        short_name: 'Tekua Gov',
-        description: 'Plataforma oficial de governança da Associação Tekua',
+        name: 'Tekuá Governança',
+        short_name: 'Tekuá Gov',
+        description: 'Plataforma oficial de governança da Associação Tekuá',
         theme_color: '#6366f1',
         background_color: '#0f172a',
         display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -34,10 +37,26 @@ export default defineConfig({
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-maskable.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
+          }
+        ],
+        screenshots: [
+          {
+            src: 'screenshot-mobile.png',
+            sizes: '750x1334',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Mural de Trabalho Mobile'
+          },
+          {
+            src: 'screenshot-desktop.png',
+            sizes: '1280x800',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Dashboard de Governança'
           }
         ]
       }
