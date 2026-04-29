@@ -248,6 +248,10 @@
     "linkCopied": "Link da tarefa copiado!",
     "participants": "Participantes",
     "validation": "Validação",
+    "interactions": "Perguntas e Comentários",
+    "postComment": "Enviar Mensagem",
+    "askQuestion": "Fazer uma pergunta...",
+    "noInteractions": "Nenhuma interação registrada.",
     "executor": "Executor",
     "history": "Histórico de Validação",
     "confirmedThis": "confirmou esta atividade"

@@ -247,6 +247,10 @@
     "linkCopied": "Task link copied!",
     "participants": "Participants",
     "validation": "Validation",
+    "interactions": "Questions and Comments",
+    "postComment": "Send Message",
+    "askQuestion": "Ask a question...",
+    "noInteractions": "No interactions recorded.",
     "executor": "Executor",
     "history": "Validation History",
     "confirmedThis": "confirmed this activity"

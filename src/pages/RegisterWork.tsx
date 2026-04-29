@@ -118,7 +118,7 @@ const RegisterWork: React.FC = () => {
 
       const { error } = await apiClient.invoke('api-work', 'submitActivity', {
         title: submissionData.p_title,
-        description: submissionData.p_description.pt,
+        description: submissionData.p_description,
         rewardAmount: submissionData.p_reward_amount,
         evidenceUrl: submissionData.p_evidence_url,
         requesterId: submissionData.p_requester_id

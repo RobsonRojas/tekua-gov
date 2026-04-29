@@ -283,6 +283,47 @@ serve(async (req) => {
         break
       }
 
+      case 'fetchInteractions': {
+        const { activityId } = params
+        if (!activityId) throw new Error('Missing activityId')
+
+        const { data, error } = await supabaseClient
+          .from('activity_interactions')
+          .select(`
+            *,
+            user:profiles(id, full_name, avatar_url)
+          `)
+          .eq('activity_id', activityId)
+          .order('created_at', { ascending: true })
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'postInteraction': {
+        const { activityId, content, metadata = {} } = params
+        if (!activityId || !content) throw new Error('Missing activityId or content')
+
+        const { data, error } = await supabaseClient
+          .from('activity_interactions')
+          .insert({
+            activity_id: activityId,
+            user_id: user.id,
+            content: content,
+            metadata: metadata
+          })
+          .select(`
+            *,
+            user:profiles(id, full_name, avatar_url)
+          `)
+          .single()
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`)
     }

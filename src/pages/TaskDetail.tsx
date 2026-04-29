@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { motion } from 'framer-motion';
+import TaskInteractions from '../components/work/TaskInteractions';
 
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -356,6 +357,8 @@ const TaskDetail: React.FC = () => {
             )}
           </Box>
         </Paper>
+
+        <TaskInteractions activityId={activity.id} />
       </motion.div>
     </Container>
   );
