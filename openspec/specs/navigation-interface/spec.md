@@ -29,25 +29,34 @@ The system SHALL ensure all navigation items in the sidebar and mobile drawer po
 - **THEN** the system SHALL navigate to the `/admin-panel?tab=activity` route
 
 ### Requirement: Responsive Navigation Support
-The navigation system SHALL adapt to different screen sizes to maintain usability.
+O sistema de navegação **SHALL** se adaptar dinamicamente a diferentes tamanhos de tela para garantir a melhor ergonomia e usabilidade em qualquer dispositivo.
 
 #### Scenario: Mobile View (Smartphone)
-- **GIVEN** a screen width of 375px (Mobile)
-- **WHEN** the user interacts with navigation
-- **THEN** the system SHALL use a mobile drawer (hamburger menu)
-- **THEN** clicking a menu item SHALL navigate and close the drawer
+- **GIVEN** uma largura de tela inferior a 768px.
+- **WHEN** o usuário interage com a aplicação.
+- **THEN** o sistema **SHALL** exibir uma Barra de Navegação Inferior (Bottom Navigation) contendo as ações principais (Dashboard, Mural, Perfil).
+- **AND** o menu lateral **SHALL** ser acessível através de um menu hambúrguer para acesso a configurações e recursos administrativos.
 
 #### Scenario: Tablet View
-- **GIVEN** a screen width of 768px (Tablet)
-- **WHEN** the user interacts with navigation
-- **THEN** the system SHALL show the collapsed sidebar or drawer as appropriate
-- **THEN** navigation links SHALL remain functional
+- **GIVEN** uma largura de tela entre 768px e 1024px.
+- **WHEN** o usuário interage com a navegação.
+- **THEN** o sistema **SHALL** exibir o Sidebar em modo colapsado para maximizar a área de conteúdo, permitindo expansão sob demanda.
 
 #### Scenario: Desktop View
-- **GIVEN** a screen width of 1280px (Desktop)
-- **WHEN** the user interacts with navigation
-- **THEN** the system SHALL display the full permanent sidebar
-- **THEN** all navigation links SHALL be directly accessible
+- **GIVEN** uma largura de tela superior a 1024px.
+- **WHEN** o usuário interage com a navegação.
+- **THEN** o sistema **SHALL** exibir o Sidebar permanentemente visível na lateral esquerda.
+
+### Requirement: Layout Adaptation
+A interface de usuário **SHALL** reorganizar e redimensionar seus componentes principais para otimizar a legibilidade e o uso do espaço disponível.
+
+#### Scenario: Dashboard Grid on Mobile
+- **WHEN** o Dashboard é visualizado em um smartphone.
+- **THEN** os elementos e cards de resumo **SHALL** ser empilhados verticalmente para evitar rolagem lateral e facilitar a navegação com o polegar.
+
+#### Scenario: Task Mural on Desktop
+- **WHEN** o Mural de Trabalho é visualizado em um monitor desktop.
+- **THEN** os cards de tarefas **SHALL** ser distribuídos em uma grade multi-colunas para permitir a visualização de mais itens simultaneamente.
 
 ### Requirement: Navigation Integration
 The navigation state SHALL be correctly synchronized with the browser URL and internal application state.
