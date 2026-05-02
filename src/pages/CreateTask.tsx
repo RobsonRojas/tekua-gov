@@ -82,7 +82,7 @@ const CreateTask: React.FC = () => {
 
       if (error) throw new Error(error);
 
-      setMessage({ type: 'success', text: t('common.success') });
+      setMessage({ type: 'success', text: t('work.pendingApprovalMessage') || 'Sua tarefa foi enviada e aguarda aprovação do Conselho Transversal.' });
       setTimeout(() => navigate('/tasks-board'), 500);
     } catch (err: any) {
       console.error('Error creating task:', err);

@@ -113,6 +113,7 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
             >
               <MenuItem value="member">{t('profile.member')}</MenuItem>
               <MenuItem value="admin">Administrador</MenuItem>
+              <MenuItem value="transversal_council">{t('profile.transversal_council') || 'Conselho Transversal'}</MenuItem>
             </TextField>
 
             <FormControlLabel

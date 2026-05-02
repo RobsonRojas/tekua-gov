@@ -23,7 +23,8 @@ import {
   PlayCircle,
   CheckCircle,
   HelpCircle,
-  Share2
+  Share2,
+  ShieldAlert
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +40,7 @@ interface ActivityCardProps {
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highlighted }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState(activity.status);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -61,6 +62,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
       case 'pending_validation': return 'info';
       case 'completed': return 'success';
       case 'rejected': return 'error';
+      case 'pending_approval': return 'secondary';
       default: return 'default';
     }
   };
@@ -72,6 +74,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
       case 'pending_validation': return <AlertCircle size={16} />;
       case 'completed': return <CheckCircle size={16} />;
       case 'rejected': return <AlertCircle size={16} />;
+      case 'pending_approval': return <ShieldAlert size={16} />;
       default: return undefined;
     }
   };
@@ -92,6 +95,22 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
       onRefresh();
     } catch (err) {
       console.error('Error performing activity action:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModeration = async (action: 'approve' | 'reject') => {
+    setLoading(true);
+    try {
+      const { error } = await apiClient.invoke('api-work', 'moderateActivity', { 
+        activityId: activity.id, 
+        action 
+      });
+      if (error) throw new Error(error);
+      onRefresh();
+    } catch (err) {
+      console.error('Error moderating activity:', err);
     } finally {
       setLoading(false);
     }
@@ -277,6 +296,33 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 </Button>
               </Box>
             </Tooltip>
+          )}
+
+          {localStatus === 'pending_approval' && (profile?.role === 'admin' || profile?.role === 'transversal_council') && (
+            <Stack direction="row" spacing={2}>
+              <Button 
+                fullWidth 
+                variant="contained"
+                color="secondary"
+                startIcon={<CheckCircle size={18} />}
+                onClick={(e) => { e.stopPropagation(); handleModeration('approve'); }}
+                disabled={loading}
+                sx={{ borderRadius: '12px', py: 1.5 }}
+              >
+                {t('common.approve') || 'Aprovar'}
+              </Button>
+              <Button 
+                fullWidth 
+                variant="outlined"
+                color="error"
+                startIcon={<AlertCircle size={18} />}
+                onClick={(e) => { e.stopPropagation(); handleModeration('reject'); }}
+                disabled={loading}
+                sx={{ borderRadius: '12px', py: 1.5 }}
+              >
+                {t('common.reject') || 'Reprovar'}
+              </Button>
+            </Stack>
           )}
         </Box>
       </CardContent>

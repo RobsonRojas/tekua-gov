@@ -173,7 +173,9 @@ const AdminPanel: React.FC = () => {
     handleMenuClose();
     
     try {
-      const newRole = selectedUser.role === 'admin' ? 'member' : 'admin';
+      const roles = ['member', 'transversal_council', 'admin'];
+      const currentIndex = roles.indexOf(selectedUser.role || 'member');
+      const newRole = roles[(currentIndex + 1) % roles.length];
       
       const { error } = await apiClient.invoke('api-members', 'manageAdmin', {
         targetUserId: selectedUser.id,
@@ -245,6 +247,17 @@ const AdminPanel: React.FC = () => {
           onChange={handleTabChange}
           textColor="primary"
           indicatorColor="primary"
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            '& .MuiTab-root': {
+              minHeight: 64,
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              textTransform: 'none',
+              gap: 1
+            }
+          }}
         >
           <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.userManagement')} />
           <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
@@ -257,7 +270,7 @@ const AdminPanel: React.FC = () => {
 
       {tabValue === 0 ? (
         <>
-          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
             <Box>
               <Typography variant="h4" color="primary.main" gutterBottom fontWeight={600}>
                 {t('admin.userManagement')}
@@ -266,7 +279,7 @@ const AdminPanel: React.FC = () => {
                 {t('admin.subtitle')}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, width: { xs: '100%', sm: 'auto' }, justifyContent: 'flex-end' }}>
               <Tooltip title={t('admin.refresh')}>
                 <IconButton onClick={fetchUsers} disabled={loading}>
                   <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
@@ -276,7 +289,7 @@ const AdminPanel: React.FC = () => {
                 variant="contained" 
                 startIcon={<UserPlus size={20} />}
                 onClick={() => setIsNewMemberModalOpen(true)}
-                sx={{ py: 1.5, px: 3, borderRadius: '12px' }}
+                sx={{ py: 1.5, px: 3, borderRadius: '12px', flex: { xs: 1, sm: 'none' } }}
               >
                 {t('admin.newMember')}
               </Button>
@@ -328,7 +341,7 @@ const AdminPanel: React.FC = () => {
               backgroundColor: 'background.paper', 
               borderRadius: '24px',
               border: '1px solid rgba(255, 255, 255, 0.05)',
-              overflow: 'hidden',
+              overflowX: 'auto',
               position: 'relative'
             }}
           >
@@ -387,10 +400,18 @@ const AdminPanel: React.FC = () => {
                       <TableCell>
                         <Stack spacing={0.5} alignItems="flex-start">
                           <Chip 
-                            label={user.role === 'admin' ? 'Admin' : t('profile.member')} 
+                            label={
+                              user.role === 'admin' ? 'Admin' : 
+                              user.role === 'transversal_council' ? t('profile.transversal_council') || 'Conselho' : 
+                              t('profile.member')
+                            } 
                             size="small" 
                             variant="outlined" 
-                            sx={{ textTransform: 'capitalize', color: 'primary.light', borderColor: 'rgba(99, 102, 241, 0.3)' }} 
+                            sx={{ 
+                              textTransform: 'capitalize', 
+                              color: user.role === 'admin' ? 'primary.light' : user.role === 'transversal_council' ? 'secondary.light' : 'text.secondary',
+                              borderColor: user.role === 'admin' ? 'rgba(99, 102, 241, 0.3)' : user.role === 'transversal_council' ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)'
+                            }} 
                           />
                           {user.is_board_member && (
                             <Chip 
@@ -506,7 +527,11 @@ const AdminPanel: React.FC = () => {
           <ListItemIcon>
             {actionLoading ? <CircularProgress size={18} /> : <ShieldAlert size={18} />}
           </ListItemIcon>
-          <ListItemText primary={selectedUser?.role === 'admin' ? t('admin.removeAdmin') : t('admin.makeAdmin')} />
+          <ListItemText primary={
+            selectedUser?.role === 'admin' ? t('admin.makeMember') || 'Tornar Membro' : 
+            selectedUser?.role === 'transversal_council' ? t('admin.makeAdmin') || 'Tornar Admin' : 
+            t('admin.makeCouncil') || 'Tornar Conselho'
+          } />
         </MenuItem>
         <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
         <MenuItem 

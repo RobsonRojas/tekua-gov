@@ -131,7 +131,7 @@ const RegisterWork: React.FC = () => {
         en: `Work registered: ${description.substring(0, 30)}...`
       });
 
-      setMessage({ type: 'success', text: t('work.success') });
+      setMessage({ type: 'success', text: t('work.pendingApprovalMessage') || 'Seu trabalho foi registrado e aguarda aprovação do Conselho Transversal.' });
       setTimeout(() => navigate('/work-wall'), 2000);
     } catch (err: any) {
       console.error('Error submitting work:', err);
@@ -179,7 +179,7 @@ const RegisterWork: React.FC = () => {
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1, alignItems: 'flex-start' }}>
                 <TextField
                   fullWidth
                   label={t('work.evidence')}
@@ -189,12 +189,12 @@ const RegisterWork: React.FC = () => {
                   placeholder="https://link_ou_upload"
                   helperText="Link para fotos ou clique no botão ao lado para carregar"
                 />
-                <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                <Box sx={{ mt: { xs: 0, sm: 1 }, mb: { xs: 2, sm: 0 }, display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
                   <Button
                     variant="outlined"
                     component="label"
                     disabled={uploadingFile}
-                    sx={{ height: 56, minWidth: 90 }}
+                    sx={{ height: 56, flex: { xs: 1, sm: 'none' }, minWidth: { xs: 0, sm: 90 } }}
                   >
                     {uploadingFile ? <CircularProgress size={24} /> : 'Upload'}
                     <input
@@ -208,7 +208,7 @@ const RegisterWork: React.FC = () => {
                     variant="outlined"
                     onClick={() => setIsCameraOpen(true)}
                     disabled={uploadingFile}
-                    sx={{ height: 56, minWidth: 90 }}
+                    sx={{ height: 56, flex: { xs: 1, sm: 'none' }, minWidth: { xs: 0, sm: 90 } }}
                     color="secondary"
                   >
                     <PhotoCameraIcon />

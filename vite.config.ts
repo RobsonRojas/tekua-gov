@@ -59,6 +59,10 @@ export default defineConfig({
             label: 'Dashboard de Governança'
           }
         ]
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module'
       }
     })
   ],

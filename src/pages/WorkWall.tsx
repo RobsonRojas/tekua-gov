@@ -32,7 +32,7 @@ const WorkWall: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   
   const taskId = searchParams.get('task');
 
@@ -77,10 +77,14 @@ const WorkWall: React.FC = () => {
       filtered = rawActivities.filter((a: any) => a.status === 'pending_validation');
     } else if (tabIndex === 4) { // Finalizadas
       filtered = rawActivities.filter((a: any) => a.status === 'completed');
+    } else if (tabIndex === 5) { // Moderação
+      filtered = rawActivities.filter((a: any) => a.status === 'pending_approval');
     }
 
     setActivities(filtered);
   }, [rawActivities, tabIndex, user]);
+
+  const isCouncilOrAdmin = profile?.role === 'admin' || profile?.role === 'transversal_council';
 
   useEffect(() => {
     if (taskId) {
@@ -161,6 +165,9 @@ const WorkWall: React.FC = () => {
           <Tab label={t('work.in_progress') || 'Em Execução'} />
           <Tab label={t('work.forValidating') || 'Para Validar'} />
           <Tab label={t('work.completed') || 'Finalizadas'} />
+          {isCouncilOrAdmin && (
+            <Tab label={t('work.moderation') || 'Moderação'} sx={{ color: 'secondary.main', fontWeight: 700 }} />
+          )}
         </Tabs>
       </Paper>
 

@@ -11,11 +11,13 @@ import {
   Avatar,
   Typography
 } from '@mui/material';
-import { LogOut } from 'lucide-react';
+import { LogOut, Download } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '../../hooks/useNavigation';
 import { useAuth } from '../../context/useAuth';
+import { usePWA } from '../../context/PWAContext';
+import { InstallPrompt } from '../pwa/InstallPrompt';
 import LanguageSelector from '../LanguageSelector';
 
 interface MobileDrawerProps {
@@ -29,6 +31,8 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
   const navigate = useNavigate();
   const { navItems } = useNavigation();
   const { profile, signOut } = useAuth();
+  const { isInstallable, platform, isInstalled } = usePWA();
+  const [showInstallDialog, setShowInstallDialog] = React.useState(false);
 
   const handleLogout = async () => {
     try {
@@ -106,6 +110,22 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
       <Divider />
       
       <List>
+        {(!isInstalled && (isInstallable || platform === 'ios')) && (
+          <ListItem disablePadding>
+            <ListItemButton 
+              onClick={() => {
+                setShowInstallDialog(true);
+              }} 
+              sx={{ color: 'primary.main' }}
+            >
+              <ListItemIcon sx={{ color: 'inherit' }}>
+                <Download size={20} />
+              </ListItemIcon>
+              <ListItemText primary={t('pwa.install_button', 'Instalar App')} />
+            </ListItemButton>
+          </ListItem>
+        )}
+        
         <ListItem disablePadding>
           <ListItemButton onClick={handleLogout} sx={{ color: 'error.main' }}>
             <ListItemIcon sx={{ color: 'inherit' }}>
@@ -115,6 +135,8 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
           </ListItemButton>
         </ListItem>
       </List>
+
+      <InstallPrompt open={showInstallDialog} onClose={() => setShowInstallDialog(false)} />
 
       <Box sx={{ p: 2, mt: 'auto', borderTop: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', justifyContent: 'center' }}>
         <LanguageSelector />

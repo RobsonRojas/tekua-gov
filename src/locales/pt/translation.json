@@ -29,6 +29,7 @@
     "notInformed": "Não informado",
     "corporateEmail": "Email Corporativo",
     "role": "Cargo / Função",
+    "transversal_council": "Conselho Transversal",
     "boardRole": "Cargo na Diretoria",
     "isBoardMember": "Membro da Diretoria",
     "board": "Diretoria",
@@ -91,6 +92,8 @@
     "viewProfile": "Ver Perfil",
     "removeAdmin": "Remover Administrador",
     "makeAdmin": "Tornar Administrador",
+    "makeCouncil": "Tornar Conselho",
+    "makeMember": "Tornar Membro",
     "removeAccess": "Remover Acesso",
     "exportCSV": "Exportar CSV",
     "statusDistribution": "Distribuição por Status",
@@ -260,7 +263,10 @@
     "noInteractions": "Nenhuma interação registrada.",
     "executor": "Executor",
     "history": "Histórico de Validação",
-    "confirmedThis": "confirmou esta atividade"
+    "confirmedThis": "confirmou esta atividade",
+    "moderation": "Moderação",
+    "pending_approval": "Aguardando Aprovação",
+    "pendingApprovalMessage": "Sua solicitação foi enviada e aguarda aprovação do Conselho Transversal."
   },
   "governance": {
     "config": "Configuração de Governança",

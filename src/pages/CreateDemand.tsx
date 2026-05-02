@@ -57,7 +57,7 @@ const CreateDemand: React.FC = () => {
         en: `Demand created: ${title}`
       });
 
-      setMessage({ type: 'success', text: t('work.demandCreated') || 'Demanda criada com sucesso!' });
+      setMessage({ type: 'success', text: t('work.pendingApprovalMessage') || 'Sua demanda foi enviada e aguarda aprovação do Conselho Transversal.' });
       setTimeout(() => navigate('/work-wall'), 2000);
     } catch (err: any) {
       console.error('Error creating demand:', err);

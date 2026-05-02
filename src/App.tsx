@@ -4,6 +4,7 @@ import { CssBaseline } from '@mui/material';
 import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { PWAProvider } from './context/PWAContext';
 import { useTranslation } from 'react-i18next';
 import ConsentGuard from './components/auth/ConsentGuard';
 import router from './router';
@@ -16,16 +17,18 @@ const App: React.FC = () => {
   }, [i18n.language, t]);
 
   return (
-    <ThemeContextProvider>
-      <CssBaseline />
-      <AuthProvider>
-        <NotificationProvider>
-          <ConsentGuard>
-            <RouterProvider router={router} />
-          </ConsentGuard>
-        </NotificationProvider>
-      </AuthProvider>
-    </ThemeContextProvider>
+    <PWAProvider>
+      <ThemeContextProvider>
+        <CssBaseline />
+        <AuthProvider>
+          <NotificationProvider>
+            <ConsentGuard>
+              <RouterProvider router={router} />
+            </ConsentGuard>
+          </NotificationProvider>
+        </AuthProvider>
+      </ThemeContextProvider>
+    </PWAProvider>
   );
 };
 

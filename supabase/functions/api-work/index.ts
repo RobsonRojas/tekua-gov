@@ -135,7 +135,7 @@ serve(async (req) => {
             reward_amount: amount,
             type: type,
             requester_id: user.id,
-            status: 'open',
+            status: 'pending_approval',
             geo_required: geoRequired,
             validation_method: 'requester_approval'
           })
@@ -321,6 +321,31 @@ serve(async (req) => {
 
         if (error) throw error
         responseData = data
+        break
+      }
+
+      case 'moderateActivity': {
+        const { activityId, action: modAction } = params
+        if (!activityId || !modAction) throw new Error('Missing moderation details')
+        
+        // 1. Verify role
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        const canModerate = profile?.role === 'admin' || profile?.role === 'transversal_council'
+        if (!canModerate) throw new Error('Forbidden')
+
+        // 2. Call moderation RPC using admin client (since RPC is security definer but we want to ensure caller is authorized)
+        const { error } = await supabaseAdmin.rpc('moderate_activity', {
+          p_activity_id: activityId,
+          p_action: modAction
+        })
+
+        if (error) throw error
+        responseData = { success: true }
         break
       }
 

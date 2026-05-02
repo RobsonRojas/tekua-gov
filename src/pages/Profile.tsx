@@ -35,6 +35,7 @@ import SecurityTab from './components/SecurityTab';
 import ActivityTab from './components/ActivityTab';
 import PrivacyTab from './components/PrivacyTab';
 import { logActivity } from '../utils/activityLogger';
+import { InstallPrompt } from '../components/pwa/InstallPrompt';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -230,6 +231,7 @@ const Profile: React.FC = () => {
       </Box>
 
       <TabPanel value={tabValue} index={0}>
+        <InstallPrompt variant="banner" />
         <Grid container spacing={4}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Paper

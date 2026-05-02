@@ -12,8 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import WalletCard from '../components/WalletCard';
 import PushNotificationBanner from '../components/PushNotificationBanner';
-import { usePWAInstall } from '../hooks/usePWAInstall';
-import { Download } from 'lucide-react';
+import { usePWA } from '../context/PWAContext';
+import { InstallPrompt } from '../components/pwa/InstallPrompt';
 
 import { useAuth } from '../context/useAuth';
 
@@ -22,7 +22,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
-  const { isInstallable, installPWA } = usePWAInstall();
+  const { isInstallable, platform, isInstalled } = usePWA();
 
   const homeCards = [
     { 
@@ -73,23 +73,10 @@ const Home: React.FC = () => {
           {t('home.subtitle')}
         </Typography>
 
-        {isInstallable && (
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            startIcon={<Download size={20} />}
-            onClick={installPWA}
-            sx={{ 
-              borderRadius: '30px', 
-              px: 4, 
-              py: 1.5,
-              fontSize: '1rem',
-              boxShadow: '0 10px 20px rgba(99, 102, 241, 0.3)'
-            }}
-          >
-            {t('pwa.install') || 'Instalar Aplicativo'}
-          </Button>
+        {(!isInstalled && (isInstallable || platform === 'ios')) && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+            <InstallPrompt variant="button" />
+          </Box>
         )}
       </Box>
 
