@@ -21,7 +21,7 @@ const Home: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = profile?.roles?.includes('admin');
   const { isInstallable, platform, isInstalled } = usePWA();
 
   const homeCards = [

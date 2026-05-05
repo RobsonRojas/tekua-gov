@@ -12,12 +12,11 @@ import {
   Alert,
   CircularProgress,
   Stack,
-  FormControlLabel,
-  Switch
+  Autocomplete,
+  Chip as MuiChip
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useMembers } from '../../hooks/useMembers';
-import { BOARD_ROLES } from '../../constants/boardRoles';
 
 interface MemberEditModalProps {
   open: boolean;
@@ -30,38 +29,44 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
   const { t } = useTranslation();
   const { updateMember, members } = useMembers();
   const [fullName, setFullName] = useState(member?.full_name || '');
-  const [role, setRole] = useState(member?.role || 'member');
-  const [isBoardMember, setIsBoardMember] = useState(member?.is_board_member || false);
-  const [boardRole, setBoardRole] = useState(member?.board_role || '');
+  const [roles, setRoles] = useState<string[]>(member?.roles || []);
+  const [functions, setFunctions] = useState<string[]>(member?.functions || []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (member) {
       setFullName(member.full_name || '');
-      setRole(member.role || 'member');
-      setIsBoardMember(member.is_board_member || false);
-      setBoardRole(member.board_role || '');
+      setRoles(member.roles || (member.role ? [member.role] : ['member']));
+      setFunctions(member.functions || (member.board_role ? [member.board_role] : (member.is_board_member ? ['Diretoria'] : [])));
     }
   }, [member]);
 
   const handleSave = async () => {
     // Basic validation: ensure at least one admin remains
-    if (member.role === 'admin' && role === 'member') {
-      const adminCount = members.filter(m => m.role === 'admin').length;
+    if (member.roles?.includes('admin') && !roles.includes('admin')) {
+      const adminCount = members.filter(m => m.roles?.includes('admin')).length;
       if (adminCount <= 1) {
         setError('Não é possível remover o único administrador do sistema.');
         return;
       }
     }
 
+    if (roles.length === 0) {
+      setError('O usuário deve ter pelo menos um papel.');
+      return;
+    }
+
     setSaving(true);
     setError(null);
     const success = await updateMember(member.id, { 
       full_name: fullName,
-      role: role,
-      is_board_member: isBoardMember,
-      board_role: isBoardMember ? boardRole : null
+      roles: roles,
+      functions: functions,
+      // Legacy compatibility
+      role: roles.includes('admin') ? 'admin' : (roles.includes('transversal_council') ? 'transversal_council' : 'member'),
+      is_board_member: functions.length > 0,
+      board_role: functions.length > 0 ? functions[0] : null
     });
     
     if (success) {
@@ -97,41 +102,44 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
+
           <TextField
             select
             fullWidth
             label={t('profile.role')}
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
+            SelectProps={{
+              multiple: true,
+              renderValue: (selected: any) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value: string) => (
+                    <MuiChip key={value} label={value === 'admin' ? 'Admin' : value === 'transversal_council' ? 'Conselho' : 'Membro'} size="small" />
+                  ))}
+                </Box>
+              ),
+            }}
+            value={roles}
+            onChange={(e) => setRoles(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
           >
             <MenuItem value="member">Membro</MenuItem>
             <MenuItem value="admin">Administrador</MenuItem>
+            <MenuItem value="transversal_council">Conselho Transversal</MenuItem>
           </TextField>
 
-          <FormControlLabel
-            control={
-              <Switch 
-                checked={isBoardMember} 
-                onChange={(e) => setIsBoardMember(e.target.checked)} 
-              />
+          <Autocomplete
+            multiple
+            freeSolo
+            options={['Presidente', 'Diretor', 'Tesoureiro', 'Secretário', 'Conselheiro']}
+            value={functions}
+            onChange={(_, newValue) => setFunctions(newValue)}
+            renderInput={(params) => (
+              <TextField {...params} label="Funções Organizacionais" placeholder="Adicionar função..." />
+            )}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <MuiChip label={option} {...getTagProps({ index })} size="small" color="secondary" />
+              ))
             }
-            label="Membro da Diretoria"
           />
-
-          {isBoardMember && (
-            <TextField
-              select
-              fullWidth
-              label="Cargo na Diretoria"
-              value={boardRole}
-              onChange={(e) => setBoardRole(e.target.value)}
-            >
-              <MenuItem value=""><em>Nenhum específico</em></MenuItem>
-              {BOARD_ROLES.map((r) => (
-                <MenuItem key={r} value={r}>{r}</MenuItem>
-              ))}
-            </TextField>
-          )}
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>

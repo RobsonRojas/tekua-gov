@@ -298,7 +298,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             </Tooltip>
           )}
 
-          {localStatus === 'pending_approval' && (profile?.role === 'admin' || profile?.role === 'transversal_council') && (
+          {localStatus === 'pending_approval' && (profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council')) && (
             <Stack direction="row" spacing={2}>
               <Button 
                 fullWidth 

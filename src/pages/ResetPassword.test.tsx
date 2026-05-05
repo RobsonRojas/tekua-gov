@@ -46,7 +46,7 @@ describe('ResetPassword Page', () => {
       session: { user: {} } as any, 
       loading: false,
       user: {} as any,
-      profile: {},
+      profile: { id: 'test-user', roles: ['member'], functions: [] },
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
       updateTheme: vi.fn(), acceptTerms: vi.fn()
@@ -85,7 +85,7 @@ describe('ResetPassword Page', () => {
       session: { user: {} } as any, 
       loading: false,
       user: {} as any,
-      profile: {},
+      profile: { id: 'test-user', roles: ['member'], functions: [] },
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
       updateTheme: vi.fn(), acceptTerms: vi.fn()
@@ -116,7 +116,7 @@ describe('ResetPassword Page', () => {
       session: { user: {} } as any, 
       loading: false,
       user: {} as any,
-      profile: {},
+      profile: { id: 'test-user', roles: ['member'], functions: [] },
       signOut: vi.fn(),
       updateLanguage: vi.fn(),
       updateTheme: vi.fn(), acceptTerms: vi.fn()

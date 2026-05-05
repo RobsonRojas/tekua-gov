@@ -81,7 +81,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
       
       <List sx={{ flexGrow: 1 }}>
         {navItems.map((item) => (
-          (!item.adminOnly || profile?.role === 'admin') && (
+          (!item.adminOnly || profile?.roles?.includes('admin')) && (
             <ListItem key={item.path} disablePadding>
               <ListItemButton
                 component={RouterLink}

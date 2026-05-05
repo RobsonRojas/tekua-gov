@@ -84,7 +84,7 @@ const WorkWall: React.FC = () => {
     setActivities(filtered);
   }, [rawActivities, tabIndex, user]);
 
-  const isCouncilOrAdmin = profile?.role === 'admin' || profile?.role === 'transversal_council';
+  const isCouncilOrAdmin = profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council');
 
   useEffect(() => {
     if (taskId) {

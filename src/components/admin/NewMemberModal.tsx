@@ -11,12 +11,11 @@ import {
   Alert,
   CircularProgress,
   Stack,
-  FormControlLabel,
-  Switch
+  Autocomplete,
+  Chip as MuiChip
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useMembers } from '../../hooks/useMembers';
-import { BOARD_ROLES } from '../../constants/boardRoles';
 
 interface NewMemberModalProps {
   open: boolean;
@@ -29,9 +28,8 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
   const { inviteMember } = useMembers();
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState('member');
-  const [isBoardMember, setIsBoardMember] = useState(false);
-  const [boardRole, setBoardRole] = useState('');
+  const [roles, setRoles] = useState<string[]>(['member']);
+  const [functions, setFunctions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +44,7 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
     setLoading(true);
     setError(null);
 
-    const result = await inviteMember(email, fullName, role, isBoardMember, isBoardMember ? boardRole : null);
+    const result = await inviteMember(email, fullName, roles, functions);
 
     if (result.success) {
       onSuccess();
@@ -60,9 +58,8 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
   const handleClose = () => {
     setEmail('');
     setFullName('');
-    setRole('member');
-    setIsBoardMember(false);
-    setBoardRole('');
+    setRoles(['member']);
+    setFunctions([]);
     setError(null);
     onClose();
   };
@@ -108,38 +105,39 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
               select
               fullWidth
               label={t('profile.role')}
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+              SelectProps={{
+                multiple: true,
+                renderValue: (selected: any) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value: string) => (
+                      <MuiChip key={value} label={value === 'admin' ? 'Admin' : value === 'transversal_council' ? 'Conselho' : 'Membro'} size="small" />
+                    ))}
+                  </Box>
+                ),
+              }}
+              value={roles}
+              onChange={(e) => setRoles(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
             >
               <MenuItem value="member">{t('profile.member')}</MenuItem>
               <MenuItem value="admin">Administrador</MenuItem>
               <MenuItem value="transversal_council">{t('profile.transversal_council') || 'Conselho Transversal'}</MenuItem>
             </TextField>
 
-            <FormControlLabel
-              control={
-                <Switch 
-                  checked={isBoardMember} 
-                  onChange={(e) => setIsBoardMember(e.target.checked)} 
-                />
+            <Autocomplete
+              multiple
+              freeSolo
+              options={['Presidente', 'Diretor', 'Tesoureiro', 'Secretário', 'Conselheiro']}
+              value={functions}
+              onChange={(_, newValue) => setFunctions(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Funções Organizacionais" placeholder="Adicionar função..." />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <MuiChip label={option} {...getTagProps({ index })} size="small" color="secondary" />
+                ))
               }
-              label="Membro da Diretoria"
             />
-
-            {isBoardMember && (
-              <TextField
-                select
-                fullWidth
-                label="Cargo na Diretoria"
-                value={boardRole}
-                onChange={(e) => setBoardRole(e.target.value)}
-              >
-                <MenuItem value=""><em>Nenhum específico</em></MenuItem>
-                {BOARD_ROLES.map((r) => (
-                  <MenuItem key={r} value={r}>{r}</MenuItem>
-                ))}
-              </TextField>
-            )}
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 3, borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>

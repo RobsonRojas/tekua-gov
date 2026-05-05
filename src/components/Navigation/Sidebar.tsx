@@ -47,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
   };
 
   const filteredNavItems = navItems.filter(item => 
-    !item.adminOnly || profile?.role === 'admin'
+    !item.adminOnly || profile?.roles?.includes('admin')
   );
 
   return (
@@ -167,7 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
               {open && (
                 <ListItemText 
                   primary={t('layout.profile')} 
-                  secondary={profile?.role === 'admin' ? 'Admin' : ''}
+                  secondary={profile?.roles?.map(r => r === 'admin' ? 'Admin' : r === 'transversal_council' ? 'Conselho' : 'Membro').join(' / ')}
                   secondaryTypographyProps={{ variant: 'caption' }}
                 />
               )}

@@ -37,7 +37,7 @@ describe('Profile Page', () => {
   it('renders the profile header', async () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { id: 'test-user', email: 'test@example.com' } as any,
-      profile: { full_name: 'Test User' },
+      profile: { id: 'test-user', full_name: 'Test User', roles: ['member'], functions: [] },
       loading: false,
       session: {} as any,
       signOut: vi.fn(),
@@ -53,7 +53,7 @@ describe('Profile Page', () => {
   it('toggles edit mode when clicking the edit button', async () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { id: 'test-user', email: 'test@example.com' } as any,
-      profile: { full_name: 'Test User' },
+      profile: { id: 'test-user', full_name: 'Test User', roles: ['member'], functions: [] },
       loading: false,
       session: {} as any,
       signOut: vi.fn(),
@@ -71,7 +71,7 @@ describe('Profile Page', () => {
   it('validates input and shows success message on save', async () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { id: 'test-user', email: 'test@example.com' } as any,
-      profile: { full_name: 'Test User' },
+      profile: { id: 'test-user', full_name: 'Test User', roles: ['member'], functions: [] },
       loading: false,
       session: {} as any,
       signOut: vi.fn(),

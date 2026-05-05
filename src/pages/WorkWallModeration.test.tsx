@@ -34,7 +34,10 @@ describe('WorkWall Moderation', () => {
   });
 
   it('should show the Moderation tab for admin users', async () => {
-    (useAuth as any).mockReturnValue({ user: { id: 'user-1', role: 'admin' } });
+    (useAuth as any).mockReturnValue({ 
+      user: { id: 'user-1' }, 
+      profile: { roles: ['admin'] } 
+    });
     (apiClient.invoke as any).mockResolvedValue({ data: mockActivities, error: null });
 
     render(
@@ -49,7 +52,10 @@ describe('WorkWall Moderation', () => {
   });
 
   it('should show the Moderation tab for transversal_council users', async () => {
-    (useAuth as any).mockReturnValue({ user: { id: 'user-1', role: 'transversal_council' } });
+    (useAuth as any).mockReturnValue({ 
+      user: { id: 'user-1' }, 
+      profile: { roles: ['transversal_council'] } 
+    });
     (apiClient.invoke as any).mockResolvedValue({ data: mockActivities, error: null });
 
     render(
@@ -64,7 +70,10 @@ describe('WorkWall Moderation', () => {
   });
 
   it('should NOT show the Moderation tab for regular members', async () => {
-    (useAuth as any).mockReturnValue({ user: { id: 'user-1', role: 'member' } });
+    (useAuth as any).mockReturnValue({ 
+      user: { id: 'user-1' }, 
+      profile: { roles: ['member'] } 
+    });
     (apiClient.invoke as any).mockResolvedValue({ data: mockActivities, error: null });
 
     render(

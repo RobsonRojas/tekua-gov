@@ -16,7 +16,8 @@ import {
   Alert,
   CircularProgress,
   Tabs,
-  Tab
+  Tab,
+  Chip
 } from '@mui/material';
 import { 
   Shield, 
@@ -101,7 +102,7 @@ const Profile: React.FC = () => {
       setFullName(data?.full_name || '');
       
       // Fetch balance for target user if requester is admin
-      if (profile?.role === 'admin') {
+      if (profile?.roles?.includes('admin')) {
         const { data: balanceData } = await apiClient.invoke('api-wallet', 'getBalance', { targetUserId: id });
         if (balanceData) setBalance(balanceData.balance);
       }
@@ -250,7 +251,7 @@ const Profile: React.FC = () => {
                 badgeContent={
                   <Box 
                     sx={{ 
-                      bgcolor: currentProfile?.role === 'admin' ? 'primary.main' : 'secondary.main', 
+                      bgcolor: currentProfile?.roles?.includes('admin') ? 'primary.main' : 'secondary.main', 
                       p: 0.5, 
                       borderRadius: '50%',
                       border: '4px solid #1e293b'
@@ -280,8 +281,8 @@ const Profile: React.FC = () => {
                 {currentProfile?.full_name || t('profile.defaultName')}
               </Typography>
               <Typography variant="body1" color="text.secondary" gutterBottom sx={{ textTransform: 'capitalize' }}>
-                {currentProfile?.role === 'admin' ? 'Admin' : t('profile.member')}
-                {currentProfile?.is_board_member && ` | ${t('profile.board')}`}
+                {currentProfile?.roles?.map((r: string) => r === 'admin' ? 'Admin' : r === 'transversal_council' ? 'Conselho' : 'Membro').join(' / ')}
+                {currentProfile?.functions && currentProfile.functions.length > 0 && ` | ${currentProfile.functions.join(', ')}`}
               </Typography>
               
               <Box 
@@ -383,19 +384,34 @@ const Profile: React.FC = () => {
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     {t('profile.role')}
                   </Typography>
-                  <Typography variant="body1" fontWeight={500} sx={{ textTransform: 'capitalize' }}>
-                    {currentProfile?.role === 'admin' ? 'Admin' : t('profile.member')}
-                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {currentProfile?.roles?.map((role: string) => (
+                      <Chip 
+                        key={role}
+                        label={role === 'admin' ? 'Admin' : role === 'transversal_council' ? 'Conselho Transversal' : 'Membro'} 
+                        size="small"
+                        color={role === 'admin' ? 'primary' : 'default'}
+                      />
+                    ))}
+                  </Box>
                 </Grid>
 
-                {currentProfile?.is_board_member && (
+                {currentProfile?.functions && currentProfile.functions.length > 0 && (
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      {t('profile.boardRole')}
+                      {t('profile.functions') || 'Funções'}
                     </Typography>
-                    <Typography variant="body1" fontWeight={600} color="primary.light">
-                      {currentProfile?.board_role || t('profile.isBoardMember')}
-                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {currentProfile.functions.map((func: string) => (
+                        <Chip 
+                          key={func}
+                          label={func} 
+                          size="small"
+                          color="secondary"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
                   </Grid>
                 )}
 

@@ -76,7 +76,7 @@ const Voting: React.FC = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4">{t('voting.title', 'Votações e Pautas')}</Typography>
-        {profile?.role === 'admin' && (
+        {profile?.roles?.includes('admin') && (
           <Button variant="contained" onClick={() => setOpenDialog(true)}>
             {t('voting.createTopic', 'Criar Nova Pauta')}
           </Button>

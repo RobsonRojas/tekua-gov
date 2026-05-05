@@ -5,11 +5,12 @@ import { apiClient } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useThemeContext } from './ThemeContext';
 import type { PaletteMode } from '@mui/material';
+import type { Profile } from '../utils/memberUtils';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  profile: any | null;
+  profile: Profile | null;
   loading: boolean;
   signOut: () => Promise<void>;
   updateLanguage: (lang: string) => Promise<void>;
@@ -22,7 +23,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const fetchingUserIdRef = React.useRef<string | null>(null);
   const currentProfileIdRef = React.useRef<string | null>(null);
@@ -90,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         table: 'profiles' 
       }, (payload) => {
         if (user && payload.new.id === user.id) {
-          setProfile(payload.new);
+          setProfile(payload.new as Profile);
         }
       })
       .subscribe();

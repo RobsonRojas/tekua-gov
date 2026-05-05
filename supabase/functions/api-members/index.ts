@@ -59,14 +59,14 @@ serve(async (req) => {
         const { userId } = params
         if (!userId) throw new Error('Missing userId')
 
-        // 1. Fetch requester profile to check role
+        // 1. Fetch requester profile to check roles
         const { data: requesterProfile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
           .single()
         
-        const isAdmin = requesterProfile?.role === 'admin'
+        const isAdmin = requesterProfile?.roles?.includes('admin')
         
         // 2. Security check: Only admins can fetch other users. 
         // Members can only fetch themselves.
@@ -91,15 +91,15 @@ serve(async (req) => {
         // 1. Fetch requester profile to check role
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
           .single()
         
-        const isAdmin = profile?.role === 'admin'
+        const isAdmin = profile?.roles?.includes('admin')
 
         // 2. Fetch all users. If admin, use admin client to see everything.
         // If not admin, just use regular client (RLS will handle it or we select specific fields)
-        let query = isAdmin ? supabaseAdmin.from('profiles').select('*') : supabaseClient.from('profiles').select('id, full_name, email, avatar_url, role')
+        let query = isAdmin ? supabaseAdmin.from('profiles').select('*') : supabaseClient.from('profiles').select('id, full_name, email, avatar_url, roles, functions')
         
         const { data, error } = await query
           .order('full_name', { ascending: true })
@@ -114,7 +114,7 @@ serve(async (req) => {
         if (!updates) throw new Error('Missing updates')
 
         // Filter out protected fields
-        const protectedFields = ['role', 'id', 'created_at', 'is_board_member', 'board_role']
+        const protectedFields = ['roles', 'id', 'created_at', 'functions', 'role', 'is_board_member', 'board_role']
         const cleanUpdates: any = {}
         Object.keys(updates).forEach(key => {
           if (!protectedFields.includes(key)) {
@@ -137,11 +137,11 @@ serve(async (req) => {
         // Only existing admins can promote/demote others
         const { data: requesterProfile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
           .single()
         
-        if (requesterProfile?.role !== 'admin') throw new Error('Forbidden')
+        if (!requesterProfile?.roles?.includes('admin')) throw new Error('Forbidden')
 
         const { targetUserId, role } = params
         if (!targetUserId || !role) throw new Error('Missing targetUserId or role')
@@ -164,11 +164,11 @@ serve(async (req) => {
         // 1. Verify requester is admin
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        if (!profile?.roles?.includes('admin')) throw new Error('Forbidden')
 
         // 2. Perform update using admin client
         const protectedFields = ['id', 'created_at']
@@ -197,11 +197,11 @@ serve(async (req) => {
         // 1. Verify requester is admin
         const { data: requesterProfile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
           .single()
         
-        if (requesterProfile?.role !== 'admin') throw new Error('Forbidden')
+        if (!requesterProfile?.roles?.includes('admin')) throw new Error('Forbidden')
 
         // 2. Prevent self-deletion
         if (targetUserId === user.id) throw new Error('You cannot remove your own access')
@@ -215,25 +215,28 @@ serve(async (req) => {
       }
 
       case 'inviteMember': {
-        const { email, role, full_name } = params
+        const { email, roles, full_name, functions } = params
         if (!email) throw new Error('Missing email')
 
         // 1. Verify requester is admin
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        if (!profile?.roles?.includes('admin')) throw new Error('Forbidden')
 
         // 2. Invite user via Supabase Auth Admin API
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
           data: { 
             full_name: full_name || '',
-            role: role || 'member',
-            is_board_member: params.is_board_member || false,
-            board_role: params.board_role || null
+            roles: roles || ['member'],
+            functions: functions || [],
+            // Legacy fields for backward compatibility
+            role: roles ? roles[0] : 'member',
+            is_board_member: functions ? functions.length > 0 : false,
+            board_role: functions ? functions[0] : null
           }
         })
 

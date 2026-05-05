@@ -42,14 +42,13 @@ export function useMembers() {
     }
   };
 
-  const inviteMember = async (email: string, fullName: string, role: string, isBoardMember: boolean = false, boardRole: string | null = null) => {
+  const inviteMember = async (email: string, fullName: string, roles: string[], functions: string[] = []) => {
     try {
       const { error } = await apiClient.invoke('api-members', 'inviteMember', {
         email,
         full_name: fullName,
-        role,
-        is_board_member: isBoardMember,
-        board_role: boardRole
+        roles,
+        functions
       });
 
       if (error) throw new Error(error);

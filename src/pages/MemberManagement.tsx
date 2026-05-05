@@ -44,7 +44,7 @@ const MemberManagement: React.FC = () => {
     const matchesSearch = 
       member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
       member.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+    const matchesRole = roleFilter === 'all' || member.roles?.includes(roleFilter);
     return matchesSearch && matchesRole;
   });
 
@@ -135,22 +135,30 @@ const MemberManagement: React.FC = () => {
                   </TableCell>
                   <TableCell>{member.email}</TableCell>
                   <TableCell>
-                    <Stack spacing={0.5} alignItems="flex-start">
-                      <Chip 
-                        label={member.role === 'admin' ? 'Administrador' : 'Membro'} 
-                        color={member.role === 'admin' ? 'secondary' : 'default'}
-                        size="small"
-                        variant="outlined"
-                      />
-                      {member.is_board_member && (
-                        <Chip 
-                          label={member.board_role || 'Diretoria'} 
-                          color="primary"
-                          size="small"
-                          sx={{ fontSize: '0.65rem' }}
-                        />
-                      )}
-                    </Stack>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                        {member.roles?.map((role: string) => (
+                          <Chip 
+                            key={role}
+                            label={role === 'admin' ? 'Admin' : role === 'transversal_council' ? 'Conselho' : 'Membro'} 
+                            color={role === 'admin' ? 'secondary' : 'default'}
+                            size="small"
+                            variant="outlined"
+                          />
+                        ))}
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                        {member.functions?.map((func: string) => (
+                          <Chip 
+                            key={func}
+                            label={func} 
+                            color="primary"
+                            size="small"
+                            sx={{ fontSize: '0.65rem' }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
                   </TableCell>
                   <TableCell>
                     <Chip 
