@@ -136,11 +136,12 @@ serve(async (req) => {
         // 1. Verify admin
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
 
         // 2. Fetch stats using admin client
         const { data: walletData } = await supabaseAdmin.from('wallets').select('balance')
@@ -165,11 +166,12 @@ serve(async (req) => {
         // 1. Verify admin
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
 
         const { recipientId, amount, description } = params
         if (!recipientId || !amount) throw new Error('Missing minting details')

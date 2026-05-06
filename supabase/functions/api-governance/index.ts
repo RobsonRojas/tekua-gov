@@ -103,11 +103,12 @@ serve(async (req) => {
         // Admin only check
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
 
         const { config } = params
         const { data, error } = await supabaseAdmin
@@ -128,11 +129,12 @@ serve(async (req) => {
         // Admin only check
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
 
         const { title, content } = params
         const { data, error } = await supabaseAdmin

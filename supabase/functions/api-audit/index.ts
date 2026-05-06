@@ -42,11 +42,12 @@ serve(async (req) => {
           // Verify requester is admin
           const { data: profile } = await supabaseClient
             .from('profiles')
-            .select('role')
+            .select('role, roles')
             .eq('id', user.id)
             .single()
           
-          if (profile?.role !== 'admin') throw new Error('Forbidden')
+          const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+          if (!isAdmin) throw new Error('Forbidden')
           actorId = targetUserId
           useAdminClient = true
         }
@@ -73,11 +74,12 @@ serve(async (req) => {
         // Check if admin
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
 
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
 
         const { limit = 100, page = 0, pageSize = 20, filters = {} } = params
         let query = supabaseAdmin

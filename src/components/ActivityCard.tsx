@@ -44,6 +44,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
   const [loading, setLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState(activity.status);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   const title = activity.title?.[lang] || activity.title?.pt || 'Untitled';
@@ -107,10 +108,14 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         activityId: activity.id, 
         action 
       });
-      if (error) throw new Error(error);
+      if (error) {
+        setErrorMessage(typeof error === 'string' ? error : ((error as any).message || 'Erro ao processar ação.'));
+        return;
+      }
       onRefresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error moderating activity:', err);
+      setErrorMessage(err?.message || 'Erro ao processar ação.');
     } finally {
       setLoading(false);
     }
@@ -310,7 +315,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 disabled={loading}
                 sx={{ borderRadius: '12px', py: 1.5 }}
               >
-                {t('common.approve') || 'Aprovar'}
+                {t('common.approve', 'Aprovar')}
               </Button>
               <Button 
                 fullWidth 
@@ -321,7 +326,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 disabled={loading}
                 sx={{ borderRadius: '12px', py: 1.5 }}
               >
-                {t('common.reject') || 'Reprovar'}
+                {t('common.reject', 'Reprovar')}
               </Button>
             </Stack>
           )}
@@ -329,14 +334,20 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
       </CardContent>
 
       <Snackbar
-        open={snackbarOpen}
+        open={snackbarOpen || !!errorMessage}
         autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={() => { setSnackbarOpen(false); setErrorMessage(null); }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%', borderRadius: '12px' }}>
-          {t('work.linkCopied') || 'Link da tarefa copiado!'}
-        </Alert>
+        {errorMessage ? (
+          <Alert onClose={() => setErrorMessage(null)} severity="error" sx={{ width: '100%', borderRadius: '12px' }}>
+            {errorMessage}
+          </Alert>
+        ) : (
+          <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%', borderRadius: '12px' }}>
+            {t('work.linkCopied') || 'Link da tarefa copiado!'}
+          </Alert>
+        )}
       </Snackbar>
     </Card>
   );

@@ -240,11 +240,12 @@ serve(async (req) => {
         // 1. Verify admin
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
 
         // 2. Fetch pending audits
         const { data, error } = await supabaseAdmin
@@ -263,11 +264,12 @@ serve(async (req) => {
         // 1. Verify admin
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
         
-        if (profile?.role !== 'admin') throw new Error('Forbidden')
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
 
         const { activityId, status } = params
         if (!activityId || !status) throw new Error('Missing audit details')
@@ -331,11 +333,15 @@ serve(async (req) => {
         // 1. Verify role
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
         
-        const canModerate = profile?.role === 'admin' || profile?.role === 'transversal_council'
+        const canModerate = profile?.role === 'admin' || 
+                           profile?.roles?.includes('admin') || 
+                           profile?.role === 'transversal_council' ||
+                           profile?.roles?.includes('transversal_council')
+        
         if (!canModerate) throw new Error('Forbidden')
 
         // 2. Call moderation RPC using admin client (since RPC is security definer but we want to ensure caller is authorized)

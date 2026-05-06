@@ -74,11 +74,12 @@ serve(async (req) => {
         // 2. Only owner or admin can delete
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role')
+          .select('role, roles')
           .eq('id', user.id)
           .single()
 
-        if (doc.created_by !== user.id && profile?.role !== 'admin') {
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (doc.created_by !== user.id && !isAdmin) {
           throw new Error('Forbidden')
         }
 

@@ -27,11 +27,12 @@ serve(async (req) => {
 
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
-      .select('role')
+      .select('role, roles')
       .eq('id', user.id)
       .single()
 
-    if (profileError || profile?.role !== 'admin') {
+    const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+    if (profileError || !isAdmin) {
       throw new Error('Forbidden: Only admins can update roles')
     }
 
