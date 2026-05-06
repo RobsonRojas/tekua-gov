@@ -89,6 +89,7 @@
     "noUsersFound": "Nenhum usuário encontrado.",
     "noName": "Sem nome",
     "active": "Ativo",
+    "editMember": "Editar Membro",
     "viewProfile": "Ver Perfil",
     "removeAdmin": "Remover Administrador",
     "makeAdmin": "Tornar Administrador",
@@ -150,6 +151,8 @@
     "sending": "Enviando...",
     "share": "Compartilhar",
     "errorLoadingData": "Erro ao carregar dados:",
+    "approve": "Aprovar",
+    "reject": "Reprovar",
     "back": "Voltar",
     "retry": "Tentar Novamente"
   },

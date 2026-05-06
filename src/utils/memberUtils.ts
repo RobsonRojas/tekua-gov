@@ -37,3 +37,11 @@ export const getBoardRoleDisplay = (profile: Partial<Profile> | null | undefined
   }
   return profile.board_role || (profile.is_board_member ? 'Membro da Diretoria' : '');
 };
+
+/**
+ * Checks if a user is a member of the Transversal Council
+ */
+export const isTransversalCouncilMember = (profile: Partial<Profile> | null | undefined): boolean => {
+  if (!profile) return false;
+  return profile.roles?.includes('transversal_council') || profile.role === 'transversal_council';
+};

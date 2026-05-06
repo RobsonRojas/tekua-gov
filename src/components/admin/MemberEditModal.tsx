@@ -8,12 +8,15 @@ import {
   TextField, 
   MenuItem, 
   Box,
-  Typography,
-  Alert,
-  CircularProgress,
-  Stack,
-  Autocomplete,
-  Chip as MuiChip
+  Typography, 
+  Alert, 
+  CircularProgress, 
+  Stack, 
+  Autocomplete, 
+  Chip as MuiChip,
+  Switch,
+  FormControlLabel,
+  Divider
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useMembers } from '../../hooks/useMembers';
@@ -31,14 +34,22 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
   const [fullName, setFullName] = useState(member?.full_name || '');
   const [roles, setRoles] = useState<string[]>(member?.roles || []);
   const [functions, setFunctions] = useState<string[]>(member?.functions || []);
+  const [isBoardMember, setIsBoardMember] = useState(false);
+  const [isTransversalCouncil, setIsTransversalCouncil] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (member) {
       setFullName(member.full_name || '');
-      setRoles(member.roles || (member.role ? [member.role] : ['member']));
-      setFunctions(member.functions || (member.board_role ? [member.board_role] : (member.is_board_member ? ['Diretoria'] : [])));
+      const initialRoles = member.roles || (member.role ? [member.role] : ['member']);
+      setRoles(initialRoles);
+      
+      const initialFunctions = member.functions || (member.board_role ? [member.board_role] : (member.is_board_member ? ['Diretoria'] : []));
+      setFunctions(initialFunctions);
+      
+      setIsBoardMember(initialFunctions.length > 0 || !!member.is_board_member);
+      setIsTransversalCouncil(initialRoles.includes('transversal_council'));
     }
   }, [member]);
 
@@ -59,14 +70,28 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
 
     setSaving(true);
     setError(null);
+
+    // Sync roles array with toggles
+    let finalRoles = roles.filter(r => r !== 'transversal_council');
+    if (isTransversalCouncil) {
+      finalRoles.push('transversal_council');
+    }
+
+    // Ensure primary role exists (admin or member)
+    if (!finalRoles.includes('admin') && !finalRoles.includes('member')) {
+      finalRoles.push('member');
+    }
+
+    const finalFunctions = isBoardMember ? functions : [];
+
     const success = await updateMember(member.id, { 
       full_name: fullName,
-      roles: roles,
-      functions: functions,
+      roles: finalRoles,
+      functions: finalFunctions,
       // Legacy compatibility
-      role: roles.includes('admin') ? 'admin' : (roles.includes('transversal_council') ? 'transversal_council' : 'member'),
-      is_board_member: functions.length > 0,
-      board_role: functions.length > 0 ? functions[0] : null
+      role: finalRoles.includes('admin') ? 'admin' : (finalRoles.includes('transversal_council') ? 'transversal_council' : 'member'),
+      is_board_member: isBoardMember,
+      board_role: finalFunctions.length > 0 ? finalFunctions[0] : null
     });
     
     if (success) {
@@ -107,39 +132,70 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
             select
             fullWidth
             label={t('profile.role')}
-            SelectProps={{
-              multiple: true,
-              renderValue: (selected: any) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value: string) => (
-                    <MuiChip key={value} label={value === 'admin' ? 'Admin' : value === 'transversal_council' ? 'Conselho' : 'Membro'} size="small" />
-                  ))}
-                </Box>
-              ),
+            value={roles.includes('admin') ? 'admin' : 'member'}
+            onChange={(e) => {
+              const val = e.target.value;
+              setRoles(prev => {
+                const filtered = prev.filter(r => r !== 'admin' && r !== 'member');
+                return [...filtered, val];
+              });
             }}
-            value={roles}
-            onChange={(e) => setRoles(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
           >
             <MenuItem value="member">Membro</MenuItem>
             <MenuItem value="admin">Administrador</MenuItem>
-            <MenuItem value="transversal_council">Conselho Transversal</MenuItem>
           </TextField>
 
-          <Autocomplete
-            multiple
-            freeSolo
-            options={['Presidente', 'Diretor', 'Tesoureiro', 'Secretário', 'Conselheiro']}
-            value={functions}
-            onChange={(_, newValue) => setFunctions(newValue)}
-            renderInput={(params) => (
-              <TextField {...params} label="Funções Organizacionais" placeholder="Adicionar função..." />
-            )}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <MuiChip label={option} {...getTagProps({ index })} size="small" color="secondary" />
-              ))
-            }
-          />
+          <Divider />
+
+          <Stack spacing={1}>
+            <FormControlLabel
+              control={
+                <Switch 
+                  checked={isTransversalCouncil} 
+                  onChange={(e) => setIsTransversalCouncil(e.target.checked)} 
+                  color="primary"
+                />
+              }
+              label={
+                <Typography variant="body1" fontWeight={500}>
+                  {t('profile.transversal_council') || 'Membro do Conselho Transversal'}
+                </Typography>
+              }
+            />
+
+            <FormControlLabel
+              control={
+                <Switch 
+                  checked={isBoardMember} 
+                  onChange={(e) => setIsBoardMember(e.target.checked)} 
+                  color="primary"
+                />
+              }
+              label={
+                <Typography variant="body1" fontWeight={500}>
+                  {t('profile.isBoardMember') || 'Membro da Diretoria'}
+                </Typography>
+              }
+            />
+          </Stack>
+
+          {isBoardMember && (
+            <Autocomplete
+              multiple
+              freeSolo
+              options={['Presidente', 'Vice-Presidente', 'Diretor', 'Tesoureiro', 'Secretário', 'Conselheiro']}
+              value={functions}
+              onChange={(_, newValue) => setFunctions(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label={t('profile.boardRole') || "Cargo na Diretoria"} placeholder="Adicionar cargo..." />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <MuiChip label={option} {...getTagProps({ index })} size="small" color="secondary" />
+                ))
+              }
+            />
+          )}
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>

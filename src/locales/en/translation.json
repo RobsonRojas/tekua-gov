@@ -88,6 +88,7 @@
     "noUsersFound": "No users found.",
     "noName": "No name",
     "active": "Active",
+    "editMember": "Edit Member",
     "viewProfile": "View Profile",
     "removeAdmin": "Remove Admin",
     "makeAdmin": "Make Admin",
@@ -146,6 +147,8 @@
     "sending": "Sending...",
     "share": "Share",
     "errorLoadingData": "Error loading data:",
+    "approve": "Approve",
+    "reject": "Reject",
     "back": "Back",
     "retry": "Retry"
   },

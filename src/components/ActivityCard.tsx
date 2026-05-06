@@ -181,6 +181,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               <IconButton 
                 size="small" 
                 onClick={handleShare}
+                title={t('common.share') || 'Compartilhar'}
                 sx={{ 
                   color: 'text.secondary', 
                   p: 0.5,

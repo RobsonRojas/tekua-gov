@@ -89,6 +89,7 @@ const MemberManagement: React.FC = () => {
           >
             <MenuItem value="all">{t('common.all') || 'Todos'}</MenuItem>
             <MenuItem value="admin">Administrador</MenuItem>
+            <MenuItem value="transversal_council">Conselho Transversal</MenuItem>
             <MenuItem value="member">Membro</MenuItem>
           </TextField>
         </Stack>
@@ -141,7 +142,7 @@ const MemberManagement: React.FC = () => {
                           <Chip 
                             key={role}
                             label={role === 'admin' ? 'Admin' : role === 'transversal_council' ? 'Conselho' : 'Membro'} 
-                            color={role === 'admin' ? 'secondary' : 'default'}
+                            color={role === 'admin' ? 'secondary' : role === 'transversal_council' ? 'info' : 'default'}
                             size="small"
                             variant="outlined"
                           />
@@ -168,7 +169,7 @@ const MemberManagement: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => handleEditClick(member)}>
+                    <IconButton size="small" onClick={() => handleEditClick(member)} title={t('admin.editMember')}>
                       <Edit2 size={18} />
                     </IconButton>
                   </TableCell>
