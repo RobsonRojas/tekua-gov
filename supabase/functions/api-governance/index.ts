@@ -48,7 +48,13 @@ serve(async (req) => {
           min_contribution_confirmations: 3,
           min_reward_amount: 1.00,
           max_reward_amount: 1000.00,
-          auto_approve_small_tasks: false
+          auto_approve_small_tasks: false,
+          task_reminder_frequencies: {
+            urgent_important: '1 hour',
+            urgent_not_important: '1 day',
+            not_urgent_important: '1 day',
+            not_urgent_not_important: '1 week'
+          }
         }
         break
       }

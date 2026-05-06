@@ -121,7 +121,15 @@ serve(async (req) => {
       }
 
       case 'createActivity': {
-        const { title, description, rewardAmount, type = 'task', geoRequired = false } = params
+        const { 
+          title, 
+          description, 
+          rewardAmount, 
+          type = 'task', 
+          geoRequired = false,
+          urgency = false,
+          importance = false
+        } = params
         if (!title || !description) throw new Error('Missing activity title or description')
         
         const amount = Number(rewardAmount)
@@ -137,7 +145,9 @@ serve(async (req) => {
             requester_id: user.id,
             status: 'pending_approval',
             geo_required: geoRequired,
-            validation_method: 'requester_approval'
+            validation_method: 'requester_approval',
+            urgency,
+            importance
           })
           .select()
 
@@ -220,7 +230,7 @@ serve(async (req) => {
       }
 
       case 'submitActivity': {
-        const { title, description, rewardAmount, evidenceUrl, requesterId } = params
+        const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false } = params
         
         // Use the RPC for complex transaction logic (creating activity + notifications)
         const { data, error } = await supabaseClient.rpc('submit_activity', {
@@ -228,7 +238,9 @@ serve(async (req) => {
           p_description: description,
           p_reward_amount: rewardAmount,
           p_evidence_url: evidenceUrl,
-          p_requester_id: requesterId
+          p_requester_id: requesterId,
+          p_urgency: urgency,
+          p_importance: importance
         })
 
         if (error) throw error

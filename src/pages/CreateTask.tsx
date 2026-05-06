@@ -36,6 +36,8 @@ const CreateTask: React.FC = () => {
   const [description, setDescription] = useState('');
   const [rewardAmount, setRewardAmount] = useState<number | string>('');
   const [geoRequired, setGeoRequired] = useState(false);
+  const [urgency, setUrgency] = useState(false);
+  const [importance, setImportance] = useState(false);
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
   
   const [loading, setLoading] = useState(false);
@@ -77,7 +79,9 @@ const CreateTask: React.FC = () => {
         description,
         type: 'task',
         rewardAmount: Number(rewardAmount),
-        geoRequired: geoRequired
+        geoRequired: geoRequired,
+        urgency,
+        importance
       });
 
       if (error) throw new Error(error);
@@ -165,6 +169,32 @@ const CreateTask: React.FC = () => {
                   />
                 }
                 label="Exigir Geoprova (GPS)"
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControlLabel
+                control={
+                  <Switch 
+                    checked={urgency} 
+                    onChange={(e) => setUrgency(e.target.checked)} 
+                    color="error"
+                  />
+                }
+                label={t('work.urgency') || 'Urgente'}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControlLabel
+                control={
+                  <Switch 
+                    checked={importance} 
+                    onChange={(e) => setImportance(e.target.checked)} 
+                    color="warning"
+                  />
+                }
+                label={t('work.importance') || 'Importante'}
               />
             </Grid>
 

@@ -17,6 +17,7 @@ import {
   Stack,
   Typography,
   Paper,
+  Grid,
   IconButton,
   TableContainer,
   Table,
@@ -95,6 +96,12 @@ const AdminPanel: React.FC = () => {
 
   const [tabValue, setTabValue] = useState(currentTab ? (tabMap[currentTab] ?? 0) : 0);
   const [threshold, setThreshold] = useState<number>(3);
+  const [frequencies, setFrequencies] = useState<any>({
+    urgent_important: '1 hour',
+    urgent_not_important: '1 day',
+    not_urgent_important: '1 day',
+    not_urgent_not_important: '1 week'
+  });
   const [savingConfig, setSavingConfig] = useState(false);
 
   useEffect(() => {
@@ -128,6 +135,9 @@ const AdminPanel: React.FC = () => {
       if (!error && data) {
         // Handle singleton config structure
         setThreshold(data.min_contribution_confirmations || 3);
+        if (data.task_reminder_frequencies) {
+          setFrequencies(data.task_reminder_frequencies);
+        }
       }
     } catch (err) {
       console.error('Error fetching config:', err);
@@ -142,8 +152,19 @@ const AdminPanel: React.FC = () => {
   const handleSaveConfig = async () => {
     setSavingConfig(true);
     try {
+      // Validate frequencies (basic check)
+      const intervalRegex = /^\d+\s+(hour|day|week|month)s?$/;
+      for (const key in frequencies) {
+        if (!intervalRegex.test(frequencies[key])) {
+          throw new Error(t('admin.invalidInterval', { key }) || `Intervalo inválido para ${key}. Use formatos como "1 hour" ou "2 days".`);
+        }
+      }
+
       const { error } = await apiClient.invoke('api-governance', 'saveConfig', {
-        config: { min_contribution_confirmations: threshold }
+        config: { 
+          min_contribution_confirmations: threshold,
+          task_reminder_frequencies: frequencies
+        }
       });
 
       if (error) throw new Error(error);
@@ -476,13 +497,57 @@ const AdminPanel: React.FC = () => {
               InputProps={{ inputProps: { min: 1, max: 20 } }}
               fullWidth
             />
+
+            <Divider sx={{ my: 2 }}>
+              <Chip label="Frequências de Lembrete (Eisenhower)" size="small" />
+            </Divider>
+
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  label="Urgente & Importante"
+                  value={frequencies.urgent_important}
+                  onChange={(e) => setFrequencies({ ...frequencies, urgent_important: e.target.value })}
+                  fullWidth
+                  helperText="Ex: 1 hour"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  label="Urgente & Não Importante"
+                  value={frequencies.urgent_not_important}
+                  onChange={(e) => setFrequencies({ ...frequencies, urgent_not_important: e.target.value })}
+                  fullWidth
+                  helperText="Ex: 1 day"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  label="Não Urgente & Importante"
+                  value={frequencies.not_urgent_important}
+                  onChange={(e) => setFrequencies({ ...frequencies, not_urgent_important: e.target.value })}
+                  fullWidth
+                  helperText="Ex: 1 day"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  label="Não Urgente & Não Importante"
+                  value={frequencies.not_urgent_not_important}
+                  onChange={(e) => setFrequencies({ ...frequencies, not_urgent_not_important: e.target.value })}
+                  fullWidth
+                  helperText="Ex: 1 week"
+                />
+              </Grid>
+            </Grid>
+
             <Button 
               variant="contained" 
               size="large"
               onClick={handleSaveConfig}
               disabled={savingConfig}
               startIcon={savingConfig ? <CircularProgress size={20} /> : <Settings size={20} />}
-              sx={{ borderRadius: '12px', py: 1.5 }}
+              sx={{ borderRadius: '12px', py: 1.5, mt: 2 }}
             >
               {t('governance.save')}
             </Button>

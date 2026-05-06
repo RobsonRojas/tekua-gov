@@ -24,7 +24,9 @@ import {
   CheckCircle,
   HelpCircle,
   Share2,
-  ShieldAlert
+  ShieldAlert,
+  Flame,
+  Star
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -198,6 +200,31 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             </Tooltip>
           </Box>
         </Box>
+
+        {(activity.urgency || activity.importance) && (
+          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+            {activity.urgency && (
+              <Chip 
+                icon={<Flame size={12} />} 
+                label={t('work.urgency') || 'Urgente'} 
+                size="small" 
+                color="error" 
+                variant="outlined"
+                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, borderRadius: '6px' }}
+              />
+            )}
+            {activity.importance && (
+              <Chip 
+                icon={<Star size={12} />} 
+                label={t('work.importance') || 'Importante'} 
+                size="small" 
+                color="warning" 
+                variant="outlined"
+                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, borderRadius: '6px' }}
+              />
+            )}
+          </Box>
+        )}
 
         <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 1 }}>
           {title}

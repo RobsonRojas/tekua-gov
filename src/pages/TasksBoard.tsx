@@ -38,7 +38,15 @@ const TasksBoard: React.FC = () => {
       });
 
       if (error) throw new Error(error);
-      setActivities(data || []);
+      
+      // Sort activities by priority: (Urgency && Importance) > Urgency > Importance > None
+      const sortedData = (data || []).sort((a: any, b: any) => {
+        const scoreA = (a.urgency ? 2 : 0) + (a.importance ? 1 : 0);
+        const scoreB = (b.urgency ? 2 : 0) + (b.importance ? 1 : 0);
+        return scoreB - scoreA;
+      });
+
+      setActivities(sortedData);
     } catch (err) {
       console.error('Error fetching tasks:', err);
     } finally {
