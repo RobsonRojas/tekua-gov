@@ -11,21 +11,19 @@ import {
   CircularProgress,
   Breadcrumbs,
   Link as MuiLink,
-  Card,
-  CardMedia
 } from '@mui/material';
 import { 
   ChevronRight,
   Home as HomeIcon,
   Camera,
   MapPin,
-  Send,
-  Upload
+  Send
 } from 'lucide-react';
+import FileUploader from '../components/common/FileUploader';
+import type { Attachment } from '../components/common/FileUploader';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiClient } from '../lib/api';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
 
 const SubmitTaskProof: React.FC = () => {
@@ -34,24 +32,13 @@ const SubmitTaskProof: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   
   const [uploading, setUploading] = useState(false);
   const [capturingGeo, setCapturingGeo] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile));
-      
-      // Auto capture location when photo is selected if possible
-      handleCaptureLocation();
-    }
-  };
 
   const handleCaptureLocation = () => {
     setCapturingGeo(true);
@@ -79,30 +66,15 @@ const SubmitTaskProof: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !file || !id) return;
+    if (!user || !id) return;
 
     setUploading(true);
     try {
-      // 1. Upload to storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${id}/${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `evidence/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('task-evidence')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('task-evidence')
-        .getPublicUrl(filePath);
-
-      // 2. Insert evidence and update status via API
+      // 1. Submit proof via API
       const { error: apiError } = await apiClient.invoke('api-work', 'submitProof', {
         activityId: id,
-        evidenceUrl: publicUrl,
-        location: location ? `POINT(${location.lng} ${location.lat})` : null
+        location: location ? `POINT(${location.lng} ${location.lat})` : null,
+        attachments
       });
 
       if (apiError) throw new Error(apiError);
@@ -144,41 +116,12 @@ const SubmitTaskProof: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Box 
-                sx={{ 
-                  border: '2px dashed rgba(255, 255, 255, 0.1)', 
-                  borderRadius: '16px', 
-                  p: 4, 
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.02)' }
-                }}
-                onClick={() => document.getElementById('photo-upload')?.click()}
-              >
-                <input
-                  type="file"
-                  id="photo-upload"
-                  hidden
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-                {preview ? (
-                  <Card sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-                    <CardMedia
-                      component="img"
-                      image={preview}
-                      alt="Proof preview"
-                      sx={{ maxHeight: 300, objectFit: 'contain' }}
-                    />
-                  </Card>
-                ) : (
-                  <Box>
-                    <Upload size={48} color="#6366f1" style={{ marginBottom: '16px' }} />
-                    <Typography variant="h6">Clique para tirar ou selecionar foto</Typography>
-                    <Typography variant="body2" color="text.secondary">A evidência visual é obrigatória</Typography>
-                  </Box>
-                )}
-              </Box>
+              <Typography variant="h6" sx={{ mb: 2 }}>{t('work.evidence') || 'Evidências do Trabalho'}</Typography>
+              <FileUploader 
+                onUploadComplete={setAttachments} 
+                maxFiles={5}
+                bucket="task-evidence"
+              />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
@@ -214,7 +157,7 @@ const SubmitTaskProof: React.FC = () => {
                     fullWidth
                     size="large"
                     type="submit"
-                    disabled={uploading || !file}
+                    disabled={uploading || attachments.length === 0}
                     startIcon={uploading ? <CircularProgress size={20} /> : <Send size={18} />}
                     sx={{ borderRadius: '12px', py: 1.5 }}
                   >

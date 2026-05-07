@@ -31,6 +31,7 @@ import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { motion } from 'framer-motion';
 import TaskInteractions from '../components/work/TaskInteractions';
+import AttachmentList from '../components/common/AttachmentList';
 
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -182,6 +183,14 @@ const TaskDetail: React.FC = () => {
             {description}
           </Typography>
 
+          {/* New Attachments Section (Specifications) */}
+          {activity.attachments && activity.attachments.filter((a: any) => !a.is_evidence).length > 0 && (
+            <AttachmentList 
+              attachments={activity.attachments.filter((a: any) => !a.is_evidence)} 
+              title={t('work.demandAttachments') || 'Documentos de Referência'}
+            />
+          )}
+
           <Grid container spacing={4}>
             {/* Participants */}
             <Grid size={{ xs: 12, md: 6 }}>
@@ -247,11 +256,19 @@ const TaskDetail: React.FC = () => {
           <Divider sx={{ my: 5, borderColor: 'rgba(255,255,255,0.05)' }} />
 
           {/* Evidence Section */}
-          {activity.evidence && activity.evidence.length > 0 && (
+          {(activity.evidence && activity.evidence.length > 0 || activity.attachments?.some((a: any) => a.is_evidence)) && (
             <Box sx={{ mb: 5 }}>
               <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
                 {t('work.evidence') || 'Evidências'}
               </Typography>
+              
+              {/* Render new attachments marked as evidence */}
+              {activity.attachments && activity.attachments.filter((a: any) => a.is_evidence).length > 0 && (
+                <AttachmentList 
+                  attachments={activity.attachments.filter((a: any) => a.is_evidence)} 
+                />
+              )}
+
               <Grid container spacing={2}>
                 {activity.evidence.map((ev: any) => (
                   <Grid size={{ xs: 12, sm: 6 }} key={ev.id}>

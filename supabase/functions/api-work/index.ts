@@ -53,7 +53,8 @@ serve(async (req) => {
             requester:profiles!requester_id (id, full_name),
             worker:profiles!worker_id (id, full_name),
             confirmations:activity_confirmations (count),
-            evidence:activity_evidence (evidence_url)
+            evidence:activity_evidence (evidence_url),
+            attachments:activity_attachments (count)
           `)
         
         if (type && type !== 'all') query = query.eq('type', type)
@@ -98,7 +99,8 @@ serve(async (req) => {
             requester:profiles!requester_id (id, full_name, avatar_url),
             worker:profiles!worker_id (id, full_name, avatar_url),
             confirmations:activity_confirmations (*, profile:profiles(full_name, avatar_url)),
-            evidence:activity_evidence (*)
+            evidence:activity_evidence (*),
+            attachments:activity_attachments (*)
           `)
           .eq('id', id)
           .single()
@@ -128,14 +130,16 @@ serve(async (req) => {
           type = 'task', 
           geoRequired = false,
           urgency = false,
-          importance = false
+          importance = false,
+          attachments = [],
+          workerId = null
         } = params
         if (!title || !description) throw new Error('Missing activity title or description')
         
         const amount = Number(rewardAmount)
         if (isNaN(amount) || amount <= 0) throw new Error('Reward amount must be a positive number')
 
-        const { data, error } = await supabaseClient
+        const { data: activityData, error } = await supabaseClient
           .from('activities')
           .insert({ 
             title: typeof title === 'string' ? { pt: title, en: title } : title, 
@@ -147,32 +151,75 @@ serve(async (req) => {
             geo_required: geoRequired,
             validation_method: 'requester_approval',
             urgency,
-            importance
+            importance,
+            worker_id: workerId
           })
           .select()
+          .single()
 
         if (error) throw error
-        responseData = data
+
+        // Insert attachments if any
+        if (attachments && attachments.length > 0) {
+          const attachmentsToInsert = attachments.map((att: any) => ({
+            activity_id: activityData.id,
+            user_id: user.id,
+            file_url: att.file_url,
+            file_name: att.file_name,
+            file_type: att.file_type,
+            file_size: att.file_size,
+            is_evidence: false
+          }))
+
+          const { error: attError } = await supabaseClient
+            .from('activity_attachments')
+            .insert(attachmentsToInsert)
+
+          if (attError) throw attError
+        }
+
+        responseData = activityData
         break
       }
 
       case 'submitProof': {
-        const { activityId, evidenceUrl, location } = params
-        if (!activityId || !evidenceUrl) throw new Error('Missing proof details')
+        const { activityId, evidenceUrl, location, attachments = [] } = params
+        if (!activityId) throw new Error('Missing activityId')
 
-        // 1. Insert evidence record
-        const { error: evidenceError } = await supabaseClient
-          .from('activity_evidence')
-          .insert({ 
-            activity_id: activityId, 
-            worker_id: user.id, 
-            evidence_url: evidenceUrl,
-            location: location
-          })
+        // 1. Insert legacy evidence record if evidenceUrl is provided
+        if (evidenceUrl) {
+          const { error: evidenceError } = await supabaseClient
+            .from('activity_evidence')
+            .insert({ 
+              activity_id: activityId, 
+              worker_id: user.id, 
+              evidence_url: evidenceUrl,
+              location: location
+            })
 
-        if (evidenceError) throw evidenceError
+          if (evidenceError) throw evidenceError
+        }
 
-        // 2. Update activity status
+        // 2. Insert new attachments if any
+        if (attachments && attachments.length > 0) {
+          const attachmentsToInsert = attachments.map((att: any) => ({
+            activity_id: activityId,
+            user_id: user.id,
+            file_url: att.file_url,
+            file_name: att.file_name,
+            file_type: att.file_type,
+            file_size: att.file_size,
+            is_evidence: true
+          }))
+
+          const { error: attError } = await supabaseClient
+            .from('activity_attachments')
+            .insert(attachmentsToInsert)
+
+          if (attError) throw attError
+        }
+
+        // 3. Update activity status
         const { error: activityError } = await supabaseClient
           .from('activities')
           .update({ status: 'pending_validation', updated_at: new Date().toISOString() })
@@ -230,7 +277,7 @@ serve(async (req) => {
       }
 
       case 'submitActivity': {
-        const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false } = params
+        const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false, attachments = [], workerId = null } = params
         
         // Use the RPC for complex transaction logic (creating activity + notifications)
         const { data, error } = await supabaseClient.rpc('submit_activity', {
@@ -240,10 +287,31 @@ serve(async (req) => {
           p_evidence_url: evidenceUrl,
           p_requester_id: requesterId,
           p_urgency: urgency,
-          p_importance: importance
+          p_importance: importance,
+          p_worker_id: workerId
         })
 
         if (error) throw error
+
+        // Insert attachments if any
+        if (attachments && attachments.length > 0) {
+          const attachmentsToInsert = attachments.map((att: any) => ({
+            activity_id: data, // RPC returns the new ID
+            user_id: user.id,
+            file_url: att.file_url,
+            file_name: att.file_name,
+            file_type: att.file_type,
+            file_size: att.file_size,
+            is_evidence: true // Since it's submitActivity, it's evidence
+          }))
+
+          const { error: attError } = await supabaseClient
+            .from('activity_attachments')
+            .insert(attachmentsToInsert)
+
+          if (attError) throw attError
+        }
+
         responseData = data
         break
       }
@@ -356,13 +424,30 @@ serve(async (req) => {
         
         if (!canModerate) throw new Error('Forbidden')
 
-        // 2. Call moderation RPC using admin client (since RPC is security definer but we want to ensure caller is authorized)
+        // 2. Call moderation RPC using admin client
         const { error } = await supabaseAdmin.rpc('moderate_activity', {
           p_activity_id: activityId,
           p_action: modAction
         })
 
         if (error) throw error
+
+        // 3. Auto-transition to in_progress if approved and has worker_id
+        if (modAction === 'approve') {
+          const { data: activity } = await supabaseAdmin
+            .from('activities')
+            .select('worker_id, status')
+            .eq('id', activityId)
+            .single()
+
+          if (activity && activity.worker_id && activity.status === 'open') {
+            await supabaseAdmin
+              .from('activities')
+              .update({ status: 'in_progress', updated_at: new Date().toISOString() })
+              .eq('id', activityId)
+          }
+        }
+
         responseData = { success: true }
         break
       }

@@ -26,7 +26,8 @@ import {
   Share2,
   ShieldAlert,
   Flame,
-  Star
+  Star,
+  Paperclip
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -198,6 +199,16 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 <Share2 size={16} />
               </IconButton>
             </Tooltip>
+            {activity.attachments?.[0]?.count > 0 && (
+              <Tooltip title={`${activity.attachments[0].count} ${t('work.attachments')}`}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                  <Paperclip size={16} />
+                  <Typography variant="caption" fontWeight={700}>
+                    {activity.attachments[0].count}
+                  </Typography>
+                </Box>
+              </Tooltip>
+            )}
           </Box>
         </Box>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Container, 
@@ -11,7 +11,8 @@ import {
   Snackbar,
   CircularProgress,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  MenuItem
 } from '@mui/material';
 import { 
   Assignment as TaskIcon, 
@@ -24,18 +25,46 @@ import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { logActivity } from '../utils/activityLogger';
+import FileUploader from '../components/common/FileUploader';
+import type { Attachment } from '../components/common/FileUploader';
+import { Divider } from '@mui/material';
 
 const CreateDemand: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number | string>('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [workerId, setWorkerId] = useState<string>('');
+  const [members, setMembers] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(false);
+  const [loadingMembers, setLoadingMembers] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const canAssignTask = profile?.role === 'admin' || profile?.roles?.includes('admin') || profile?.role === 'transversal_council' || profile?.roles?.includes('transversal_council');
+
+  useEffect(() => {
+    if (canAssignTask) {
+      fetchMembers();
+    }
+  }, [canAssignTask]);
+
+  const fetchMembers = async () => {
+    setLoadingMembers(true);
+    try {
+      const { data, error } = await apiClient.invoke('api-members', 'fetchUsers');
+      if (error) throw new Error(error);
+      setMembers(data || []);
+    } catch (err) {
+      console.error('Error fetching members:', err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +76,9 @@ const CreateDemand: React.FC = () => {
         title,
         description,
         rewardAmount: Number(amount),
-        type: 'task'
+        type: 'task',
+        attachments,
+        workerId: workerId || null
       });
 
       if (error) throw new Error(error);
@@ -128,6 +159,41 @@ const CreateDemand: React.FC = () => {
                 onChange={(e) => setAmount(e.target.value)}
                 required
                 InputProps={{ inputProps: { min: 1 } }}
+              />
+            </Grid>
+
+            {canAssignTask && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  fullWidth
+                  select
+                  label={t('work.executor') || 'Atribuir a um Membro (Opcional)'}
+                  value={workerId}
+                  onChange={(e) => setWorkerId(e.target.value)}
+                  disabled={loadingMembers}
+                  helperText={t('work.executorHelper') || 'Deixe em branco para permitir que qualquer um assuma'}
+                >
+                  <MenuItem value="">
+                    <em>{t('common.none') || 'Nenhum'}</em>
+                  </MenuItem>
+                  {members.map((member) => (
+                    <MenuItem key={member.id} value={member.id}>
+                      {member.full_name || member.email}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            )}
+
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+                {t('work.demandAttachments') || 'Documentos de Referência'}
+              </Typography>
+              <FileUploader 
+                onUploadComplete={setAttachments} 
+                maxFiles={5}
+                bucket="task-evidence"
               />
             </Grid>
 

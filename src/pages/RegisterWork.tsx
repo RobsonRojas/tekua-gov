@@ -22,6 +22,8 @@ import {
   PhotoCamera as PhotoCameraIcon
 } from '@mui/icons-material';
 import CameraCapture from '../components/CameraCapture';
+import FileUploader from '../components/common/FileUploader';
+import type { Attachment } from '../components/common/FileUploader';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
@@ -39,6 +41,7 @@ const RegisterWork: React.FC = () => {
   const [beneficiaryType, setBeneficiaryType] = useState<'tekua' | 'member'>('tekua');
   const [beneficiaryId, setBeneficiaryId] = useState<string>('');
   const [members, setMembers] = useState<any[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -87,11 +90,6 @@ const RegisterWork: React.FC = () => {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processAndUploadFile(e.target.files[0]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +102,8 @@ const RegisterWork: React.FC = () => {
         p_description: { pt: description, en: description },
         p_reward_amount: Number(amount),
         p_evidence_url: evidenceUrl,
-        p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null
+        p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null,
+        attachments
       };
 
       if (!navigator.onLine) {
@@ -121,7 +120,8 @@ const RegisterWork: React.FC = () => {
         description: submissionData.p_description,
         rewardAmount: submissionData.p_reward_amount,
         evidenceUrl: submissionData.p_evidence_url,
-        requesterId: submissionData.p_requester_id
+        requesterId: submissionData.p_requester_id,
+        attachments: submissionData.attachments
       });
 
       if (error) throw new Error(error);
@@ -178,43 +178,26 @@ const RegisterWork: React.FC = () => {
               />
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1, alignItems: 'flex-start' }}>
-                <TextField
-                  fullWidth
-                  label={t('work.evidence')}
-                  value={evidenceUrl}
-                  onChange={(e) => setEvidenceUrl(e.target.value)}
-                  required
-                  placeholder="https://link_ou_upload"
-                  helperText="Link para fotos ou clique no botão ao lado para carregar"
-                />
-                <Box sx={{ mt: { xs: 0, sm: 1 }, mb: { xs: 2, sm: 0 }, display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    disabled={uploadingFile}
-                    sx={{ height: 56, flex: { xs: 1, sm: 'none' }, minWidth: { xs: 0, sm: 90 } }}
-                  >
-                    {uploadingFile ? <CircularProgress size={24} /> : 'Upload'}
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                    />
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setIsCameraOpen(true)}
-                    disabled={uploadingFile}
-                    sx={{ height: 56, flex: { xs: 1, sm: 'none' }, minWidth: { xs: 0, sm: 90 } }}
-                    color="secondary"
-                  >
-                    <PhotoCameraIcon />
-                  </Button>
-                </Box>
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+                {t('work.evidence') || 'Evidência do Trabalho'}
+              </Typography>
+              <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsCameraOpen(true)}
+                  disabled={uploadingFile}
+                  startIcon={<PhotoCameraIcon />}
+                  sx={{ borderRadius: 2 }}
+                >
+                  {t('camera.capture') || 'Capturar Foto'}
+                </Button>
               </Box>
+              <FileUploader 
+                onUploadComplete={setAttachments} 
+                maxFiles={5}
+                bucket="task-evidence"
+              />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

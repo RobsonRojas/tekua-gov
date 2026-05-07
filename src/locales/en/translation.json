@@ -262,7 +262,13 @@
     "noInteractions": "No interactions recorded.",
     "executor": "Executor",
     "history": "Validation History",
-    "confirmedThis": "confirmed this activity"
+    "confirmedThis": "confirmed this activity",
+    "attachments": "Attachments",
+    "evidenceAttachments": "Evidence Attachments",
+    "demandAttachments": "Reference Documents",
+    "clickToUpload": "Click to upload files",
+    "uploadHint": "Images, PDFs or documents up to 10MB",
+    "maxFilesReached": "File limit reached"
   },
   "governance": {
     "config": "Governance Configuration",

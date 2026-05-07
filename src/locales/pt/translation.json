@@ -269,7 +269,13 @@
     "confirmedThis": "confirmou esta atividade",
     "moderation": "Moderação",
     "pending_approval": "Aguardando Aprovação",
-    "pendingApprovalMessage": "Sua solicitação foi enviada e aguarda aprovação do Conselho Transversal."
+    "pendingApprovalMessage": "Sua solicitação foi enviada e aguarda aprovação do Conselho Transversal.",
+    "attachments": "Anexos",
+    "evidenceAttachments": "Anexos de Evidência",
+    "demandAttachments": "Documentos de Referência",
+    "clickToUpload": "Clique para anexar arquivos",
+    "uploadHint": "Imagens, PDFs ou documentos até 10MB",
+    "maxFilesReached": "Limite de arquivos atingido"
   },
   "governance": {
     "config": "Configuração de Governança",
