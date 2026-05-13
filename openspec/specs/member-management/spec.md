@@ -39,7 +39,7 @@ O sistema SHALL permitir que administradores enviem convites para novos membros 
 - **THEN** o sistema SHALL exibir uma mensagem de erro clara explicando o motivo da falha.
 
 ### Requirement: Modificação de Permissões
-O sistema SHALL permitir que administradores alterem o nível de acesso (Role), o status de diretoria e as informações básicas de perfil de outros membros de forma atômica e persistente.
+O sistema SHALL permitir que administradores alterem o nível de acesso (Role), o status de diretoria, o status de conselho transversal e as informações básicas de perfil de outros membros de forma atômica e persistente.
 
 #### Scenario: Promoção a Administrador e Atualização de Dados
 - **WHEN** o administrador edita um membro, alterando seu papel para "Admin" e atualizando seu nome completo.
@@ -49,6 +49,11 @@ O sistema SHALL permitir que administradores alterem o nível de acesso (Role), 
 #### Scenario: Atribuição de Cargo da Diretoria
 - **WHEN** o administrador edita um membro e seleciona um cargo como "Presidente".
 - **THEN** o sistema SHALL persistir o cargo e marcar o usuário como membro da diretoria.
+
+#### Scenario: Configuração de Membro do Conselho Transversal
+- **WHEN** o administrador edita um membro e ativa a opção "Membro do Conselho Transversal".
+- **THEN** o sistema SHALL adicionar o papel de `transversal_council` ao perfil do usuário e persistir a alteração.
+- **AND** a interface SHALL refletir que o usuário agora possui responsabilidades de moderação.
 
 #### Scenario: Restrição de Acesso Comum
 - **WHEN** um usuário com papel "Member" tenta acessar a URL `/admin-panel` ou a gestão de membros.
