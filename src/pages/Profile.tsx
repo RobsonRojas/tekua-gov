@@ -19,7 +19,9 @@ import {
   Tab,
   Chip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import { 
   Shield, 
@@ -28,7 +30,8 @@ import {
   CheckCircle2,
   User,
   Settings,
-  Wallet
+  Wallet,
+  ChevronDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -82,10 +85,37 @@ const Profile: React.FC = () => {
   const [balance, setBalance] = useState<number | null>(null);
   const [targetProfile, setTargetProfile] = useState<any>(null);
   const [loadingTarget, setLoadingTarget] = useState(false);
-
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const isAdminView = !!id && id !== authUser?.id;
   const currentProfile = isAdminView ? targetProfile : profile;
   const isLoading = authLoading || (isAdminView && loadingTarget);
+
+  const tabOptions = [
+    { 
+      label: t('profile.security_tab.infoTab'), 
+      icon: <User size={18} />, 
+      value: 0,
+      visible: true
+    },
+    { 
+      label: t('profile.security_tab.tabTitle'), 
+      icon: <Settings size={18} />, 
+      value: 1,
+      visible: !isAdminView
+    },
+    { 
+      label: t('profile.activity'), 
+      icon: <Calendar size={18} />, 
+      value: 2,
+      visible: true
+    },
+    { 
+      label: t('lgpd.privacyTab', 'Privacidade'), 
+      icon: <Shield size={18} />, 
+      value: 3,
+      visible: !isAdminView
+    }
+  ].filter(opt => opt.visible);
 
   useEffect(() => {
     if (isAdminView) {
@@ -161,6 +191,20 @@ const Profile: React.FC = () => {
     setMessage(null); // Clear messages when switching tabs
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleMenuSelect = (value: number) => {
+    setTabValue(value);
+    setMessage(null);
+    handleMenuClose();
+  };
+
   if (isLoading && !currentProfile) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
@@ -196,49 +240,91 @@ const Profile: React.FC = () => {
       )}
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange} 
-          aria-label="profile tabs"
-          variant={isMobile ? "scrollable" : "standard"}
-          scrollButtons={isMobile ? "auto" : false}
-          allowScrollButtonsMobile
-          sx={{
-            '& .MuiTab-root': {
-              minHeight: 64,
-              fontSize: { xs: '0.875rem', sm: '1rem' },
-              fontWeight: 600,
-              textTransform: 'none',
-              gap: 1,
-              px: { xs: 2, sm: 3 }
-            }
-          }}
-        >
-          <Tab 
-            icon={<User size={18} />} 
-            iconPosition="start" 
-            label={t('profile.security_tab.infoTab')} 
-          />
-          {!isAdminView && (
-            <Tab 
-              icon={<Settings size={18} />} 
-              iconPosition="start" 
-              label={t('profile.security_tab.tabTitle')} 
-            />
-          )}
-          <Tab 
-            icon={<Calendar size={18} />} 
-            iconPosition="start" 
-            label={t('profile.activity')} 
-          />
-          {!isAdminView && (
-            <Tab 
-              icon={<Shield size={18} />} 
-              iconPosition="start" 
-              label={t('lgpd.privacyTab', 'Privacidade')} 
-            />
-          )}
-        </Tabs>
+        {isMobile ? (
+          <Box sx={{ py: 2, display: 'flex', justifyContent: 'center' }}>
+            <Button
+              onClick={handleMenuOpen}
+              variant="outlined"
+              startIcon={tabOptions.find(opt => opt.value === tabValue)?.icon || <User size={18} />}
+              endIcon={<ChevronDown size={14} />}
+              sx={{ 
+                borderRadius: '12px', 
+                textTransform: 'none', 
+                fontWeight: 600,
+                minWidth: { xs: '100%', sm: 250 },
+                justifyContent: 'space-between',
+                px: 2,
+                py: 1,
+                bgcolor: 'background.paper',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              {tabOptions.find(opt => opt.value === tabValue)?.label || t('profile.security_tab.infoTab')}
+            </Button>
+            <Menu
+              anchorEl={menuAnchorEl}
+              open={Boolean(menuAnchorEl)}
+              onClose={handleMenuClose}
+              transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+              PaperProps={{
+                sx: { 
+                  borderRadius: '12px', 
+                  minWidth: { xs: 'calc(100% - 32px)', sm: 250 }, 
+                  mt: 1,
+                  bgcolor: 'background.paper',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
+                }
+              }}
+            >
+              {tabOptions.map((opt) => (
+                <MenuItem 
+                  key={opt.value} 
+                  onClick={() => handleMenuSelect(opt.value)}
+                  selected={tabValue === opt.value}
+                  sx={{ py: 1.5 }}
+                >
+                  <ListItemIcon sx={{ color: tabValue === opt.value ? 'primary.main' : 'inherit' }}>
+                    {opt.icon}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={opt.label} 
+                    primaryTypographyProps={{ 
+                      fontWeight: tabValue === opt.value ? 700 : 500,
+                      color: tabValue === opt.value ? 'primary.main' : 'inherit'
+                    }} 
+                  />
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+        ) : (
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange} 
+            aria-label="profile tabs"
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 64,
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'none',
+                gap: 1,
+                px: 3
+              }
+            }}
+          >
+            {tabOptions.map((opt) => (
+              <Tab 
+                key={opt.value}
+                icon={opt.icon} 
+                iconPosition="start" 
+                label={opt.label} 
+              />
+            ))}
+          </Tabs>
+        )}
       </Box>
 
       <TabPanel value={tabValue} index={0}>
