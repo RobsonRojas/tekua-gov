@@ -8,7 +8,7 @@ O sistema SHALL permitir que membros acessem um quadro central para cadastrar e 
 
 #### Scenario: Cadastro de Nova Tarefa
 - **WHEN** um membro autenticado descreve uma tarefa, define o valor em "Surreais" e anexa a localização geográfica aproximada.
-- **THEN** a tarefa é publicada no quadro com status "Aberta".
+- **THEN** a tarefa é registrada com status `pending_approval` e aguarda moderação do Conselho Transversal.
 
 #### Scenario: Aceitação de Tarefa
 - **WHEN** um outro membro clica em "Assumir Tarefa".
@@ -18,7 +18,7 @@ O sistema SHALL permitir que membros acessem um quadro central para cadastrar e 
 O sistema SHALL garantir o reconhecimento do valor do trabalho através da moeda Surreal e evidências físicas.
 
 #### Scenario: Envio de Prova Georreferenciada
-- **WHEN** o executor clica em "Concluir Tarefa" e anexa uma foto.
+- **WHEN** the executor clica em "Concluir Tarefa" e anexa uma foto.
 - **THEN** o sistema captura as coordenadas de GPS no momento do upload e envia para validação do requisitante.
 
 #### Scenario: Pagamento Virtual (Wallet)
@@ -37,11 +37,26 @@ O sistema SHALL possuir testes automatizados para garantir a estabilidade das fu
 - **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.
 
 ### Requirement: Open Task Creation
-O sistema SHALL permitir que qualquer usuário autenticado crie uma atividade do tipo 'task' com status inicial 'open'.
+O sistema SHALL permitir que qualquer usuário autenticado crie uma atividade do tipo 'task' com status inicial 'pending_approval'.
 
 #### Scenario: Successful task creation
 - **WHEN** um membro autenticado fornece título, descrição e um valor de recompensa positivo
-- **THEN** o sistema SHALL registrar a tarefa vinculando o membro como `requester_id` e definir o status como `open`.
+- **THEN** o sistema SHALL registrar a tarefa vinculando o membro como `requester_id` e definir o status como `pending_approval`.
+
+### Requirement: Task Visibility Restrictions
+The system SHALL restrict visibility of tasks based on their status.
+
+#### Scenario: Public visibility of open tasks
+- **WHEN** any user views the Work Wall.
+- **THEN** only tasks with `open` status SHALL be visible.
+
+#### Scenario: Restricted visibility of pending tasks
+- **WHEN** a regular user views the Work Wall.
+- **THEN** tasks with `pending_approval` status SHALL NOT be visible, unless they are the creator of the task.
+
+#### Scenario: Council visibility of pending tasks
+- **WHEN** a member of the `transversal_council` views the Work Wall or moderation dashboard.
+- **THEN** tasks with `pending_approval` status SHALL be visible.
 
 ### Requirement: Reward Value Definition
 O sistema SHALL validar que o valor da recompensa informado é um número positivo.
