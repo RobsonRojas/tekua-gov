@@ -37,11 +37,18 @@ O sistema SHALL possuir testes automatizados para garantir a estabilidade das fu
 - **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.
 
 ### Requirement: Open Task Creation
-O sistema SHALL permitir que qualquer usuário autenticado crie uma atividade do tipo 'task' com status inicial 'pending_approval'.
+O sistema SHALL permitir que qualquer usuário autenticado crie uma atividade do tipo 'task' com status inicial 'pending_approval', incluindo a classificação de Urgência e Importância.
 
-#### Scenario: Successful task creation
-- **WHEN** um membro autenticado fornece título, descrição e um valor de recompensa positivo
-- **THEN** o sistema SHALL registrar a tarefa vinculando o membro como `requester_id` e definir o status como `pending_approval`.
+#### Scenario: Successful task creation with priority
+- **WHEN** um membro autenticado fornece título, descrição, um valor de recompensa positivo e seleciona os níveis de Urgência e Importância.
+- **THEN** o sistema SHALL registrar a tarefa vinculando o membro como `requester_id`, definir o status como `pending_approval` e persistir os metadados de prioridade.
+
+### Requirement: Visualização de Prioridade no Quadro
+O sistema SHALL exibir visualmente os níveis de Urgência e Importância em cada card de tarefa no mural.
+
+#### Scenario: Visualização de tags de prioridade
+- **WHEN** um usuário acessa o mural de tarefas.
+- **THEN** o sistema SHALL renderizar indicadores coloridos ou ícones que identifiquem claramente se a tarefa é Urgente/Não Urgente e Importante/Não Importante.
 
 ### Requirement: Task Visibility Restrictions
 The system SHALL restrict visibility of tasks based on their status.
