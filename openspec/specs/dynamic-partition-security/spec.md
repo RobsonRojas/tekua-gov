@@ -1,0 +1,17 @@
+# dynamic-partition-security Specification
+
+## Purpose
+Garantir que a segurança da plataforma (RLS) seja mantida mesmo em estruturas de dados dinâmicas e particionadas, prevenindo vulnerabilidades de acesso a dados em novas partições de logs ou tabelas temporárias.
+
+## Requirements
+
+### Requirement: Ensure dynamically created partition tables enforce Row-Level Security
+The system SHALL ensure that whenever a new child partition table is dynamically created for `audit_logs`, the Row-Level Security (RLS) flag is explicitly enabled on the partition table.
+
+#### Scenario: Partition creation automatically enables RLS
+- **WHEN** the `public.create_audit_partition` function is executed to create a new monthly partition
+- **THEN** the newly created partition table has Row-Level Security enabled immediately upon creation
+
+#### Scenario: Retroactive security enforcement on existing partitions
+- **WHEN** the security fix migration runs
+- **THEN** any existing partition tables associated with `audit_logs` that do not have RLS enabled are updated to have Row-Level Security enabled
