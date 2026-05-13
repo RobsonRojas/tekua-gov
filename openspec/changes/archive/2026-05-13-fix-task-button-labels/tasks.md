@@ -12,6 +12,6 @@
 
 ## 3. Verification
 
-- [ ] 3.1 Verify button labels in the UI
-- [ ] 3.2 Verify that a "transversal_council" user can successfully approve/reject an activity
-- [ ] 3.3 Verify that an "admin" user can still approve/reject activities
+- [x] 3.1 Verify button labels in the UI
+- [x] 3.2 Verify that a "transversal_council" user can successfully approve/reject an activity
+- [x] 3.3 Verify that an "admin" user can still approve/reject activities
