@@ -29,12 +29,13 @@ The system SHALL ensure all navigation items in the sidebar and mobile drawer po
 - **THEN** the system SHALL navigate to the `/admin-panel?tab=activity` route
 
 ### Requirement: Responsive Navigation Support
-O sistema de navegação **SHALL** se adaptar dinamicamente a diferentes tamanhos de tela para garantir a melhor ergonomia e usabilidade em qualquer dispositivo, garantindo que nenhum elemento cause rolagem horizontal.
+O sistema de navegação **SHALL** se adaptar dinamicamente a diferentes tamanhos de tela para garantir a melhor ergonomia e usabilidade em qualquer dispositivo, garantindo que rótulos e ícones não sobreponham em telas pequenas.
 
 #### Scenario: Mobile View (Smartphone)
 - **GIVEN** uma largura de tela inferior a 768px.
 - **WHEN** o usuário interage com a aplicação.
 - **THEN** o sistema **SHALL** exibir uma Barra de Navegação Inferior (Bottom Navigation) contendo as ações principais (Dashboard, Mural, Perfil).
+- **AND** os rótulos dos itens de navegação SHALL ser legíveis e não ultrapassar os limites do item, utilizando abreviações ou redimensionamento de fonte se necessário.
 - **AND** o menu lateral **SHALL** ser acessível através de um menu hambúrguer para acesso a configurações e recursos administrativos.
 - **AND** o botão de "Instalar App" **SHALL** ser visível no topo do menu hambúrguer ou como uma ação destacada se aplicável.
 
