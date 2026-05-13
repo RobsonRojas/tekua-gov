@@ -156,7 +156,8 @@
     "approve": "Aprovar",
     "reject": "Reprovar",
     "back": "Voltar",
-    "retry": "Tentar Novamente"
+    "retry": "Tentar Novamente",
+    "status": "Status"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",

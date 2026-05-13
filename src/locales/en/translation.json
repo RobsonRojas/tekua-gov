@@ -151,7 +151,8 @@
     "approve": "Approve",
     "reject": "Reject",
     "back": "Back",
-    "retry": "Retry"
+    "retry": "Retry",
+    "status": "Status"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",

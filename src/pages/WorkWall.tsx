@@ -10,12 +10,18 @@ import {
   Fab,
   Tooltip,
   Paper,
-  Alert
+  Alert,
+  Menu,
+  MenuItem,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { 
   Add as AddIcon, 
   Refresh as RefreshIcon,
-  Mms as MuralIcon
+  Mms as MuralIcon,
+  Menu as MenuIcon,
+  FilterList as FilterListIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -42,6 +48,11 @@ const WorkWall: React.FC = () => {
     workerId: '',
     type: 'all'
   });
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
   const fetcher = useCallback(async () => {
     if (!user || authLoading) return { data: [], error: null };
@@ -85,6 +96,28 @@ const WorkWall: React.FC = () => {
   }, [rawActivities, tabIndex, user]);
 
   const isCouncilOrAdmin = profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council');
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+  const handleMenuSelect = (index: number) => {
+    setTabIndex(index);
+    handleMenuClose();
+  };
+
+  const statusOptions = [
+    { label: t('common.all') || 'Todos', value: 0 },
+    { label: t('work.open') || 'Abertas', value: 1 },
+    { label: t('work.in_progress') || 'Em Execução', value: 2 },
+    { label: t('work.forValidating') || 'Para Validar', value: 3 },
+    { label: t('work.completed') || 'Finalizadas', value: 4 },
+    ...(isCouncilOrAdmin ? [{ label: t('work.moderation') || 'Moderação', value: 5 }] : [])
+  ];
+
+  const currentStatusLabel = statusOptions.find(opt => opt.value === tabIndex)?.label || statusOptions[0].label;
 
   useEffect(() => {
     if (taskId) {
@@ -151,34 +184,94 @@ const WorkWall: React.FC = () => {
         </Alert>
       )}
 
-      <Paper sx={{ mb: 4, borderRadius: 2 }}>
-        <Tabs 
-          value={tabIndex} 
-          onChange={(_, val) => setTabIndex(val)} 
-          indicatorColor="primary"
-          textColor="primary"
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          sx={{
-            '& .MuiTab-root': {
-              minHeight: 48,
-              fontSize: { xs: '0.8rem', sm: '0.875rem' },
-              fontWeight: 600,
-              px: { xs: 1.5, sm: 3 }
-            }
-          }}
-        >
-          <Tab label={t('common.all') || 'Todos'} />
-          <Tab label={t('work.open') || 'Abertas'} />
-          <Tab label={t('work.in_progress') || 'Em Execução'} />
-          <Tab label={t('work.forValidating') || 'Para Validar'} />
-          <Tab label={t('work.completed') || 'Finalizadas'} />
-          {isCouncilOrAdmin && (
-            <Tab label={t('work.moderation') || 'Moderação'} sx={{ color: 'secondary.main', fontWeight: 700 }} />
-          )}
-        </Tabs>
-      </Paper>
+      {isMobile ? (
+        <Box sx={{ mb: 3 }}>
+          <Button
+            variant="contained"
+            onClick={handleMenuClick}
+            startIcon={<FilterListIcon />}
+            fullWidth
+            sx={{ 
+              justifyContent: 'space-between', 
+              py: 1.5, 
+              borderRadius: '12px',
+              backgroundColor: tabIndex === 5 ? 'secondary.main' : 'primary.main',
+              '&:hover': {
+                backgroundColor: tabIndex === 5 ? 'secondary.dark' : 'primary.dark',
+              }
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mr: 1, opacity: 0.8 }}>
+                {t('common.status') || 'Status'}:
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                {currentStatusLabel}
+              </Typography>
+            </Box>
+            <MenuIcon />
+          </Button>
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleMenuClose}
+            PaperProps={{
+              sx: {
+                mt: 1,
+                borderRadius: '16px',
+                minWidth: 280,
+                boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                border: '1px solid rgba(255,255,255,0.05)'
+              }
+            }}
+          >
+            {statusOptions.map((option) => (
+              <MenuItem 
+                key={option.value} 
+                onClick={() => handleMenuSelect(option.value)}
+                selected={tabIndex === option.value}
+                sx={{ 
+                  py: 1.5, 
+                  px: 2.5,
+                  fontSize: '1rem',
+                  fontWeight: tabIndex === option.value ? 700 : 500,
+                  color: option.value === 5 ? 'secondary.main' : 'inherit'
+                }}
+              >
+                {option.label}
+              </MenuItem>
+            ))}
+          </Menu>
+        </Box>
+      ) : (
+        <Paper sx={{ mb: 4, borderRadius: 2 }}>
+          <Tabs 
+            value={tabIndex} 
+            onChange={(_, val) => setTabIndex(val)} 
+            indicatorColor="primary"
+            textColor="primary"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 48,
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                fontWeight: 600,
+                px: { xs: 1.5, sm: 3 }
+              }
+            }}
+          >
+            {statusOptions.map((option) => (
+              <Tab 
+                key={option.value} 
+                label={option.label} 
+                sx={option.value === 5 ? { color: 'secondary.main', fontWeight: 700 } : {}}
+              />
+            ))}
+          </Tabs>
+        </Paper>
+      )}
 
       {loading && !rawActivities ? (
         <Grid container spacing={3}>
