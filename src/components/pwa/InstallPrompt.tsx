@@ -120,12 +120,12 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
       <Paper 
         elevation={3} 
         sx={{ 
-          p: 2, 
-          m: 2, 
+          p: { xs: 1.5, sm: 2 }, 
+          m: { xs: 1, sm: 2 }, 
           display: 'flex', 
           flexDirection: isMobile ? 'column' : 'row',
           alignItems: 'center', 
-          gap: 2,
+          gap: 1.5,
           borderRadius: '16px',
           background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
           color: 'white'
@@ -144,7 +144,7 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
             variant="contained" 
             sx={{ 
               bgcolor: 'white', 
-              color: theme.palette.primary.main, 
+              color: 'primary.dark', 
               '&:hover': { bgcolor: alpha('#fff', 0.9) },
               borderRadius: '10px',
               textTransform: 'none',

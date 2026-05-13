@@ -17,7 +17,9 @@ import {
   CircularProgress,
   Tabs,
   Tab,
-  Chip
+  Chip,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { 
   Shield, 
@@ -56,7 +58,7 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ py: 4 }}>
+        <Box sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 0 } }}>
           {children}
         </Box>
       )}
@@ -69,6 +71,8 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { profile, user: authUser, loading: authLoading } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [fullName, setFullName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -167,16 +171,18 @@ const Profile: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h2" color="primary.main">
+      <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
+        <Typography variant="h2" color="primary.main" sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
           {t('profile.title')}
         </Typography>
         {tabValue === 0 && !isAdminView && (
           <Button 
             variant="contained" 
+            fullWidth={isMobile}
             disabled={updating}
             startIcon={updating ? <CircularProgress size={18} color="inherit" /> : (isEditing ? <CheckCircle2 size={18} /> : <Edit2 size={18} />)}
             onClick={isEditing ? handleUpdateProfile : () => setIsEditing(true)}
+            sx={{ borderRadius: '12px', py: { xs: 1, sm: 1.5 } }}
           >
             {updating ? t('profile.saving') : (isEditing ? t('profile.save') : t('profile.edit'))}
           </Button>
@@ -194,13 +200,17 @@ const Profile: React.FC = () => {
           value={tabValue} 
           onChange={handleTabChange} 
           aria-label="profile tabs"
+          variant={isMobile ? "scrollable" : "standard"}
+          scrollButtons={isMobile ? "auto" : false}
+          allowScrollButtonsMobile
           sx={{
             '& .MuiTab-root': {
               minHeight: 64,
-              fontSize: '1rem',
+              fontSize: { xs: '0.875rem', sm: '1rem' },
               fontWeight: 600,
               textTransform: 'none',
-              gap: 1
+              gap: 1,
+              px: { xs: 2, sm: 3 }
             }
           }}
         >
@@ -233,12 +243,12 @@ const Profile: React.FC = () => {
 
       <TabPanel value={tabValue} index={0}>
         <InstallPrompt variant="banner" />
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 2, sm: 4 }}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Paper
               elevation={0}
               sx={{
-                p: 4,
+                p: { xs: 2, sm: 4 },
                 textAlign: 'center',
                 backgroundColor: 'background.paper',
                 borderRadius: '24px',
@@ -263,12 +273,12 @@ const Profile: React.FC = () => {
               >
                 <Avatar 
                   sx={{ 
-                    width: 120, 
-                    height: 120, 
+                    width: { xs: 90, sm: 120 }, 
+                    height: { xs: 90, sm: 120 }, 
                     mx: 'auto', 
                     mb: 3, 
                     bgcolor: 'primary.main',
-                    fontSize: '3rem',
+                    fontSize: { xs: '2rem', sm: '3rem' },
                     fontWeight: 700,
                     boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
                   }}
@@ -277,10 +287,30 @@ const Profile: React.FC = () => {
                 </Avatar>
               </Badge>
 
-              <Typography variant="h3" gutterBottom>
+              <Typography 
+                variant="h3" 
+                gutterBottom 
+                sx={{ 
+                  fontSize: { xs: '1.25rem', sm: '1.75rem' },
+                  wordBreak: 'break-word',
+                  whiteSpace: 'normal',
+                  lineHeight: 1.2,
+                  mb: 1
+                }}
+              >
                 {currentProfile?.full_name || t('profile.defaultName')}
               </Typography>
-              <Typography variant="body1" color="text.secondary" gutterBottom sx={{ textTransform: 'capitalize' }}>
+              <Typography 
+                variant="body1" 
+                color="text.secondary" 
+                gutterBottom 
+                sx={{ 
+                  textTransform: 'capitalize',
+                  fontSize: '0.875rem',
+                  whiteSpace: 'normal',
+                  textAlign: 'center'
+                }}
+              >
                 {currentProfile?.roles?.map((r: string) => r === 'admin' ? 'Admin' : r === 'transversal_council' ? 'Conselho' : 'Membro').join(' / ')}
                 {currentProfile?.functions && currentProfile.functions.length > 0 && ` | ${currentProfile.functions.join(', ')}`}
               </Typography>
@@ -338,7 +368,7 @@ const Profile: React.FC = () => {
             <Paper
               elevation={0}
               sx={{
-                p: 4,
+                p: { xs: 2, sm: 4 },
                 backgroundColor: 'background.paper',
                 borderRadius: '24px',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -475,7 +505,7 @@ const Profile: React.FC = () => {
         <Paper
           elevation={0}
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 4 },
             backgroundColor: 'background.paper',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -489,7 +519,7 @@ const Profile: React.FC = () => {
         <Paper
           elevation={0}
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 4 },
             backgroundColor: 'background.paper',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -503,7 +533,7 @@ const Profile: React.FC = () => {
         <Paper
           elevation={0}
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 4 },
             backgroundColor: 'background.paper',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.05)',

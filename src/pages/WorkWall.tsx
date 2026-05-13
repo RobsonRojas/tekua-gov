@@ -93,11 +93,11 @@ const WorkWall: React.FC = () => {
   }, [taskId, navigate]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <MuralIcon sx={{ fontSize: 32, mr: 2, color: 'primary.main' }} />
-          <Typography variant="h4" component="h1" fontWeight={700}>
+          <Typography variant="h4" component="h1" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
             {t('work.mural')}
           </Typography>
         </Box>
@@ -159,6 +159,15 @@ const WorkWall: React.FC = () => {
           textColor="primary"
           variant="scrollable"
           scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            '& .MuiTab-root': {
+              minHeight: 48,
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              fontWeight: 600,
+              px: { xs: 1.5, sm: 3 }
+            }
+          }}
         >
           <Tab label={t('common.all') || 'Todos'} />
           <Tab label={t('work.open') || 'Abertas'} />
@@ -219,7 +228,8 @@ const WorkWall: React.FC = () => {
         <Fab 
           color="secondary" 
           aria-label="add-demand" 
-          sx={{ position: 'fixed', bottom: 160, right: 24, display: { sm: 'none' }, zIndex: 1100 }}
+          size="medium"
+          sx={{ position: 'fixed', bottom: 150, right: 20, display: { sm: 'none' }, zIndex: 1100, boxShadow: 4 }}
           onClick={() => navigate('/create-demand')}
         >
           <AddIcon />
@@ -230,7 +240,8 @@ const WorkWall: React.FC = () => {
         <Fab 
           color="primary" 
           aria-label="add" 
-          sx={{ position: 'fixed', bottom: 90, right: 24, display: { sm: 'none' }, zIndex: 1100 }}
+          size="medium"
+          sx={{ position: 'fixed', bottom: 85, right: 20, display: { sm: 'none' }, zIndex: 1100, boxShadow: 4 }}
           onClick={() => navigate('/register-work')}
         >
           <AddIcon />

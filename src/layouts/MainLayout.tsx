@@ -38,7 +38,7 @@ const MainLayout: React.FC = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', width: '100%', overflowX: 'hidden' }}>
       <OfflineBanner />
       
       {!isMobile && (

@@ -41,12 +41,13 @@ const BottomNav: React.FC = () => {
         bottom: 0, 
         left: 0, 
         right: 0, 
-        zIndex: 1000,
+        zIndex: 2000,
         borderRadius: '20px 20px 0 0',
         overflow: 'hidden',
         boxShadow: '0 -4px 20px rgba(0,0,0,0.4)',
         borderTop: '1px solid rgba(255,255,255,0.05)',
-        bgcolor: 'background.paper'
+        bgcolor: 'background.paper',
+        pb: 'env(safe-area-inset-bottom)'
       }} 
       elevation={3}
     >
@@ -68,10 +69,14 @@ const BottomNav: React.FC = () => {
             color: 'text.secondary',
             minWidth: 0,
             padding: '12px 0',
+            '& .MuiBottomNavigationAction-label': {
+              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+              mt: 0.5
+            },
             '&.Mui-selected': {
               color: 'primary.main',
               '& .MuiSvgIcon-root, & svg': {
-                transform: 'scale(1.2)',
+                transform: 'scale(1.1)',
                 transition: 'transform 0.2s'
               }
             }
@@ -87,8 +92,17 @@ const BottomNav: React.FC = () => {
           icon={<LayoutDashboard size={22} />} 
         />
         <BottomNavigationAction 
-          label={t('layout.notifications') || 'Alertas'} 
+          label={t('layout.notifications')} 
           icon={<Bell size={22} />} 
+          sx={{
+            '& .MuiBottomNavigationAction-label': {
+              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '80px'
+            }
+          }}
         />
         <BottomNavigationAction 
           label={t('layout.profile')} 

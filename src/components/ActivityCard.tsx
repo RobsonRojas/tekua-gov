@@ -343,7 +343,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           )}
 
           {localStatus === 'pending_approval' && (profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council')) && (
-            <Stack direction="row" spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
               <Button 
                 fullWidth 
                 variant="contained"
@@ -351,7 +351,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 startIcon={<CheckCircle size={18} />}
                 onClick={(e) => { e.stopPropagation(); handleModeration('approve'); }}
                 disabled={loading}
-                sx={{ borderRadius: '12px', py: 1.5 }}
+                sx={{ borderRadius: '12px', py: 1.2, fontSize: { xs: '0.875rem', sm: '1rem' } }}
               >
                 {t('common.approve', 'Aprovar')}
               </Button>
@@ -362,7 +362,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 startIcon={<AlertCircle size={18} />}
                 onClick={(e) => { e.stopPropagation(); handleModeration('reject'); }}
                 disabled={loading}
-                sx={{ borderRadius: '12px', py: 1.5 }}
+                sx={{ borderRadius: '12px', py: 1.2, fontSize: { xs: '0.875rem', sm: '1rem' } }}
               >
                 {t('common.reject', 'Reprovar')}
               </Button>

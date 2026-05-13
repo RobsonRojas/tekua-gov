@@ -57,7 +57,8 @@
       "auth": "Autenticação",
       "vote": "Votações",
       "task": "Tarefas",
-      "profile": "Perfil"
+      "profile": "Perfil",
+      "notifications": "Notificações"
     }
   },
   "admin": {
@@ -113,6 +114,7 @@
   "layout": {
     "dashboard": "Dashboard",
     "profile": "Perfil",
+    "notifications": "Notificações",
     "admin": "Painel Admin",
     "logout": "Sair",
     "footer": "© {{year}} Tekua Associação. Todos os direitos reservados."

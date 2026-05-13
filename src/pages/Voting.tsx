@@ -58,7 +58,7 @@ const Voting: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: 4, px: { xs: 2, sm: 3 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
           <Skeleton variant="text" width={200} height={40} />
           <Skeleton variant="rectangular" width={150} height={40} />
@@ -73,11 +73,11 @@ const Voting: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4">{t('voting.title', 'Votações e Pautas')}</Typography>
+    <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: 4, px: { xs: 2, sm: 3 } }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, gap: 2 }}>
+          <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' }, fontWeight: 700 }}>{t('voting.title', 'Votações e Pautas')}</Typography>
         {profile?.roles?.includes('admin') && (
-          <Button variant="contained" onClick={() => setOpenDialog(true)}>
+          <Button variant="contained" onClick={() => setOpenDialog(true)} fullWidth={true} sx={{ borderRadius: '12px' }}>
             {t('voting.createTopic', 'Criar Nova Pauta')}
           </Button>
         )}

@@ -59,11 +59,11 @@ const TasksBoard: React.FC = () => {
   }, [fetchActivities]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Box sx={{ mb: 4 }}>
         <Breadcrumbs 
           separator={<ChevronRight size={16} />} 
-          sx={{ mb: 2, '& .MuiBreadcrumbs-ol': { alignItems: 'center' } }}
+          sx={{ mb: 2, '& .MuiBreadcrumbs-ol': { alignItems: 'center', flexWrap: 'nowrap', overflow: 'hidden' } }}
         >
           <MuiLink
             component={Link}
@@ -85,11 +85,11 @@ const TasksBoard: React.FC = () => {
           </Typography>
         </Breadcrumbs>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <BoardIcon size={32} style={{ marginRight: '16px', color: '#6366f1' }} />
             <Box>
-              <Typography variant="h4" component="h1" fontWeight={700}>
+              <Typography variant="h4" component="h1" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
                 {t('work.title')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -97,18 +97,22 @@ const TasksBoard: React.FC = () => {
               </Typography>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
             <Button 
               variant="outlined" 
+              fullWidth={true}
               startIcon={<RefreshIcon size={18} />} 
               onClick={fetchActivities}
+              sx={{ borderRadius: '12px' }}
             >
               {t('admin.refresh')}
             </Button>
             <Button 
               variant="contained" 
+              fullWidth={true}
               startIcon={<AddIcon size={18} />} 
               onClick={() => navigate('/tasks/new')}
+              sx={{ borderRadius: '12px' }}
             >
               {t('work.register')}
             </Button>

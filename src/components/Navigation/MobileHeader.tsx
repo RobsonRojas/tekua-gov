@@ -29,14 +29,14 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick }) => {
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
+      <Toolbar sx={{ justifyContent: 'space-between', px: 1.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={onMenuClick}
-            sx={{ mr: 2 }}
+            sx={{ mr: 1 }}
           >
             <Menu />
           </IconButton>

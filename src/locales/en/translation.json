@@ -110,6 +110,7 @@
   "layout": {
     "dashboard": "Dashboard",
     "profile": "Profile",
+    "notifications": "Notifications",
     "admin": "Admin Panel",
     "logout": "Logout",
     "footer": "© {{year}} Tekua Association. All rights reserved."
