@@ -13,4 +13,10 @@ O sistema **DEVERÁ (SHALL)** permitir que o usuário capture fotos diretamente 
 - **WHEN** o usuário clica em "Capturar".
 - **THEN** o sistema deve obter a posição GPS atual.
 - **THEN** o sistema deve gerar uma imagem com o texto "Tekuá - [Data] [Hora] - Lat: [Lat], Lon: [Lon]" no canto inferior.
-- **THEN** a imagem resultante deve ser usada como evidência do trabalho.
+
+### Requirement: Upload de Documentos como Evidência
+O sistema SHALL permitir que o usuário faça upload de documentos (PDF, DOCX, XLSX) como parte do conjunto de evidências de uma tarefa, além das fotos capturadas.
+
+#### Scenario: Upload de PDF como evidência
+- **WHEN** o usuário seleciona um arquivo PDF em vez de capturar uma foto.
+- **THEN** o sistema SHALL permitir o upload e associar o arquivo à tarefa como evidência válida.
