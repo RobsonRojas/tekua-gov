@@ -4,11 +4,11 @@
 TBD - created by archiving change portal-governanca-tekua. Update Purpose after archive.
 ## Requirements
 ### Requirement: Profile Visualization
-Authenticated users SHALL be able to view and manage their personal profile details, including their position within the organization's board if applicable. The UI SHALL be responsive, ensuring all information remains readable and within bounds on mobile devices.
+Authenticated users SHALL be able to view and manage their personal profile details, including all active roles and organizational functions within the organization. The UI SHALL be responsive, ensuring all information remains readable and within bounds on mobile devices.
 
 #### Scenario: View Profile
 - **GIVEN** An authenticated user visits the profile page.
-- **THEN** The user's full name, email, role, board position (cargos), and joined date are displayed accurately.
+- **THEN** The user's full name, email, all active roles, organizational functions (e.g., positions in the board or council), and joined date are displayed accurately.
 - **AND** on mobile devices, the name and role SHALL wrap correctly to prevent layout breaking.
 
 #### Scenario: Edit Profile Name
@@ -18,7 +18,7 @@ Authenticated users SHALL be able to view and manage their personal profile deta
 #### Scenario: Admin View Other User Profile
 - **GIVEN** An authenticated user with "admin" role.
 - **WHEN** The admin visits the profile page with a target user ID (`/profile/:id`).
-- **THEN** The system SHALL fetch and display the full name, email, role, board position, and joined date of the target user.
+- **THEN** The system SHALL fetch and display the full name, email, all active roles, and organizational functions of the target user.
 
 #### Scenario: Unauthorized Access to Other User Profile
 - **GIVEN** An authenticated user with "member" role.

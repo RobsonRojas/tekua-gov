@@ -4,15 +4,15 @@
 TBD - created by archiving change dashboard-member-management. Update Purpose after archive.
 ## Requirements
 ### Requirement: Painel de Gestão de Membros
-O sistema SHALL permitir que administradores visualizem e gerenciem os perfis de todos os membros cadastrados. O ponto de entrada para esta funcionalidade SHALL estar visível apenas para usuários com papel de administrador.
+O sistema SHALL permitir que administradores visualizem e gerenciem os perfis de todos os membros cadastrados. O ponto de entrada para esta funcionalidade SHALL estar visível apenas para usuários com pelo menos um papel de administrador.
 
 #### Scenario: Visualização da Lista de Membros
 - **WHEN** um administrador acessa a seção de membros no painel administrativo.
-- **THEN** o sistema exibe uma tabela com nome, email, papel (role) e data de cadastro.
+- **THEN** o sistema exibe uma tabela com nome, email, todos os papéis (roles) e funções atribuídas, e data de cadastro.
 
 #### Scenario: Filtro por Papel
-- **WHEN** o administrador seleciona o filtro "Member".
-- **THEN** o sistema exibe apenas os usuários com esse papel atribuído.
+- **WHEN** o administrador seleciona um filtro de papel (ex: "Member").
+- **THEN** o sistema exibe usuários que possuem ESSE papel entre seus papéis atribuídos.
 
 #### Scenario: Visibilidade do Card de Gerenciamento no Dashboard
 - **WHEN** um usuário administrador visualiza o Dashboard.
@@ -39,21 +39,15 @@ O sistema SHALL permitir que administradores enviem convites para novos membros 
 - **THEN** o sistema SHALL exibir uma mensagem de erro clara explicando o motivo da falha.
 
 ### Requirement: Modificação de Permissões
-O sistema SHALL permitir que administradores alterem o nível de acesso (Role), o status de diretoria, o status de conselho transversal e as informações básicas de perfil de outros membros de forma atômica e persistente.
+O sistema SHALL permitir que administradores gerenciem a coleção de papéis (Roles) e funções de outros membros de forma atômica e persistente.
 
-#### Scenario: Promoção a Administrador e Atualização de Dados
-- **WHEN** o administrador edita um membro, alterando seu papel para "Admin" e atualizando seu nome completo.
-- **THEN** o sistema SHALL atualizar ambos os campos no banco de dados em uma única operação ou garantir que ambas as mudanças sejam persistidas.
-- **THEN** o sistema SHALL recarregar a lista de membros para refletir as alterações imediatamente na interface.
+#### Scenario: Atribuição de Múltiplos Papéis
+- **WHEN** o administrador edita um membro e seleciona tanto "Admin" quanto "Membro do Conselho Transversal".
+- **THEN** o sistema SHALL persistir ambos os papéis no perfil do usuário.
 
 #### Scenario: Atribuição de Cargo da Diretoria
-- **WHEN** o administrador edita um membro e seleciona um cargo como "Presidente".
-- **THEN** o sistema SHALL persistir o cargo e marcar o usuário como membro da diretoria.
-
-#### Scenario: Configuração de Membro do Conselho Transversal
-- **WHEN** o administrador edita um membro e ativa a opção "Membro do Conselho Transversal".
-- **THEN** o sistema SHALL adicionar o papel de `transversal_council` ao perfil do usuário e persistir a alteração.
-- **AND** a interface SHALL refletir que o usuário agora possui responsabilidades de moderação.
+- **WHEN** o administrador edita um membro e seleciona um ou mais cargos (ex: "Presidente", "Diretor").
+- **THEN** o sistema SHALL persistir todos os cargos selecionados no perfil do usuário.
 
 #### Scenario: Restrição de Acesso Comum
 - **WHEN** um usuário com papel "Member" tenta acessar a URL `/admin-panel` ou a gestão de membros.
