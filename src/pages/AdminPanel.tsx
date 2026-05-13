@@ -439,119 +439,215 @@ const AdminPanel: React.FC = () => {
             </Button>
           </Paper>
 
-          <TableContainer 
-            component={Paper} 
-            elevation={0}
-            sx={{ 
-              backgroundColor: 'background.paper', 
-              borderRadius: '24px',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              overflowX: 'auto',
-              position: 'relative'
-            }}
-          >
-            {loading && (
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(15, 23, 42, 0.5)', zIndex: 1 }}>
-                <CircularProgress />
-              </Box>
-            )}
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead sx={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary', py: 3 }}>{t('admin.colMember')}</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colEmail')}</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colRole')}</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colStatus')}</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredUsers.length === 0 && !loading ? (
+          {!isMobile ? (
+            <TableContainer 
+              component={Paper} 
+              elevation={0}
+              sx={{ 
+                backgroundColor: 'background.paper', 
+                borderRadius: '24px',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                overflowX: 'auto',
+                position: 'relative'
+              }}
+            >
+              {loading && (
+                <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(15, 23, 42, 0.5)', zIndex: 1 }}>
+                  <CircularProgress />
+                </Box>
+              )}
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead sx={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
-                      <Typography variant="body1" color="text.secondary">
-                        {t('admin.noUsersFound')}
-                      </Typography>
-                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary', py: 3 }}>{t('admin.colMember')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colEmail')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colRole')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colStatus')}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}></TableCell>
                   </TableRow>
-                ) : (
-                  filteredUsers.map((user) => (
-                    <TableRow 
-                      key={user.id}
-                      sx={{ 
-                        '&:last-child td, &:last-child th': { border: 0 },
-                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.02)' }
-                      }}
-                    >
-                      <TableCell component="th" scope="row">
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar 
-                            sx={{ 
-                              width: 40, 
-                              height: 40, 
-                              bgcolor: user.role === 'admin' ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
-                              fontWeight: 600,
-                              fontSize: '0.875rem'
-                            }}
-                          >
-                            {user.full_name?.charAt(0) || user.email?.charAt(0) || '?'}
-                          </Avatar>
-                          <Typography variant="body1" fontWeight={600}>
-                            {user.full_name || t('admin.noName')}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>{user.email || t('profile.na')}</TableCell>
-                      <TableCell>
-                        <Stack spacing={0.5} alignItems="flex-start">
-                          <Chip 
-                            label={
-                              user.role === 'admin' ? 'Admin' : 
-                              user.role === 'transversal_council' ? t('profile.transversal_council') || 'Conselho' : 
-                              t('profile.member')
-                            } 
-                            size="small" 
-                            variant="outlined" 
-                            sx={{ 
-                              textTransform: 'capitalize', 
-                              color: user.role === 'admin' ? 'primary.light' : user.role === 'transversal_council' ? 'secondary.light' : 'text.secondary',
-                              borderColor: user.role === 'admin' ? 'rgba(99, 102, 241, 0.3)' : user.role === 'transversal_council' ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)'
-                            }} 
-                          />
-                          {user.is_board_member && (
-                            <Chip 
-                              label={user.board_role || 'Diretoria'} 
-                              size="small" 
-                              color="secondary"
-                              sx={{ fontSize: '0.65rem', height: '18px' }} 
-                            />
-                          )}
-                        </Stack>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box 
-                            sx={{ 
-                              width: 8, 
-                              height: 8, 
-                              borderRadius: '50%', 
-                              bgcolor: 'secondary.main' 
-                            }} 
-                          />
-                          <Typography variant="body2">{t('admin.active')}</Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton onClick={(e: React.MouseEvent<HTMLElement>) => handleMenuOpen(e, user)}>
-                          <MoreVertical size={20} color="#94a3b8" />
-                        </IconButton>
+                </TableHead>
+                <TableBody>
+                  {filteredUsers.length === 0 && !loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                        <Typography variant="body1" color="text.secondary">
+                          {t('admin.noUsersFound')}
+                        </Typography>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <TableRow 
+                        key={user.id}
+                        sx={{ 
+                          '&:last-child td, &:last-child th': { border: 0 },
+                          '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.02)' }
+                        }}
+                      >
+                        <TableCell component="th" scope="row">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar 
+                              sx={{ 
+                                width: 40, 
+                                height: 40, 
+                                bgcolor: user.role === 'admin' ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+                                fontWeight: 600,
+                                fontSize: '0.875rem'
+                              }}
+                            >
+                              {user.full_name?.charAt(0) || user.email?.charAt(0) || '?'}
+                            </Avatar>
+                            <Typography variant="body1" fontWeight={600}>
+                              {user.full_name || t('admin.noName')}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>{user.email || t('profile.na')}</TableCell>
+                        <TableCell>
+                          <Stack spacing={0.5} alignItems="flex-start">
+                            <Chip 
+                              label={
+                                user.role === 'admin' ? 'Admin' : 
+                                user.role === 'transversal_council' ? t('profile.transversal_council') || 'Conselho' : 
+                                t('profile.member')
+                              } 
+                              size="small" 
+                              variant="outlined" 
+                              sx={{ 
+                                textTransform: 'capitalize', 
+                                color: user.role === 'admin' ? 'primary.light' : user.role === 'transversal_council' ? 'secondary.light' : 'text.secondary',
+                                borderColor: user.role === 'admin' ? 'rgba(99, 102, 241, 0.3)' : user.role === 'transversal_council' ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)'
+                              }} 
+                            />
+                            {user.is_board_member && (
+                              <Chip 
+                                label={user.board_role || 'Diretoria'} 
+                                size="small" 
+                                color="secondary"
+                                sx={{ fontSize: '0.65rem', height: '18px' }} 
+                              />
+                            )}
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box 
+                              sx={{ 
+                                width: 8, 
+                                height: 8, 
+                                borderRadius: '50%', 
+                                bgcolor: 'secondary.main' 
+                              }} 
+                            />
+                            <Typography variant="body2">{t('admin.active')}</Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton onClick={(e: React.MouseEvent<HTMLElement>) => handleMenuOpen(e, user)}>
+                            <MoreVertical size={20} color="#94a3b8" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Stack spacing={2}>
+              {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              )}
+              {filteredUsers.length === 0 && !loading ? (
+                <Paper sx={{ p: 4, textAlign: 'center', borderRadius: '16px', bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <Typography variant="body1" color="text.secondary">
+                    {t('admin.noUsersFound')}
+                  </Typography>
+                </Paper>
+              ) : (
+                filteredUsers.map((user) => (
+                  <Paper 
+                    key={user.id}
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: '16px', 
+                      bgcolor: 'background.paper', 
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      position: 'relative'
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Avatar 
+                        sx={{ 
+                          width: 48, 
+                          height: 48, 
+                          bgcolor: user.role === 'admin' ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+                          fontWeight: 600,
+                          fontSize: '1rem'
+                        }}
+                      >
+                        {user.full_name?.charAt(0) || user.email?.charAt(0) || '?'}
+                      </Avatar>
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ color: 'text.primary' }}>
+                          {user.full_name || t('admin.noName')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          {user.email || t('profile.na')}
+                        </Typography>
+                      </Box>
+                      <IconButton 
+                        size="small" 
+                        onClick={(e) => handleMenuOpen(e, user)}
+                        sx={{ alignSelf: 'flex-start', color: 'text.secondary' }}
+                      >
+                        <MoreVertical size={20} />
+                      </IconButton>
+                    </Box>
+                    
+                    <Divider sx={{ mb: 2, opacity: 0.1 }} />
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <Stack spacing={1}>
+                        <Chip 
+                          label={
+                            user.role === 'admin' ? 'Admin' : 
+                            user.role === 'transversal_council' ? t('profile.transversal_council') || 'Conselho' : 
+                            t('profile.member')
+                          } 
+                          size="small" 
+                          variant="outlined"
+                          sx={{ 
+                            textTransform: 'capitalize',
+                            color: user.role === 'admin' ? 'primary.light' : user.role === 'transversal_council' ? 'secondary.light' : 'text.secondary',
+                            borderColor: user.role === 'admin' ? 'rgba(99, 102, 241, 0.3)' : user.role === 'transversal_council' ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+                            fontSize: '0.75rem'
+                          }}
+                        />
+                        {user.is_board_member && (
+                          <Chip 
+                            label={user.board_role || 'Diretoria'} 
+                            size="small" 
+                            color="secondary"
+                            sx={{ fontSize: '0.65rem', height: '18px' }} 
+                          />
+                        )}
+                      </Stack>
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'secondary.main' }} />
+                        <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                          {t('admin.active')}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))
+              )}
+            </Stack>
+          )}
         </>
       ) : tabValue === 1 ? (
         <>

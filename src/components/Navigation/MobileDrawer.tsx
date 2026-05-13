@@ -110,6 +110,10 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
       <Divider />
       
       <List>
+        <ListItem sx={{ py: 1, px: 2, justifyContent: 'center' }}>
+          <LanguageSelector />
+        </ListItem>
+        
         {(!isInstalled && (isInstallable || platform === 'ios')) && (
           <ListItem disablePadding>
             <ListItemButton 
@@ -137,10 +141,6 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
       </List>
 
       <InstallPrompt open={showInstallDialog} onClose={() => setShowInstallDialog(false)} />
-
-      <Box sx={{ p: 2, mt: 'auto', borderTop: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', justifyContent: 'center' }}>
-        <LanguageSelector />
-      </Box>
     </Drawer>
   );
 };
