@@ -30,7 +30,7 @@ const Home: React.FC = () => {
       description: t('home.cardMembrosDesc'), 
       icon: <Users size={32} />, 
       color: '#6366f1',
-      path: '/admin/members',
+      path: '/admin-panel?tab=users',
       adminOnly: true
     },
     { 
