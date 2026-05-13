@@ -82,6 +82,21 @@ The system SHALL ensure that administrative dashboard cards (e.g., Member Manage
 - **WHEN** the dashboard page is loaded
 - **THEN** administrative cards SHALL be completely removed from the UI (not just disabled)
 
+### Requirement: Admin Panel Contextual Navigation
+O Painel Administrativo **SHALL** adaptar sua navegação de ferramentas para facilitar o uso em dispositivos móveis.
+
+#### Scenario: Mobile Mode (xs)
+- **GIVEN** a visualização do Painel Admin em um dispositivo com largura < 600px.
+- **THEN** o sistema **SHALL** ocultar a barra de abas administrativa.
+- **AND** exibir um seletor de menu contextual contendo as ferramentas (Usuários, Configuração, Docs, Financeiro, Auditoria, Histórico).
+- **AND** o seletor **SHALL** indicar qual ferramenta está ativa.
+
+#### Scenario: Tool Selection
+- **WHEN** o administrador seleciona uma nova ferramenta através do menu mobile.
+- **THEN** o sistema **SHALL** atualizar o conteúdo do painel.
+- **AND** sincronizar o parâmetro `tab` na URL.
+- **AND** fechar o menu.
+
 ### Requirement: Profile Contextual Navigation
 O sistema de perfil **SHALL** adaptar sua navegação de seções para priorizar a área de conteúdo em dispositivos móveis.
 
