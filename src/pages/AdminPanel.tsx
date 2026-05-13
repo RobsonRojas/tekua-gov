@@ -205,7 +205,8 @@ const AdminPanel: React.FC = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedUser(null);
+    // Note: selectedUser is NOT cleared here to allow Dialogs to use its data
+    // It will be cleared when a Dialog is closed or an action completes
   };
 
   const handleToggleRole = async () => {
@@ -240,7 +241,7 @@ const AdminPanel: React.FC = () => {
     if (!selectedUser) return;
     
     setActionLoading(true);
-    setIsDeleteDialogOpen(false);
+    // Don't close the dialog yet, wait for the action to complete or fail
     
     try {
       const { error } = await apiClient.invoke('api-members', 'removeMember', {
@@ -250,13 +251,17 @@ const AdminPanel: React.FC = () => {
       if (error) throw new Error(error);
       
       setMessage({ type: 'success', text: t('admin.removeMemberSuccess', { name: selectedUser.full_name || selectedUser.email }) });
+      setIsDeleteDialogOpen(false); // Close only on success
       fetchUsers();
     } catch (err: any) {
       console.error('Error removing member:', err);
       setMessage({ type: 'error', text: err.message || t('admin.removeMemberError') });
     } finally {
       setActionLoading(false);
-      setSelectedUser(null);
+      // Only clear selectedUser when we are sure no more UI needs it
+      if (!isDeleteDialogOpen) {
+        setSelectedUser(null);
+      }
     }
   };
 
@@ -762,13 +767,18 @@ const AdminPanel: React.FC = () => {
         }}
       >
         <MenuItem onClick={() => {
-          if (selectedUser) navigate(`/profile/${selectedUser.id}`);
+          const userId = selectedUser?.id;
           handleMenuClose();
+          if (userId) navigate(`/profile/${userId}`);
+          setSelectedUser(null); // Clear now as we are navigating away
         }}>
           <ListItemIcon><UserIcon size={18} /></ListItemIcon>
           <ListItemText primary={t('admin.viewProfile')} />
         </MenuItem>
-        <MenuItem onClick={handleToggleRole} disabled={actionLoading}>
+        <MenuItem onClick={async () => {
+          await handleToggleRole();
+          setSelectedUser(null); // Clear after action
+        }} disabled={actionLoading}>
           <ListItemIcon>
             {actionLoading ? <CircularProgress size={18} /> : <ShieldAlert size={18} />}
           </ListItemIcon>
@@ -794,7 +804,12 @@ const AdminPanel: React.FC = () => {
 
       <Dialog
         open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
+        onClose={() => {
+          if (!actionLoading) {
+            setIsDeleteDialogOpen(false);
+            setSelectedUser(null);
+          }
+        }}
         PaperProps={{
           sx: {
             borderRadius: '16px',
@@ -813,9 +828,13 @@ const AdminPanel: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
           <Button 
-            onClick={() => setIsDeleteDialogOpen(false)}
+            onClick={() => {
+              setIsDeleteDialogOpen(false);
+              setSelectedUser(null);
+            }}
             variant="outlined"
             sx={{ borderRadius: '8px' }}
+            disabled={actionLoading}
           >
             {t('common.cancel')}
           </Button>
@@ -825,6 +844,8 @@ const AdminPanel: React.FC = () => {
             color="error"
             autoFocus
             sx={{ borderRadius: '8px' }}
+            disabled={actionLoading}
+            startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : null}
           >
             {t('admin.removeAccess')}
           </Button>

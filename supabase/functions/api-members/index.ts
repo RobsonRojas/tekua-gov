@@ -208,7 +208,14 @@ serve(async (req) => {
 
         // 3. Delete user from Auth (this will cascade to profiles)
         const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(targetUserId)
-        if (deleteError) throw deleteError
+        if (deleteError) {
+          console.error(`Error deleting user ${targetUserId}:`, deleteError)
+          // Provide a more descriptive message if it's a constraint error
+          if (deleteError.message?.includes('foreign key constraint')) {
+            throw new Error('Cannot remove user because they are linked to existing data (announcements, audits, etc.)')
+          }
+          throw deleteError
+        }
 
         responseData = { success: true }
         break
