@@ -4,7 +4,6 @@ import {
   Settings, 
   Wallet as WalletIcon,
   FileText as MuralIcon,
-  History,
   Bot
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -34,12 +33,6 @@ export const useNavigation = () => {
       path: '/wallet',
       label: t('wallet.title'),
       icon: <WalletIcon size={20} />,
-    },
-    {
-      path: '/admin-panel?tab=activity',
-      label: t('profile.activity'),
-      icon: <History size={20} />,
-      adminOnly: true,
     },
     {
       path: '/ai-agent',

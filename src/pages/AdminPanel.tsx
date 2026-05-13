@@ -31,7 +31,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { 
   Search, 
@@ -46,7 +48,8 @@ import {
   Users,
   FileText,
   DollarSign,
-  ShieldCheck
+  ShieldCheck,
+  ChevronDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -72,29 +75,28 @@ const AdminPanel: React.FC = () => {
   const [isNewMemberModalOpen, setIsNewMemberModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user: authUser } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get('tab');
 
-  const tabMap: Record<string, number> = {
-    'users': 0,
-    'config': 1,
-    'docs': 2,
-    'financial': 3,
-    'payouts': 4,
-    'activity': 5
-  };
+  const ADMIN_TABS = [
+    { id: 'users', label: t('admin.userManagement'), icon: <Users size={18} />, value: 0 },
+    { id: 'config', label: t('governance.config'), icon: <Settings size={18} />, value: 1 },
+    { id: 'docs', label: t('docs.docsTitle', 'Documentação'), icon: <FileText size={18} />, value: 2 },
+    { id: 'financial', label: t('admin.financial'), icon: <DollarSign size={18} />, value: 3 },
+    { id: 'payouts', label: t('admin.payoutAudit'), icon: <ShieldCheck size={18} />, value: 4 },
+    { id: 'activity', label: t('audit.title'), icon: <History size={18} />, value: 5 }
+  ];
 
-  const reverseTabMap: Record<number, string> = {
-    0: 'users',
-    1: 'config',
-    2: 'docs',
-    3: 'financial',
-    4: 'payouts',
-    5: 'activity'
-  };
+  const [tabValue, setTabValue] = useState(() => {
+    if (!currentTab) return 0;
+    const tab = ADMIN_TABS.find(t => t.id === currentTab);
+    return tab ? tab.value : 0;
+  });
 
-  const [tabValue, setTabValue] = useState(currentTab ? (tabMap[currentTab] ?? 0) : 0);
+  const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [threshold, setThreshold] = useState<number>(3);
   const [frequencies, setFrequencies] = useState<any>({
     urgent_important: '1 hour',
@@ -105,14 +107,33 @@ const AdminPanel: React.FC = () => {
   const [savingConfig, setSavingConfig] = useState(false);
 
   useEffect(() => {
-    if (currentTab && tabMap[currentTab] !== undefined) {
-      setTabValue(tabMap[currentTab]);
+    if (currentTab) {
+      const tab = ADMIN_TABS.find(t => t.id === currentTab);
+      if (tab && tab.value !== tabValue) {
+        setTabValue(tab.value);
+      }
     }
   }, [currentTab]);
 
   const handleTabChange = (_: any, newValue: number) => {
     setTabValue(newValue);
-    setSearchParams({ tab: reverseTabMap[newValue] });
+    const tab = ADMIN_TABS.find(t => t.value === newValue);
+    if (tab) {
+      setSearchParams({ tab: tab.id });
+    }
+  };
+
+  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMobileMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuAnchorEl(null);
+  };
+
+  const handleMobileMenuSelect = (value: number) => {
+    handleTabChange(null, value);
+    handleMobileMenuClose();
   };
 
   const fetchUsers = async () => {
@@ -262,32 +283,95 @@ const AdminPanel: React.FC = () => {
         </Alert>
       )}
 
-      <Paper sx={{ mb: 4, borderRadius: '16px', bgcolor: 'background.paper', overflow: 'hidden' }}>
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange}
-          textColor="primary"
-          indicatorColor="primary"
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{
-            '& .MuiTab-root': {
-              minHeight: 64,
-              fontSize: '0.875rem',
+      {isMobile ? (
+        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            onClick={handleMobileMenuOpen}
+            variant="outlined"
+            startIcon={ADMIN_TABS.find(t => t.value === tabValue)?.icon}
+            endIcon={<ChevronDown size={14} />}
+            sx={{ 
+              borderRadius: '12px', 
+              textTransform: 'none', 
               fontWeight: 600,
-              textTransform: 'none',
-              gap: 1
-            }
-          }}
-        >
-          <Tab icon={<Users size={18} />} iconPosition="start" label={t('admin.userManagement')} />
-          <Tab icon={<Settings size={18} />} iconPosition="start" label={t('governance.config')} />
-          <Tab icon={<FileText size={18} />} iconPosition="start" label={t('docs.docsTitle', 'Documentação')} />
-          <Tab icon={<DollarSign size={18} />} iconPosition="start" label={t('admin.financial')} />
-          <Tab icon={<ShieldCheck size={18} />} iconPosition="start" label={t('admin.payoutAudit')} />
-          <Tab icon={<History size={18} />} iconPosition="start" label={t('audit.title')} />
-        </Tabs>
-      </Paper>
+              minWidth: '100%',
+              justifyContent: 'space-between',
+              px: 2,
+              py: 1.5,
+              bgcolor: 'background.paper',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          >
+            {ADMIN_TABS.find(t => t.value === tabValue)?.label}
+          </Button>
+          <Menu
+            anchorEl={mobileMenuAnchorEl}
+            open={Boolean(mobileMenuAnchorEl)}
+            onClose={handleMobileMenuClose}
+            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+            PaperProps={{
+              sx: { 
+                borderRadius: '12px', 
+                minWidth: 'calc(100% - 32px)', 
+                mt: 1,
+                bgcolor: 'background.paper',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
+              }
+            }}
+          >
+            {ADMIN_TABS.map((opt) => (
+              <MenuItem 
+                key={opt.value} 
+                onClick={() => handleMobileMenuSelect(opt.value)}
+                selected={tabValue === opt.value}
+                sx={{ py: 1.5 }}
+              >
+                <ListItemIcon sx={{ color: tabValue === opt.value ? 'primary.main' : 'inherit' }}>
+                  {opt.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={opt.label} 
+                  primaryTypographyProps={{ 
+                    fontWeight: tabValue === opt.value ? 700 : 500,
+                    color: tabValue === opt.value ? 'primary.main' : 'inherit'
+                  }} 
+                />
+              </MenuItem>
+            ))}
+          </Menu>
+        </Box>
+      ) : (
+        <Paper sx={{ mb: 4, borderRadius: '16px', bgcolor: 'background.paper', overflow: 'hidden' }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange}
+            textColor="primary"
+            indicatorColor="primary"
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 64,
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                textTransform: 'none',
+                gap: 1
+              }
+            }}
+          >
+            {ADMIN_TABS.map((opt) => (
+              <Tab 
+                key={opt.value}
+                icon={opt.icon} 
+                iconPosition="start" 
+                label={opt.label} 
+              />
+            ))}
+          </Tabs>
+        </Paper>
+      )}
 
       {tabValue === 0 ? (
         <>
