@@ -15,14 +15,14 @@
 
 ## 3. Frontend - Marketplace and Listing
 
-- [ ] 3.1 Create new "Sharing" tab/page in the main navigation
-- [ ] 3.2 Build the marketplace grid/list view to display active, public equipment items
-- [ ] 3.3 Create the item creation/edit form (title, description, price, privacy toggle)
-- [ ] 3.4 Build the public item detail page (`/sharing/:itemId`)
+- [x] 3.1 Create new "Sharing" tab/page in the main navigation
+- [x] 3.2 Build the marketplace grid/list view to display active, public equipment items
+- [x] 3.3 Create the item creation/edit form (title, description, price, privacy toggle)
+- [x] 3.4 Build the public item detail page (`/sharing/:itemId`)
 
 ## 4. Frontend - Moderation, Q&A, and Handover
 
-- [ ] 4.1 Implement Q&A UI on the item detail page (ask form for members, answer form for owner)
-- [ ] 4.2 Add admin moderation controls (remove button + justification modal) on item pages
-- [ ] 4.3 Build the handover UI for borrowers (upload evidence photo) and owners (confirm return)
-- [ ] 4.4 Add notification triggers for Q&A, moderation, and handover events
+- [x] 4.1 Implement Q&A UI on the item detail page (ask form for members, answer form for owner)
+- [x] 4.2 Add admin moderation controls (remove button + justification modal) on item pages
+- [x] 4.3 Build the handover UI for borrowers (upload evidence photo) and owners (confirm return)
+- [x] 4.4 Add notification triggers for Q&A, moderation, and handover events
