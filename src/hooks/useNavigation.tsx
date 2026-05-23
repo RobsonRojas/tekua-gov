@@ -4,7 +4,8 @@ import {
   Settings, 
   Wallet as WalletIcon,
   FileText as MuralIcon,
-  Bot
+  Bot,
+  Wrench
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -33,6 +34,11 @@ export const useNavigation = () => {
       path: '/wallet',
       label: t('wallet.title'),
       icon: <WalletIcon size={20} />,
+    },
+    {
+      path: '/sharing',
+      label: t('layout.sharing'),
+      icon: <Wrench size={20} />,
     },
     {
       path: '/ai-agent',

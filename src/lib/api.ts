@@ -13,6 +13,7 @@ export type ApiDomain =
   | 'api-work' 
   | 'api-documents' 
   | 'api-notifications'
+  | 'api-sharing'
   | 'api-privacy';
 
 class ApiClient {

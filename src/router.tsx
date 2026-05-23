@@ -28,6 +28,8 @@ const SubmitTaskProof = lazy(() => import('./pages/SubmitTaskProof'));
 const AIAgent = lazy(() => import('./pages/AIAgent'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const TaskDetail = lazy(() => import('./pages/TaskDetail'));
+const SharingMarketplace = lazy(() => import('./pages/Sharing/index'));
+const SharingItemDetail = lazy(() => import('./pages/Sharing/SharingItemDetail'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -62,33 +64,53 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: (
-      <ProtectedRoute>
-        <MainLayout />
-      </ProtectedRoute>
-    ),
+    element: <MainLayout />,
     children: [
       {
         index: true,
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <Home />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <Home />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'profile/:id?',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <Profile />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <Profile />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'wallet',
         element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <Wallet />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'sharing',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <SharingMarketplace />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'sharing/:itemId',
+        element: (
           <Suspense fallback={<LoadingFallback />}>
-            <Wallet />
+            <SharingItemDetail />
           </Suspense>
         ),
       },
@@ -125,117 +147,144 @@ export const router = createBrowserRouter([
       {
         path: 'documents',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <Documentation />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <Documentation />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'governance',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <GovernanceServices />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <GovernanceServices />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'work-wall',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <WorkWall />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <WorkWall />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'register-work',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <RegisterWork />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <RegisterWork />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'create-demand',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <CreateDemand />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <CreateDemand />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'dashboard/reports',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <ReportsDashboard />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <ReportsDashboard />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'voting',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <Voting />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <Voting />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'voting/:id',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <TopicDetail />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <TopicDetail />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'tasks-board',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <TasksBoard />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <TasksBoard />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'tasks/new',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <CreateTask />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <CreateTask />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'tasks/:id',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <TaskDetail />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <TaskDetail />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'tasks/:id/submit',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <SubmitTaskProof />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <SubmitTaskProof />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'ai-agent',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AIAgent />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <AIAgent />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'notifications',
         element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <Notifications />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <Notifications />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
     ],
-
   },
   {
     path: '*',

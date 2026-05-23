@@ -14,15 +14,17 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/useAuth';
 
 const BottomNav: React.FC = () => {
+  const { profile } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
 
-  if (!isMobile) return null;
+  if (!isMobile || !profile) return null;
 
   // Determine active value based on current path
   const getValue = () => {

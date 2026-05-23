@@ -5,9 +5,10 @@ import {
   CircularProgress,
   useMediaQuery,
   useTheme,
-  Typography
+  Typography,
+  Button
 } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/useAuth';
 import Sidebar from '../components/Navigation/Sidebar';
@@ -16,6 +17,65 @@ import MobileDrawer from '../components/Navigation/MobileDrawer';
 import BottomNav from '../components/layout/BottomNav';
 import OfflineBanner from '../components/OfflineBanner';
 import { MOBILE_HEADER_HEIGHT } from '../theme';
+
+const PublicHeader: React.FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <Box 
+      sx={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '80px',
+        zIndex: 1100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        px: { xs: 2, sm: 4 },
+        backdropFilter: 'blur(12px)',
+        bgcolor: 'rgba(15, 23, 42, 0.6)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box 
+          component="img" 
+          src="/pwa-192x192.png" 
+          sx={{ width: 40, height: 40, borderRadius: '10px' }} 
+        />
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 800, 
+            color: 'primary.main', 
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            fontSize: { xs: '1rem', sm: '1.25rem' }
+          }}
+        >
+          Tekuá
+        </Typography>
+      </Box>
+      <Button 
+        variant="contained" 
+        onClick={() => navigate('/login')}
+        sx={{ 
+          borderRadius: '10px', 
+          fontWeight: 700, 
+          px: 3, 
+          py: 1,
+          textTransform: 'none',
+          boxShadow: '0 4px 14px rgba(99, 102, 241, 0.3)'
+        }}
+      >
+        Entrar / Sign In
+      </Button>
+    </Box>
+  );
+};
 
 const MainLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -41,14 +101,16 @@ const MainLayout: React.FC = () => {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', width: '100%', overflowX: 'hidden' }}>
       <OfflineBanner />
       
-      {!isMobile && (
+      {!profile && <PublicHeader />}
+
+      {profile && !isMobile && (
         <Sidebar 
           open={sidebarOpen} 
           onToggle={toggleSidebar} 
         />
       )}
 
-      {isMobile && (
+      {profile && isMobile && (
         <>
           <MobileHeader onMenuClick={toggleMobileDrawer} />
           <MobileDrawer 
@@ -65,8 +127,8 @@ const MainLayout: React.FC = () => {
           display: 'flex', 
           flexDirection: 'column',
           minHeight: '100vh',
-          pt: isMobile ? `${MOBILE_HEADER_HEIGHT}px` : 0,
-          pb: isMobile ? '70px' : 0, // Padding for BottomNav
+          pt: !profile ? '80px' : (isMobile ? `${MOBILE_HEADER_HEIGHT}px` : 0),
+          pb: profile && isMobile ? '70px' : 0, // Padding for BottomNav
           transition: (theme) => theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
@@ -90,7 +152,7 @@ const MainLayout: React.FC = () => {
             py: 3, 
             px: 2, 
             mt: 'auto', 
-            mb: isMobile ? 2 : 0,
+            mb: profile && isMobile ? 2 : 0,
             borderTop: (theme) => `1px solid ${theme.palette.divider}`,
             background: 'background.paper'
           }}
