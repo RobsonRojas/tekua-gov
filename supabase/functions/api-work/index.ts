@@ -260,10 +260,9 @@ serve(async (req) => {
 
       case 'confirmActivity': {
         const { activityId } = params
-        const { data, error } = await supabaseClient
-          .from('activity_confirmations')
-          .insert([{ activity_id: activityId, user_id: user.id }])
-          .select()
+        const { data, error } = await supabaseClient.rpc('confirm_activity', {
+          p_activity_id: activityId
+        })
 
         if (error) throw error
         responseData = data
@@ -306,6 +305,8 @@ serve(async (req) => {
       case 'submitActivity': {
         const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false, attachments = [], workerId = null } = params
         
+        const validationMethod = (requesterId && requesterId.trim() !== '') ? 'requester_approval' : 'community_consensus';
+
         // Use the RPC for complex transaction logic (creating activity + notifications)
         const { data, error } = await supabaseClient.rpc('submit_activity', {
           p_title: title,
@@ -313,6 +314,7 @@ serve(async (req) => {
           p_reward_amount: rewardAmount,
           p_evidence_url: evidenceUrl,
           p_requester_id: requesterId,
+          p_validation_method: validationMethod,
           p_urgency: urgency,
           p_importance: importance,
           p_worker_id: workerId
