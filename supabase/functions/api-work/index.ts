@@ -45,6 +45,18 @@ serve(async (req) => {
           workerId
         } = params
         
+        // Fetch user profile to check roles
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
+          
+        const canSeeAll = profile?.role === 'admin' || 
+                          profile?.roles?.includes('admin') || 
+                          profile?.role === 'transversal_council' ||
+                          profile?.roles?.includes('transversal_council')
+
         // 1. Build query
         let query = supabaseClient
           .from('activities')
@@ -66,6 +78,11 @@ serve(async (req) => {
         if (endDate) query = query.lte('created_at', endDate)
         if (requesterId) query = query.eq('requester_id', requesterId)
         if (workerId) query = query.eq('worker_id', workerId)
+
+        if (!canSeeAll) {
+          query = query.or(`status.neq.pending_approval,requester_id.eq.${user.id}`)
+          query = query.or(`status.neq.rejected,requester_id.eq.${user.id}`)
+        }
 
         const { data: activities, error: activitiesError } = await query
           .order('created_at', { ascending: false })

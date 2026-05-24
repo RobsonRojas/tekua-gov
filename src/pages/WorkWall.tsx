@@ -79,8 +79,16 @@ const WorkWall: React.FC = () => {
   useEffect(() => {
     if (!rawActivities || !user) return;
 
+    const isCouncilOrAdmin = profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council');
+
     let filtered = rawActivities;
-    if (tabIndex === 1) { // Abertas
+    if (tabIndex === 0) { // Todos
+      if (!isCouncilOrAdmin) {
+        filtered = rawActivities.filter((a: any) => 
+          (a.status !== 'pending_approval' && a.status !== 'rejected') || a.requester_id === user?.id
+        );
+      }
+    } else if (tabIndex === 1) { // Abertas
       filtered = rawActivities.filter((a: any) => a.status === 'open');
     } else if (tabIndex === 2) { // Em Execução
       filtered = rawActivities.filter((a: any) => a.status === 'in_progress');
