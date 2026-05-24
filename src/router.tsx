@@ -7,6 +7,7 @@ import { Box, CircularProgress } from '@mui/material';
 // Lazy loading pages
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
+const TaskInviteLanding = lazy(() => import('./pages/TaskInviteLanding'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -43,6 +44,14 @@ export const router = createBrowserRouter([
     element: (
       <Suspense fallback={<LoadingFallback />}>
         <Login />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/invite/task/:inviteToken',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <TaskInviteLanding />
       </Suspense>
     ),
   },

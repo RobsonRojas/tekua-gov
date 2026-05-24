@@ -32,6 +32,7 @@ import { useAuth } from '../context/useAuth';
 import { motion } from 'framer-motion';
 import TaskInteractions from '../components/work/TaskInteractions';
 import AttachmentList from '../components/common/AttachmentList';
+import { QRCodeSVG } from 'qrcode.react';
 
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -326,6 +327,62 @@ const TaskDetail: React.FC = () => {
                   </Box>
                 ))}
               </Stack>
+            </Box>
+          )}
+
+          {/* Task Invitation */}
+          {isOwner && activity.invite_token && activity.status === 'open' && (
+            <Box sx={{ mb: 5 }}>
+              <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+                {t('work.inviteExternal') || 'Convite Externo'}
+              </Typography>
+              <Paper 
+                sx={{ 
+                  p: 3, 
+                  borderRadius: '16px', 
+                  bgcolor: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: 'center',
+                  gap: 3
+                }}
+              >
+                <Box sx={{ bgcolor: 'white', p: 2, borderRadius: 2 }}>
+                  <QRCodeSVG 
+                    value={`${window.location.origin}/invite/task/${activity.invite_token}`} 
+                    size={120} 
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Compartilhe este QR Code ou o link abaixo para permitir que pessoas externas se cadastrem na Tekuá e assumam esta tarefa.
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        p: 1.5, 
+                        bgcolor: 'rgba(0,0,0,0.2)', 
+                        borderRadius: 1, 
+                        flex: 1,
+                        fontFamily: 'monospace',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {`${window.location.origin}/invite/task/${activity.invite_token}`}
+                    </Typography>
+                    <Button 
+                      variant="outlined" 
+                      onClick={() => navigator.clipboard.writeText(`${window.location.origin}/invite/task/${activity.invite_token}`)}
+                    >
+                      Copiar
+                    </Button>
+                  </Box>
+                </Box>
+              </Paper>
             </Box>
           )}
 
