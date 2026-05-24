@@ -139,6 +139,15 @@ serve(async (req) => {
         const amount = Number(rewardAmount)
         if (isNaN(amount) || amount <= 0) throw new Error('Reward amount must be a positive number')
 
+        // Fetch min_confirmations from governance_settings
+        const { data: govSettings } = await supabaseClient
+          .from('governance_settings')
+          .select('min_contribution_confirmations')
+          .eq('id', 'current')
+          .maybeSingle()
+          
+        const minConfirmations = govSettings?.min_contribution_confirmations || 3;
+
         const { data: activityData, error } = await supabaseClient
           .from('activities')
           .insert({ 
@@ -150,6 +159,7 @@ serve(async (req) => {
             status: 'pending_approval',
             geo_required: geoRequired,
             validation_method: 'requester_approval',
+            min_confirmations: minConfirmations,
             urgency,
             importance,
             worker_id: workerId
