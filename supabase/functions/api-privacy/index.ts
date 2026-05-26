@@ -83,12 +83,32 @@ serve(async (req) => {
         const { confirmation } = params
         if (confirmation !== 'DELETE') throw new Error('Confirmation string mismatch')
 
-        // 1. Anonimize sensitive records that must stay for integrity
-        // - Topic votes: remove user_id or set to null if possible (depends on constraints)
-        // For now, we'll try to set them to null or a ghost user if defined.
-        
-        // 2. Delete the profile (Cascade should handle most things if configured, but let's be careful)
-        // In this system, we'll delete the auth user which should trigger profile deletion via our triggers.
+        // Step 1: Explicit pre-anonimization of records that MUST be preserved for integrity.
+        // We do this BEFORE deleting the auth user to avoid race conditions with FK triggers.
+
+        // Nullify topic_votes user references (votes must remain for governance integrity)
+        await supabaseAdmin
+          .from('topic_votes')
+          .update({ user_id: null })
+          .eq('user_id', user.id)
+
+        // Nullify activity_log user references (audit trail must remain)
+        await supabaseAdmin
+          .from('activity_log')
+          .update({ user_id: null })
+          .eq('user_id', user.id)
+
+        // Anonimize the profile personal data (wallet, contributions etc. cascade via FK ON DELETE SET NULL)
+        await supabaseAdmin
+          .from('profiles')
+          .update({
+            full_name: 'Membro Excluído',
+            avatar_url: null,
+          })
+          .eq('id', user.id)
+
+        // Step 2: Delete the auth user — this will cascade-delete the profile row
+        // and trigger ON DELETE SET NULL on all remaining FK references.
         const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
         if (deleteError) throw deleteError
 
