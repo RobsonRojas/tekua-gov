@@ -18,6 +18,7 @@ export interface DocumentMetadata {
 export interface Document extends DocumentMetadata {
   id: string;
   file_path: string;
+  external_url?: string;
   created_at: string;
   created_by: string;
 }
@@ -45,7 +46,7 @@ export function useDocuments() {
     }
   }, []);
 
-  const uploadDocument = async (file: File, metadata: DocumentMetadata) => {
+  const uploadDocument = async (file: File | null, metadata: DocumentMetadata, externalUrl?: string) => {
     if (!user) {
       setError('User not authenticated.');
       return false;
@@ -56,17 +57,21 @@ export function useDocuments() {
     setUploadProgress(0);
 
     try {
-      // Create a unique file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-      const filePath = `${metadata.category}/${fileName}`;
+      let filePath = '';
+      
+      if (file) {
+        // Create a unique file path
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        filePath = `${metadata.category}/${fileName}`;
 
-      // 1. Upload to Supabase Storage
-      const { uploadFile } = await import('../utils/storage');
-      await uploadFile(file, {
-        bucket: 'official-docs',
-        path: filePath,
-      });
+        // 1. Upload to Supabase Storage
+        const { uploadFile } = await import('../utils/storage');
+        await uploadFile(file, {
+          bucket: 'official-docs',
+          path: filePath,
+        });
+      }
 
       // Simulate progress since supabase-js doesn't provide upload progress natively for small files easily
       setUploadProgress(50);
@@ -76,12 +81,15 @@ export function useDocuments() {
         title: metadata.title,
         description: metadata.description,
         category: metadata.category,
-        filePath: filePath
+        filePath: file ? filePath : null,
+        externalUrl: externalUrl || null
       });
 
       if (apiError) {
         // Rollback storage upload if DB insert fails
-        await supabase.storage.from('official-docs').remove([filePath]);
+        if (file) {
+          await supabase.storage.from('official-docs').remove([filePath]);
+        }
         throw new Error(apiError);
       }
 

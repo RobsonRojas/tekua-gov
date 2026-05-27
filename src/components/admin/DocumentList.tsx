@@ -36,10 +36,16 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete, onView
     doc: null
   });
 
-  const handleView = async (filePath: string) => {
-    const url = await onView(filePath);
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+  const handleView = async (doc: Document) => {
+    if (doc.external_url) {
+      window.open(doc.external_url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (doc.file_path) {
+      const url = await onView(doc.file_path);
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
     }
   };
 
@@ -102,7 +108,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete, onView
                   <Tooltip title={t('common.view', 'Visualizar')}>
                     <IconButton 
                       color="primary" 
-                      onClick={() => handleView(doc.file_path)}
+                      onClick={() => handleView(doc)}
                       disabled={loading}
                     >
                       <ViewIcon size={20} />

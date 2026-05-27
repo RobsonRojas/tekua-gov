@@ -38,8 +38,8 @@ serve(async (req) => {
       }
 
       case 'registerDocument': {
-        const { title, description, category, filePath } = params
-        if (!title || !category || !filePath) throw new Error('Missing document details')
+        const { title, description, category, filePath, externalUrl } = params
+        if (!title || !category || (!filePath && !externalUrl)) throw new Error('Missing document details')
 
         const { data, error } = await supabaseClient
           .from('documents')
@@ -47,7 +47,8 @@ serve(async (req) => {
             title, 
             description, 
             category, 
-            file_path: filePath,
+            file_path: filePath || null,
+            external_url: externalUrl || null,
             created_by: user.id,
             created_at: new Date().toISOString()
           }])

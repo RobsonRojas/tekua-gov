@@ -14,7 +14,7 @@ import { Upload as UploadIcon } from 'lucide-react';
 import type { DocumentMetadata } from '../../hooks/useDocuments';
 
 interface DocumentUploadFormProps {
-  onUpload: (file: File, metadata: DocumentMetadata) => Promise<boolean>;
+  onUpload: (file: File | null, metadata: DocumentMetadata, externalUrl?: string) => Promise<boolean>;
   loading: boolean;
   progress: number;
 }
@@ -30,6 +30,8 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
   const [descPt, setDescPt] = useState('');
   const [descEn, setDescEn] = useState('');
   const [category, setCategory] = useState('');
+  const [uploadType, setUploadType] = useState<'file' | 'link'>('file');
+  const [externalUrl, setExternalUrl] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -39,7 +41,9 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !titlePt || !titleEn || !category) return;
+    if (!titlePt || !titleEn || !category) return;
+    if (uploadType === 'file' && !file) return;
+    if (uploadType === 'link' && !externalUrl) return;
 
     const metadata: DocumentMetadata = {
       title: { pt: titlePt, en: titleEn },
@@ -47,7 +51,7 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
       category
     };
 
-    const success = await onUpload(file, metadata);
+    const success = await onUpload(uploadType === 'file' ? file : null, metadata, uploadType === 'link' ? externalUrl : undefined);
     if (success) {
       setFile(null);
       setTitlePt('');
@@ -55,6 +59,7 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
       setDescPt('');
       setDescEn('');
       setCategory('');
+      setExternalUrl('');
     }
   };
 
@@ -122,23 +127,55 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
             ))}
           </TextField>
 
-          <Box>
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<UploadIcon size={20} />}
-              disabled={loading}
-              fullWidth
-            >
-              {file ? file.name : t('docs.selectFileAny', 'Selecionar Arquivo')}
-              <input
-                type="file"
-                hidden
-                accept="*/*"
-                onChange={handleFileChange}
-              />
-            </Button>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>{t('docs.type', 'Tipo de Documento')}</Typography>
+            <Stack direction="row" spacing={2}>
+              <Button 
+                variant={uploadType === 'file' ? 'contained' : 'outlined'}
+                onClick={() => setUploadType('file')}
+                disabled={loading}
+              >
+                {t('docs.uploadFile', 'Upload de Arquivo')}
+              </Button>
+              <Button 
+                variant={uploadType === 'link' ? 'contained' : 'outlined'}
+                onClick={() => setUploadType('link')}
+                disabled={loading}
+              >
+                {t('docs.externalLink', 'Link Externo')}
+              </Button>
+            </Stack>
           </Box>
+
+          {uploadType === 'file' ? (
+            <Box>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<UploadIcon size={20} />}
+                disabled={loading}
+                fullWidth
+              >
+                {file ? file.name : t('docs.selectFileAny', 'Selecionar Arquivo')}
+                <input
+                  type="file"
+                  hidden
+                  accept="*/*"
+                  onChange={handleFileChange}
+                />
+              </Button>
+            </Box>
+          ) : (
+            <TextField
+              required
+              fullWidth
+              label={t('docs.url', 'URL Externa')}
+              value={externalUrl}
+              onChange={(e) => setExternalUrl(e.target.value)}
+              disabled={loading}
+              placeholder="https://..."
+            />
+          )}
 
           {loading && progress > 0 && (
             <Box sx={{ width: '100%' }}>
@@ -153,7 +190,7 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
             type="submit"
             variant="contained"
             color="primary"
-            disabled={!file || !titlePt || !titleEn || !category || loading}
+            disabled={(!file && uploadType === 'file') || (!externalUrl && uploadType === 'link') || !titlePt || !titleEn || !category || loading}
           >
             {loading ? t('common.loading', 'Carregando...') : t('docs.upload', 'Enviar Documento')}
           </Button>
