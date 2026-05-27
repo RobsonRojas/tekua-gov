@@ -130,11 +130,11 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
               disabled={loading}
               fullWidth
             >
-              {file ? file.name : t('docs.selectFile', 'Selecionar Arquivo (PDF, DOCX)')}
+              {file ? file.name : t('docs.selectFileAny', 'Selecionar Arquivo')}
               <input
                 type="file"
                 hidden
-                accept=".pdf,.doc,.docx"
+                accept="*/*"
                 onChange={handleFileChange}
               />
             </Button>
