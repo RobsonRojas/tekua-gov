@@ -49,7 +49,6 @@ const ResetPassword: React.FC = () => {
       try {
         // token_hash is the correct field for email-link recovery flows (not token, which is for 6-digit OTPs)
         const { error: verifyError } = await supabase.auth.verifyOtp({
-          email: emailParam,
           token_hash: tokenHashParam,
           type: 'recovery',
         });
