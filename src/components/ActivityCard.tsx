@@ -12,7 +12,13 @@ import {
   LinearProgress,
   IconButton,
   Snackbar,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  TextField
 } from '@mui/material';
 import { 
   User, 
@@ -27,7 +33,8 @@ import {
   ShieldAlert,
   Flame,
   Star,
-  Paperclip
+  Paperclip,
+  Trash2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +55,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
   const [localStatus, setLocalStatus] = useState(activity.status);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [justification, setJustification] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   const title = activity.title?.[lang] || activity.title?.pt || 'Untitled';
@@ -131,6 +142,28 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
     setSnackbarOpen(true);
   };
 
+  const handleDelete = async () => {
+    if (justification.length < 10) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await apiClient.invoke('api-work', 'deleteActivity', {
+        activityId: activity.id,
+        justification
+      });
+      if (error) {
+        setErrorMessage(typeof error === 'string' ? error : ((error as any).message || 'Erro ao remover atividade.'));
+        return;
+      }
+      setDeleteModalOpen(false);
+      onRefresh();
+    } catch (err: any) {
+      console.error('Error deleting activity:', err);
+      setErrorMessage(err?.message || 'Erro ao remover atividade.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const evidenceUrl = activity.evidence?.[0]?.evidence_url;
 
   return (
@@ -199,6 +232,21 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 <Share2 size={16} />
               </IconButton>
             </Tooltip>
+            {(profile?.roles?.includes('admin') || profile?.role === 'admin') && (
+              <Tooltip title={t('common.delete') || 'Remover Atividade'}>
+                <IconButton 
+                  size="small" 
+                  onClick={(e) => { e.stopPropagation(); setDeleteModalOpen(true); }}
+                  sx={{ 
+                    color: 'text.secondary', 
+                    p: 0.5,
+                    '&:hover': { color: 'error.main', bgcolor: 'error.mainChannel' } 
+                  }}
+                >
+                  <Trash2 size={16} />
+                </IconButton>
+              </Tooltip>
+            )}
             {activity.attachments?.[0]?.count > 0 && (
               <Tooltip title={`${activity.attachments[0].count} ${t('work.attachments')}`}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
@@ -387,6 +435,48 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           </Alert>
         )}
       </Snackbar>
+
+      <Dialog 
+        open={deleteModalOpen} 
+        onClose={() => !isDeleting && setDeleteModalOpen(false)}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <DialogTitle>{t('work.deleteTitle') || 'Remover Atividade'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            {t('work.deleteConfirmMessage') || 'Tem certeza que deseja remover esta atividade? Esta ação exige uma justificativa e será auditada.'}
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="justification"
+            label={t('work.justification') || 'Justificativa'}
+            type="text"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={3}
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            disabled={isDeleting}
+            error={justification.length > 0 && justification.length < 10}
+            helperText={justification.length > 0 && justification.length < 10 ? 'Mínimo de 10 caracteres' : ''}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setDeleteModalOpen(false)} disabled={isDeleting}>
+            {t('common.cancel') || 'Cancelar'}
+          </Button>
+          <Button 
+            onClick={handleDelete} 
+            color="error" 
+            variant="contained"
+            disabled={isDeleting || justification.length < 10}
+          >
+            {isDeleting ? (t('common.loading') || 'Processando...') : (t('common.delete') || 'Remover')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

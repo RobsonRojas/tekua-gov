@@ -481,6 +481,50 @@ serve(async (req) => {
         break
       }
 
+      case 'deleteActivity': {
+        const { activityId, justification } = params
+        if (!activityId || !justification) throw new Error('Missing activityId or justification')
+        
+        // 1. Verify role
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
+        
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        
+        if (!isAdmin) throw new Error('Forbidden')
+
+        // 2. Soft delete using admin client
+        const { error: updateError } = await supabaseAdmin
+          .from('activities')
+          .update({ status: 'rejected', updated_at: new Date().toISOString() })
+          .eq('id', activityId)
+
+        if (updateError) throw updateError
+
+        // 3. Log the action
+        const { error: logError } = await supabaseAdmin
+          .from('audit_logs')
+          .insert({
+            actor_id: user.id,
+            action: 'ADMIN_DELETE_ACTIVITY',
+            resource_type: 'activities',
+            resource_id: activityId,
+            description: {
+              pt: `Atividade removida pelo administrador. Justificativa: ${justification}`,
+              en: `Activity removed by administrator. Justification: ${justification}`
+            },
+            metadata: { justification }
+          })
+
+        if (logError) throw logError
+
+        responseData = { success: true }
+        break
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`)
     }
