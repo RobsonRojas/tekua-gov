@@ -101,7 +101,7 @@ const Profile: React.FC = () => {
       label: t('profile.security_tab.tabTitle'), 
       icon: <Settings size={18} />, 
       value: 1,
-      visible: !isAdminView
+      visible: !isAdminView || profile?.roles?.includes('admin')
     },
     { 
       label: t('profile.activity'), 
@@ -548,22 +548,24 @@ const Profile: React.FC = () => {
                   {t('profile.accountSettings')}
                 </Typography>
                 <List sx={{ p: 0 }}>
-                  <ListItem 
-                    sx={{ 
-                      px: 0, 
-                      cursor: 'pointer',
-                      '&:hover .MuiListItemText-primary': { color: 'primary.main' }
-                    }}
-                    onClick={() => setTabValue(1)}
-                  >
-                    <ListItemIcon sx={{ color: 'text.secondary', minWidth: 40 }}>
-                      <Shield size={20} />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={t('profile.security')} 
-                      secondary={t('profile.securityDesc')} 
-                    />
-                  </ListItem>
+                  {(!isAdminView || profile?.roles?.includes('admin')) && (
+                    <ListItem 
+                      sx={{ 
+                        px: 0, 
+                        cursor: 'pointer',
+                        '&:hover .MuiListItemText-primary': { color: 'primary.main' }
+                      }}
+                      onClick={() => setTabValue(1)}
+                    >
+                      <ListItemIcon sx={{ color: 'text.secondary', minWidth: 40 }}>
+                        <Shield size={20} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={t('profile.security')} 
+                        secondary={t('profile.securityDesc')} 
+                      />
+                    </ListItem>
+                  )}
                   <ListItem 
                     sx={{ 
                       px: 0, 
@@ -597,7 +599,9 @@ const Profile: React.FC = () => {
             border: '1px solid rgba(255, 255, 255, 0.05)',
           }}
         >
-          <SecurityTab />
+          {(!isAdminView || profile?.roles?.includes('admin')) && (
+            <SecurityTab targetUserId={isAdminView ? id : undefined} />
+          )}
         </Paper>
       </TabPanel>
 

@@ -12,8 +12,13 @@ import {
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
 
-const SecurityTab: React.FC = () => {
+interface SecurityTabProps {
+  targetUserId?: string;
+}
+
+const SecurityTab: React.FC<SecurityTabProps> = ({ targetUserId }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,11 +53,20 @@ const SecurityTab: React.FC = () => {
       
       while (retries > 0) {
         try {
-          const { error } = await supabase.auth.updateUser({
-            password: password,
-          });
-          updateError = error;
-          break; // success or normal error (not lock timeout)
+          if (targetUserId) {
+            const { error } = await apiClient.invoke('api-members', 'adminUpdatePassword', {
+              targetUserId,
+              newPassword: password
+            });
+            updateError = error;
+            break;
+          } else {
+            const { error } = await supabase.auth.updateUser({
+              password: password,
+            });
+            updateError = error;
+            break; // success or normal error (not lock timeout)
+          }
         } catch (err: any) {
           if (err.name === 'NavigatorLockAcquireTimeoutError' || err.message?.includes('Lock')) {
             retries--;

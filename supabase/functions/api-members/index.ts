@@ -254,6 +254,30 @@ serve(async (req) => {
         break
       }
 
+      case 'adminUpdatePassword': {
+        const { targetUserId, newPassword } = params
+        if (!targetUserId || !newPassword) throw new Error('Missing targetUserId or newPassword')
+
+        // 1. Verify requester is admin
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('roles')
+          .eq('id', user.id)
+          .single()
+        
+        if (!profile?.roles?.includes('admin')) throw new Error('Forbidden')
+
+        // 2. Perform password update using admin client
+        const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
+          targetUserId,
+          { password: newPassword }
+        )
+
+        if (error) throw error
+        responseData = { success: true }
+        break
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`)
     }
