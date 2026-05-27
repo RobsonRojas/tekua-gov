@@ -238,6 +238,7 @@ serve(async (req) => {
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
           data: { 
             full_name: full_name || '',
+            email: email, // ensure email is passed in meta data
             roles: roles || ['member'],
             functions: functions || [],
             // Legacy fields for backward compatibility
@@ -249,7 +250,14 @@ serve(async (req) => {
 
         if (inviteError) throw inviteError
 
-        // 3. Update profile role if specified
+        // 3. Update profile email to ensure it's saved in the profiles table
+        if (inviteData?.user?.id) {
+          await supabaseAdmin
+            .from('profiles')
+            .update({ email: email })
+            .eq('id', inviteData.user.id);
+        }
+
         responseData = inviteData
         break
       }
