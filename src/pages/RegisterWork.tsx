@@ -40,6 +40,8 @@ const RegisterWork: React.FC = () => {
   const [amount, setAmount] = useState<number | string>('');
   const [beneficiaryType, setBeneficiaryType] = useState<'tekua' | 'member'>('tekua');
   const [beneficiaryId, setBeneficiaryId] = useState<string>('');
+  const [executorType, setExecutorType] = useState<'me' | 'other'>('me');
+  const [executorId, setExecutorId] = useState<string>('');
   const [members, setMembers] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   
@@ -50,10 +52,8 @@ const RegisterWork: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
-    if (beneficiaryType === 'member') {
-      fetchMembers();
-    }
-  }, [beneficiaryType]);
+    fetchMembers();
+  }, []);
 
   const fetchMembers = async () => {
     setLoadingMembers(true);
@@ -103,6 +103,7 @@ const RegisterWork: React.FC = () => {
         p_reward_amount: Number(amount),
         p_evidence_url: evidenceUrl,
         p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null,
+        p_worker_id: executorType === 'other' ? executorId : user.id,
         attachments
       };
 
@@ -121,6 +122,7 @@ const RegisterWork: React.FC = () => {
         rewardAmount: submissionData.p_reward_amount,
         evidenceUrl: submissionData.p_evidence_url,
         requesterId: submissionData.p_requester_id,
+        workerId: submissionData.p_worker_id,
         attachments: submissionData.attachments
       });
 
@@ -233,6 +235,39 @@ const RegisterWork: React.FC = () => {
                   label={t('work.otherMember')}
                   value={beneficiaryId}
                   onChange={(e) => setBeneficiaryId(e.target.value)}
+                  required
+                  disabled={loadingMembers}
+                >
+                  {members.map((member) => (
+                    <MenuItem key={member.id} value={member.id}>
+                      {member.full_name || member.email}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            )}
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                select
+                label={t('work.executor', 'Quem executou o trabalho?')}
+                value={executorType}
+                onChange={(e) => setExecutorType(e.target.value as any)}
+              >
+                <MenuItem value="me">{t('work.me', 'Eu mesmo')}</MenuItem>
+                <MenuItem value="other">{t('work.otherExecutor', 'Outro Membro')}</MenuItem>
+              </TextField>
+            </Grid>
+
+            {executorType === 'other' && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  fullWidth
+                  select
+                  label={t('work.selectExecutor', 'Selecione o Membro')}
+                  value={executorId}
+                  onChange={(e) => setExecutorId(e.target.value)}
                   required
                   disabled={loadingMembers}
                 >
