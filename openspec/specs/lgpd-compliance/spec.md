@@ -2,9 +2,7 @@
 
 ## Purpose
 TBD - created by archiving change full-support-to-lgpd. Update Purpose after archive.
-
 ## Requirements
-
 ### Requirement: Consentimento de Privacidade
 O sistema SHALL exigir que todo usuário aceite expressamente os Termos de Uso e a Política de Privacidade antes de acessar as funcionalidades da plataforma.
 
@@ -31,3 +29,4 @@ O sistema SHALL prover um mecanismo para que o usuário solicite a exclusão de 
 - **THEN** o sistema SHALL remover todos os dados de identificação pessoal (nome, email, avatar).
 - **THEN** o sistema SHALL anonimizar registros vinculados que precisam ser mantidos por integridade (votos, transações).
 - **THEN** o acesso do usuário SHALL ser revogado imediatamente.
+

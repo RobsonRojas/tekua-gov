@@ -2,9 +2,7 @@
 
 ## Purpose
 Esta especificação define o comportamento responsivo da navegação de filtros no Mural de Trabalho, garantindo consistência entre a visualização de abas em desktop e o menu de hambúrguer/contextual em dispositivos móveis.
-
 ## Requirements
-
 ### Requirement: Work Wall Category Filtering UI
 O Mural de Trabalho **SHALL** fornecer uma interface de filtragem por status que se adapta ao dispositivo do usuário.
 
@@ -28,3 +26,15 @@ A seleção de filtros no componente responsivo **SHALL** manter a sincronia com
 - **THEN** o menu **SHALL** ser fechado.
 - **AND** a lista de atividades **SHALL** ser filtrada imediatamente.
 - **AND** o rótulo do botão de menu **SHALL** ser atualizado para o novo status.
+
+### Requirement: Ocultação de Tarefas Pendentes
+O Mural de Trabalho **SHALL** ocultar tarefas em status `pending_approval` e `rejected` para usuários comuns, garantindo que apenas tarefas aprovadas ou em andamento sejam visíveis.
+
+#### Scenario: Visualização do mural por usuário padrão
+- **WHEN** um usuário padrão (sem a role `admin` ou `transversal_council`) acessa a aba "Todos" no Mural de Trabalho.
+- **THEN** nenhuma tarefa com o status `pending_approval` ou `rejected` **SHALL** ser exibida, a menos que o usuário seja o criador (`requester_id`) da tarefa.
+
+#### Scenario: Visualização do mural por conselheiro transversal
+- **WHEN** um conselheiro transversal acessa o Mural de Trabalho.
+- **THEN** ele **SHALL** ser capaz de ver as tarefas pendentes, seja em sua aba dedicada ("Moderação") ou misturadas (dependendo da lógica da aba Todos).
+

@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Centralized Validation RPC
 The backend API **MUST** process all activity confirmations using the centralized `confirm_activity` database RPC to ensure consistency, security, and automated payout execution.
@@ -6,6 +6,8 @@ The backend API **MUST** process all activity confirmations using the centralize
 #### Scenario: Backend routing
 - **WHEN** the `api-work` function receives a `confirmActivity` request.
 - **THEN** it SHALL call the `confirm_activity` RPC instead of performing direct inserts on `activity_confirmations`.
+
+## MODIFIED Requirements
 
 ### Requirement: Validação Social de Contribuições
 Membros da Vila **SHALL** confirmar a realização de trabalhos publicados no mural quando o método de validação for `community_consensus`. Se for `requester_approval`, apenas o beneficiário indicado tem permissão para confirmar o trabalho.

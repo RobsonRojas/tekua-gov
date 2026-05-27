@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Registro de Beneficiário Específico
 The system SHALL allow users to specify a particular beneficiary (`requester_id`) when registering completed work. If a beneficiary is specified, the system **MUST** automatically assign `requester_approval` as the validation method for the task.

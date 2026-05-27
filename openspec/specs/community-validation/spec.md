@@ -4,21 +4,23 @@
 TBD - created by archiving change user-register-work-done. Update Purpose after archive.
 ## Requirements
 ### Requirement: Validação Social de Contribuições
-Membros da Vila **SHALL** confirmar a realização de trabalhos publicados no mural para garantir a transparência e consenso.
+Membros da Vila **SHALL** confirmar a realização de trabalhos publicados no mural quando o método de validação for `community_consensus`. Se for `requester_approval`, apenas o beneficiário indicado tem permissão para confirmar o trabalho.
 
-#### Scenario: Confirmação realizada por terceiro
-- **WHEN** Um membro visualiza a evidência de outro usuário e clica em "Confirmar".
-- **THEN** Uma nova entrada é criada e a contagem de validações da contribuição é incrementada.
+#### Scenario: Validação por beneficiário único (requester_approval)
+- **WHEN** uma tarefa com `validation_method = requester_approval` é visualizada.
+- **AND** o usuário logado é o `requester_id` da tarefa.
+- **AND** ele confirma a atividade.
+- **THEN** o sistema marca a atividade como concluída imediatamente e realiza a transferência da recompensa, sem aguardar outros votos.
 
-#### Scenario: Prevenção de auto-confirmação
-- **WHEN** O autor da tarefa tenta confirmar sua própria contribuição.
-- **THEN** O sistema impede a ação e exibe uma mensagem de indisponibilidade.
+#### Scenario: Validação por terceiros não autorizados
+- **WHEN** um usuário tenta confirmar uma tarefa configurada com `requester_approval`.
+- **AND** ele não é o `requester_id` da tarefa.
+- **THEN** o sistema **SHALL** impedir a ação e retornar um erro "Only the requester can approve this activity".
 
-#### Scenario: Revogação de confirmação
-- **WHEN** Um usuário que já confirmou deseja desfazer sua ação (dentro de um prazo de 24h).
-- **THEN** A confirmação é removida e o progresso da contribuição volta um nível.
+### Requirement: Centralized Validation RPC
+The backend API **MUST** process all activity confirmations using the centralized `confirm_activity` database RPC to ensure consistency, security, and automated payout execution.
 
-#### Scenario: Validação de perfil (Sybil prevention)
-- **WHEN** Um usuário com permissões de 'visitante' tenta validar uma tarefa.
-- **THEN** O sistema nega a validação, permitindo apenas membros reconhecidos ('member', 'admin').
+#### Scenario: Backend routing
+- **WHEN** the `api-work` function receives a `confirmActivity` request.
+- **THEN** it SHALL call the `confirm_activity` RPC instead of performing direct inserts on `activity_confirmations`.
 

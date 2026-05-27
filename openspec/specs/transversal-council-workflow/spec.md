@@ -2,9 +2,7 @@
 
 ## Purpose
 Define o fluxo de trabalho do Conselho Transversal, incluindo permissões especiais para moderação de demandas, acesso a dashboards de aprovação e governança descentralizada da plataforma.
-
 ## Requirements
-
 ### Requirement: Transversal Council Role
 The system SHALL support a specific user role named `transversal_council`.
 
@@ -20,11 +18,11 @@ The system SHALL provide a moderation interface accessible only to `transversal_
 - **THEN** the system SHALL display a list of all tasks and demands with `pending_approval` status.
 
 ### Requirement: Task Approval Action
-The system SHALL allow `transversal_council` members to approve pending tasks.
+The system SHALL allow `transversal_council` members to approve pending tasks so they become visible to standard users.
 
 #### Scenario: Approving a task
 - **WHEN** a council member clicks "Approve" on a `pending_approval` task.
-- **THEN** the task status SHALL change to `open` and it SHALL become visible on the public Work Wall.
+- **THEN** the task status SHALL change to `open` and it SHALL become visible on the public Work Wall for all standard users.
 
 ### Requirement: Task Rejection Action
 The system SHALL allow `transversal_council` members to reject pending tasks.
@@ -43,3 +41,4 @@ The system SHALL have automated tests to validate the transversal council approv
 #### Scenario: Integration testing the approval flow
 - **WHEN** an integration test simulates a council member approving a pending task in the browser.
 - **THEN** it SHALL verify that the task becomes visible to other users on the Work Wall.
+
