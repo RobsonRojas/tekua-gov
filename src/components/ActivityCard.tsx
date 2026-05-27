@@ -142,6 +142,24 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
     setSnackbarOpen(true);
   };
 
+  const handleUpdateThreshold = async (newThreshold: number) => {
+    if (newThreshold < 1) return;
+    try {
+      const { error } = await apiClient.invoke('api-work', 'updateThreshold', {
+        activityId: activity.id,
+        threshold: newThreshold
+      });
+      if (error) {
+        setErrorMessage(typeof error === 'string' ? error : ((error as any).message || 'Erro ao atualizar.'));
+        return;
+      }
+      onRefresh();
+    } catch (err: any) {
+      console.error('Error updating threshold:', err);
+      setErrorMessage(err?.message || 'Erro ao atualizar.');
+    }
+  };
+
   const handleDelete = async () => {
     if (justification.length < 10) return;
     setIsDeleting(true);
@@ -310,9 +328,22 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         )}
 
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" color="text.secondary">
-              {t('work.confirmations')}: {confirmCount} / {threshold}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {t('work.confirmations')}: {confirmCount} / 
+              {(profile?.roles?.includes('admin') || profile?.role === 'admin') ? (
+                <TextField 
+                  size="small"
+                  type="number"
+                  value={threshold}
+                  onChange={(e) => handleUpdateThreshold(Number(e.target.value))}
+                  inputProps={{ min: 1, style: { padding: '2px 6px', fontSize: '0.75rem', textAlign: 'center', width: '30px' } }}
+                  onClick={(e) => e.stopPropagation()}
+                  sx={{ ml: 0.5 }}
+                />
+              ) : (
+                threshold
+              )}
             </Typography>
             <Typography variant="caption" color="text.secondary">
                {Math.min(100, progress).toFixed(0)}%
@@ -381,10 +412,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                   variant="outlined"
                   startIcon={<CheckCircle size={18} />}
                   onClick={handleAction}
-                  disabled={loading || isWorker}
+                  disabled={loading || isWorker || activity.user_has_confirmed}
                   sx={{ borderRadius: '12px', py: 1.5 }}
                 >
-                  {t('work.confirm')}
+                  {activity.user_has_confirmed ? 'Já Confirmado' : t('work.confirm')}
                 </Button>
               </Box>
             </Tooltip>

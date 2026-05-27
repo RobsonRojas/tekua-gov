@@ -525,6 +525,32 @@ serve(async (req) => {
         break
       }
 
+      case 'updateThreshold': {
+        const { activityId, threshold } = params
+        if (!activityId || threshold === undefined) throw new Error('Missing activityId or threshold')
+        
+        // 1. Verify role
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
+        
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
+
+        // 2. Update threshold
+        const { error: updateError } = await supabaseAdmin
+          .from('activities')
+          .update({ min_confirmations: threshold, updated_at: new Date().toISOString() })
+          .eq('id', activityId)
+
+        if (updateError) throw updateError
+
+        responseData = { success: true }
+        break
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`)
     }
