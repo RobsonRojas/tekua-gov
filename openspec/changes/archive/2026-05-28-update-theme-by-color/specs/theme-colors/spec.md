@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Atualização do Tema Base com a Nova Paleta
-O sistema DEVE prover um esquema de cores baseado na imagem `cores.jpeg`, mapeando as novas cores para as propriedades nativas do Material-UI.
+O sistema SHALL prover um esquema de cores baseado na imagem `cores.jpeg`, mapeando as novas cores para as propriedades nativas do Material-UI.
 
 #### Scenario: Tema Light Ativo
 - **WHEN** o usuário seleciona ou seu sistema estiver configurado para o tema Light
