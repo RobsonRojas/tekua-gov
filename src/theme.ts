@@ -11,39 +11,49 @@ export const getThemeOptions = (mode: PaletteMode): ThemeOptions => ({
       ? {
           // Palette for light mode
           primary: {
-            main: '#4f46e5', // Indigo 600
-            light: '#6366f1',
-            dark: '#3730a3',
+            main: '#467048', // Verde floresta
+            light: '#659367',
+            dark: '#2c492d',
           },
           secondary: {
-            main: '#059669', // Emerald 600
+            main: '#da8923', // Laranja mostarda
+            light: '#f5a43d',
+            dark: '#b36d16',
+          },
+          error: {
+            main: '#8d0c09', // Vermelho carmesim
           },
           background: {
-            default: '#f8fafc', // Slate 50
+            default: '#f4f5f0', // Tom claro neutro/esverdeado
             paper: '#ffffff',
           },
           text: {
-            primary: '#0f172a', // Slate 900
-            secondary: '#475569', // Slate 600
+            primary: '#262a18', // Verde muito escuro (substitui preto)
+            secondary: '#5f5142', // Marrom escuro / Taupe
           },
         }
       : {
           // Palette for dark mode
           primary: {
-            main: '#6366f1', // Indigo 500
-            light: '#818cf8',
-            dark: '#4f46e5',
+            main: '#467048', // Verde floresta
+            light: '#659367',
+            dark: '#2c492d',
           },
           secondary: {
-            main: '#10b981', // Emerald 500
+            main: '#da8923', // Laranja mostarda
+            light: '#f5a43d',
+            dark: '#b36d16',
+          },
+          error: {
+            main: '#8d0c09', // Vermelho carmesim
           },
           background: {
-            default: '#0f172a', // Slate 900
-            paper: '#1e293b',   // Slate 800
+            default: '#1c1f12', // Fundo principal ainda mais escuro que paper
+            paper: '#262a18',   // Verde muito escuro
           },
           text: {
             primary: '#f8fafc',
-            secondary: '#94a3b8',
+            secondary: '#a2a45e', // Verde oliva claro
           },
         }),
   },
@@ -78,13 +88,13 @@ export const getThemeOptions = (mode: PaletteMode): ThemeOptions => ({
         },
         containedPrimary: {
           background: mode === 'dark' 
-            ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
-            : 'linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)',
+            ? 'linear-gradient(135deg, #659367 0%, #467048 100%)'
+            : 'linear-gradient(135deg, #467048 0%, #2c492d 100%)',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
           '&:hover': {
             background: mode === 'dark'
-              ? 'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)'
-              : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+              ? 'linear-gradient(135deg, #a2a45e 0%, #659367 100%)'
+              : 'linear-gradient(135deg, #659367 0%, #467048 100%)',
           },
         },
       },
