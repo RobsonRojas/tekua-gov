@@ -14,6 +14,7 @@ import WalletCard from '../components/WalletCard';
 import PushNotificationBanner from '../components/PushNotificationBanner';
 import { usePWA } from '../context/PWAContext';
 import { InstallPrompt } from '../components/pwa/InstallPrompt';
+import NoticeWall from '../components/NoticeWall';
 
 import { useAuth } from '../context/useAuth';
 
@@ -83,8 +84,11 @@ const Home: React.FC = () => {
       <PushNotificationBanner />
 
       <Grid container spacing={4} sx={{ mb: 6 }}>
-        <Grid size={{ xs: 12 }}>
+        <Grid size={{ xs: 12, md: 7, lg: 8 }}>
           <WalletCard />
+        </Grid>
+        <Grid size={{ xs: 12, md: 5, lg: 4 }}>
+          <NoticeWall />
         </Grid>
       </Grid>
 
