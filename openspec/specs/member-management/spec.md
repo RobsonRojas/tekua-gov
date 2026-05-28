@@ -26,17 +26,15 @@ O sistema SHALL permitir que administradores visualizem e gerenciem os perfis de
 - **THEN** o sistema SHALL redirecionar o administrador para a página de perfil do usuário selecionado.
 
 ### Requirement: Convite de Novos Membros
-O sistema SHALL permitir que administradores enviem convites para novos membros via email para integração na plataforma.
+O sistema SHALL permitir que administradores adicionem novos membros à plataforma, fornecendo no mínimo o Nome, Papel (Role) e o Endereço de E-mail. O e-mail **MUST** ser validado e salvo obrigatoriamente no banco de dados para garantir que o membro possa ser contatado e consiga realizar o login posteriormente.
 
-#### Scenario: Envio de Convite com Sucesso
-- **WHEN** o administrador abre o formulário de "Novo Membro", insere um email válido e clica em "Enviar Convite".
-- **THEN** o sistema SHALL invocar o backend para disparar um convite via Supabase Auth.
-- **THEN** o sistema SHALL exibir uma confirmação de sucesso para o administrador.
-- **THEN** o novo membro SHALL aparecer na lista de usuários (ou a lista deve ser recarregada).
+#### Scenario: Cadastro com Sucesso
+- **WHEN** o administrador preenche o formulário de "Novo Membro" com Nome, Papel e um E-mail válido e clica em "Salvar".
+- **THEN** o sistema SHALL criar o usuário e salvar todos os dados fornecidos, incluindo o e-mail, nas respectivas tabelas do banco de dados (ex: perfis e auth).
 
-#### Scenario: Falha ao Enviar Convite (Email Duplicado ou Inválido)
-- **WHEN** o administrador tenta convidar um email que já está cadastrado ou possui formato inválido.
-- **THEN** o sistema SHALL exibir uma mensagem de erro clara explicando o motivo da falha.
+#### Scenario: Prevenção de Cadastro Sem E-mail
+- **WHEN** o administrador tenta salvar o formulário sem fornecer o E-mail.
+- **THEN** o sistema SHALL bloquear a submissão e exibir um aviso de que o E-mail é um campo obrigatório.
 
 ### Requirement: Modificação de Permissões
 O sistema SHALL permitir que administradores gerenciem a coleção de papéis (Roles) e funções de outros membros de forma atômica e persistente.

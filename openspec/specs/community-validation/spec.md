@@ -4,7 +4,13 @@
 TBD - created by archiving change user-register-work-done. Update Purpose after archive.
 ## Requirements
 ### Requirement: Validação Social de Contribuições
-Membros da Vila **SHALL** confirmar a realização de trabalhos publicados no mural quando o método de validação for `community_consensus`. Se for `requester_approval`, apenas o beneficiário indicado tem permissão para confirmar o trabalho.
+Membros da Vila e Membros do Conselho **SHALL** confirmar a realização de trabalhos publicados no mural quando o método de validação for `community_consensus`. Se for `requester_approval`, apenas o beneficiário indicado tem permissão para confirmar o trabalho. O sistema **MUST** garantir que usuários com permissões elevadas (como conselheiros e administradores) não sejam bloqueados indevidamente por verificações de autorização ao tentar confirmar atividades de `community_consensus`.
+
+#### Scenario: Validação por membro do conselho
+- **WHEN** uma tarefa com `validation_method = community_consensus` é visualizada.
+- **AND** o usuário logado é um membro do conselho ou administrador.
+- **AND** ele confirma a atividade clicando no botão.
+- **THEN** o sistema SHALL registrar a confirmação com sucesso e incrementar a contagem de validações da atividade.
 
 #### Scenario: Validação por beneficiário único (requester_approval)
 - **WHEN** uma tarefa com `validation_method = requester_approval` é visualizada.

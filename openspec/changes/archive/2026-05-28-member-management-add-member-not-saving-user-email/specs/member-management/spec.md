@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: Cadastro de Novos Membros
+### Requirement: Convite de Novos Membros
 O sistema SHALL permitir que administradores adicionem novos membros à plataforma, fornecendo no mínimo o Nome, Papel (Role) e o Endereço de E-mail. O e-mail **MUST** ser validado e salvo obrigatoriamente no banco de dados para garantir que o membro possa ser contatado e consiga realizar o login posteriormente.
 
 #### Scenario: Cadastro com Sucesso

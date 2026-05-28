@@ -24,11 +24,15 @@ O sistema **SHALL** permitir que qualquer usuário autenticado registre uma ativ
 - **THEN** O sistema impede a submissão, destacando que a prova de trabalho é obrigatória para a transparência.
 
 ### Requirement: Tabbed Work Mural
-O Mural de Trabalho SHALL organizar as atividades em abas baseadas em seu status operacional.
+O Mural de Trabalho SHALL organizar as atividades em abas baseadas em seu status operacional, e **MUST NOT** exibir atividades que foram administrativamente removidas ou rejeitadas.
 
 #### Scenario: Switching tabs
 - **WHEN** o usuário seleciona a aba "Em Execução"
 - **THEN** o sistema SHALL exibir apenas atividades com status `in_progress`.
+
+#### Scenario: Ocultação de atividades removidas
+- **WHEN** uma atividade é removida/arquivada por um administrador.
+- **THEN** o Mural de Trabalho SHALL ocultar imediatamente essa atividade de todas as abas públicas.
 
 ### Requirement: Advanced Filtering
 O Mural de Trabalho SHALL prover filtros para refinar a lista de atividades por múltiplos critérios simultâneos.
@@ -62,4 +66,17 @@ The system SHALL allow users to specify a particular beneficiary (`requester_id`
 #### Scenario: Submitting work without a beneficiary
 - **WHEN** a user registers work without providing a `requester_id`.
 - **THEN** the system SHALL default the task's validation method to `community_consensus`.
+
+### Requirement: Registro de Trabalho em Nome de Outro Membro
+The system SHALL allow an authenticated user to register a work activity on behalf of another member, specifying that other member as the actual executor (author) of the work.
+
+#### Scenario: Registering work for another member
+- **WHEN** a user fills out the work registration form and selects a different member in the "Membro Executor" field.
+- **AND** submits the form.
+- **THEN** the system SHALL create the activity and assign the selected member as the true author/executor.
+- **AND** the rewards and validation flows SHALL target the selected executor, not the user who submitted the form.
+
+#### Scenario: Registering work for self
+- **WHEN** a user fills out the work registration form and does NOT select a different member (or selects themselves).
+- **THEN** the system SHALL default the executor/author to the currently authenticated user.
 

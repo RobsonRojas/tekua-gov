@@ -4,15 +4,12 @@
 TBD - created by archiving change admin-panel-documents-manager. Update Purpose after archive.
 ## Requirements
 ### Requirement: Registro de Documentos Oficiais
-O sistema SHALL permitir que administradores registrem documentos oficiais com metadados para visualização pelos membros.
+O sistema SHALL permitir que administradores registrem documentos oficiais de qualquer formato de arquivo de uso comum (textos, planilhas, imagens, etc.) para visualização ou download pelos membros.
 
 #### Scenario: Envio de Novo Documento
-- **WHEN** um administrador seleciona um arquivo (PDF/Docx), preenche o título e a categoria e clica em "Salvar".
+- **WHEN** um administrador seleciona um arquivo de formato de trabalho ou mídia (ex: PDF, XLSX, PNG, CSV), preenche o título e a categoria e clica em "Salvar".
 - **THEN** o sistema faz o upload para o Supabase Storage e registra os metadados na tabela de documentos.
-
-#### Scenario: Listagem por Categoria
-- **WHEN** o administrador acessa o gerenciador de documentos e seleciona um filtro de categoria.
-- **THEN** o sistema exibe apenas os documentos pertencentes àquela categoria (ex: "Atas").
+- **AND** a interface não SHALL restringir a seleção de arquivos na janela de seleção do sistema operacional (file picker).
 
 ### Requirement: Gestão de Ciclo de Vida
 O sistema SHALL permitir que documentos obsoletos ou incorretos sejam removidos ou atualizados.
