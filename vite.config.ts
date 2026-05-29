@@ -75,7 +75,15 @@ export default defineConfig({
             if (id.includes('@mui') || id.includes('@emotion')) {
               return 'vendor-mui';
             }
-            if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-router')) {
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler/') ||
+              id.includes('node_modules/react-is/') ||
+              id.includes('node_modules/react-router/') ||
+              id.includes('node_modules/react-router-dom/') ||
+              id.includes('node_modules/@remix-run/router/')
+            ) {
               return 'vendor-react';
             }
             if (id.includes('lucide-react')) {
