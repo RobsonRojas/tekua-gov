@@ -525,6 +525,119 @@ serve(async (req) => {
         break
       }
 
+      case 'updateActivity': {
+        const { 
+          activityId,
+          title, 
+          description, 
+          rewardAmount, 
+          workerId,
+          attachments = []
+        } = params
+        
+        if (!activityId) throw new Error('Missing activityId')
+        
+        // 1. Fetch existing activity to verify requester
+        const { data: activity, error: fetchError } = await supabaseClient
+          .from('activities')
+          .select('requester_id, status')
+          .eq('id', activityId)
+          .single()
+          
+        if (fetchError || !activity) throw new Error('Activity not found')
+        
+        // 2. Fetch user profile to check if admin
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
+          
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        const isOwner = activity.requester_id === user.id
+        
+        if (!isAdmin && !isOwner) throw new Error('Forbidden: Only the author or an admin can edit this task')
+        
+        // Prepare updates
+        const updates: any = {
+          updated_at: new Date().toISOString()
+        }
+        
+        if (title !== undefined) {
+          updates.title = typeof title === 'string' ? { pt: title, en: title } : title
+        }
+        if (description !== undefined) {
+          updates.description = typeof description === 'string' ? { pt: description, en: description } : description
+        }
+        if (rewardAmount !== undefined) {
+          const amount = Number(rewardAmount)
+          if (isNaN(amount) || amount <= 0) throw new Error('Reward amount must be a positive number')
+          updates.reward_amount = amount
+        }
+        if (workerId !== undefined) {
+          updates.worker_id = workerId || null
+        }
+        
+        const { data: updatedData, error: updateError } = await supabaseAdmin
+          .from('activities')
+          .update(updates)
+          .eq('id', activityId)
+          .select()
+          .single()
+          
+        if (updateError) throw updateError
+        
+        // Manage reference attachments (is_evidence = false)
+        if (attachments !== undefined) {
+          // Delete existing non-evidence attachments
+          const { error: deleteAttError } = await supabaseAdmin
+            .from('activity_attachments')
+            .delete()
+            .eq('activity_id', activityId)
+            .eq('is_evidence', false)
+            
+          if (deleteAttError) throw deleteAttError
+          
+          if (attachments.length > 0) {
+            const attachmentsToInsert = attachments.map((att: any) => ({
+              activity_id: activityId,
+              user_id: user.id,
+              file_url: att.file_url,
+              file_name: att.file_name,
+              file_type: att.file_type,
+              file_size: att.file_size,
+              is_evidence: false
+            }))
+
+            const { error: attError } = await supabaseAdmin
+              .from('activity_attachments')
+              .insert(attachmentsToInsert)
+
+            if (attError) throw attError
+          }
+        }
+        
+        // 3. Log the action
+        const { error: logError } = await supabaseAdmin
+          .from('audit_logs')
+          .insert({
+            actor_id: user.id,
+            action: 'UPDATE_ACTIVITY',
+            resource_type: 'activities',
+            resource_id: activityId,
+            description: {
+              pt: `Tarefa editada por ${isAdmin ? 'administrador' : 'autor'}.`,
+              en: `Task edited by ${isAdmin ? 'administrator' : 'author'}.`
+            },
+            metadata: { updates }
+          })
+          
+        if (logError) console.error("Error logging activity update to audit:", logError)
+        
+        responseData = updatedData
+        break
+      }
+
       case 'updateThreshold': {
         const { activityId, threshold } = params
         if (!activityId || threshold === undefined) throw new Error('Missing activityId or threshold')

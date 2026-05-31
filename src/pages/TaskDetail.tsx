@@ -14,16 +14,24 @@ import {
   Stack,
   LinearProgress,
   Tooltip,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  Snackbar
 } from '@mui/material';
 import { 
   ArrowLeft, 
   Share2, 
   Trophy, 
   CheckCircle2, 
-  PlayCircle,
+  PlayCircle, 
   User,
-  MapPin
+  MapPin,
+  Pencil
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -33,19 +41,38 @@ import { motion } from 'framer-motion';
 import TaskInteractions from '../components/work/TaskInteractions';
 import AttachmentList from '../components/common/AttachmentList';
 import { QRCodeSVG } from 'qrcode.react';
+import FileUploader from '../components/common/FileUploader';
+import type { Attachment } from '../components/common/FileUploader';
 
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   
   const [activity, setActivity] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editAmount, setEditAmount] = useState<number | string>('');
+  const [editWorkerId, setEditWorkerId] = useState<string>('');
+  const [editAttachments, setEditAttachments] = useState<Attachment[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
+
+  const isAdmin = profile?.roles?.includes('admin') || profile?.role === 'admin';
+  const isOwner = user?.id === activity?.requester_id;
+  const canEdit = isAdmin || isOwner;
 
   const fetchDetail = useCallback(async () => {
     if (!id || authLoading) return;
@@ -61,9 +88,79 @@ const TaskDetail: React.FC = () => {
     }
   }, [id, authLoading]);
 
+  const fetchMembers = useCallback(async () => {
+    setLoadingMembers(true);
+    try {
+      const { data, error } = await apiClient.invoke('api-members', 'fetchUsers');
+      if (error) throw new Error(error);
+      setMembers(data || []);
+    } catch (err) {
+      console.error('Error fetching members:', err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchDetail();
   }, [fetchDetail]);
+
+  useEffect(() => {
+    if (editDialogOpen && isAdmin) {
+      fetchMembers();
+    }
+  }, [editDialogOpen, isAdmin, fetchMembers]);
+
+  const handleOpenEdit = () => {
+    if (!activity) return;
+    setEditTitle(activity.title?.[lang] || activity.title?.pt || '');
+    setEditDescription(activity.description?.[lang] || activity.description?.pt || '');
+    setEditAmount(activity.reward_amount || '');
+    setEditWorkerId(activity.worker_id || '');
+    const existingRefs = activity.attachments
+      ? activity.attachments
+          .filter((a: any) => !a.is_evidence)
+          .map((a: any) => ({
+            file_url: a.file_url,
+            file_name: a.file_name,
+            file_type: a.file_type,
+            file_size: a.file_size
+          }))
+      : [];
+    setEditAttachments(existingRefs);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activity) return;
+    setEditLoading(true);
+    try {
+      const { error } = await apiClient.invoke('api-work', 'updateActivity', {
+        activityId: activity.id,
+        title: editTitle,
+        description: editDescription,
+        rewardAmount: Number(editAmount),
+        workerId: editWorkerId || null,
+        attachments: editAttachments
+      });
+
+      if (error) throw new Error(error);
+
+      setSnackbarMessage(t('work.editSuccess') || 'Tarefa atualizada com sucesso!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setEditDialogOpen(false);
+      fetchDetail();
+    } catch (err: any) {
+      console.error('Error updating task:', err);
+      setSnackbarMessage(err.message || t('common.error') || 'Erro ao atualizar tarefa.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const handleAction = async () => {
     if (!activity) return;
@@ -87,7 +184,9 @@ const TaskDetail: React.FC = () => {
   const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    // Could add a toast here
+    setSnackbarMessage(t('work.linkCopied') || 'Link da tarefa copiado!');
+    setSnackbarSeverity('success');
+    setSnackbarOpen(true);
   };
 
   if (loading || authLoading) {
@@ -113,7 +212,6 @@ const TaskDetail: React.FC = () => {
 
   const title = activity.title?.[lang] || activity.title?.pt || 'Untitled';
   const description = activity.description?.[lang] || activity.description?.pt || 'No description';
-  const isOwner = user?.id === activity.requester_id;
   const isWorker = user?.id === activity.worker_id;
   const confirmCount = activity.confirmations?.length || 0;
   const threshold = activity.min_confirmations || 3;
@@ -145,9 +243,22 @@ const TaskDetail: React.FC = () => {
           >
             {t('common.back') || 'Voltar ao Mural'}
           </Button>
-          <IconButton onClick={handleShare} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}>
-            <Share2 size={20} />
-          </IconButton>
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+            {canEdit && (
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<Pencil size={16} />}
+                onClick={handleOpenEdit}
+                sx={{ borderRadius: '12px' }}
+              >
+                {t('common.edit') || 'Editar'}
+              </Button>
+            )}
+            <IconButton onClick={handleShare} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}>
+              <Share2 size={20} />
+            </IconButton>
+          </Box>
         </Box>
 
         <Paper 
@@ -434,6 +545,127 @@ const TaskDetail: React.FC = () => {
 
         <TaskInteractions activityId={activity.id} />
       </motion.div>
+
+      {editDialogOpen && (
+        <Dialog 
+          open={editDialogOpen} 
+          onClose={() => !editLoading && setEditDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '24px',
+              bgcolor: 'background.paper',
+              border: '1px solid rgba(255,255,255,0.05)',
+              p: 2
+            }
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 700, px: 3, pt: 3 }}>
+            {t('work.editTaskTitle') || 'Editar Tarefa'}
+          </DialogTitle>
+          <DialogContent sx={{ px: 3 }}>
+            <form onSubmit={handleEditSubmit}>
+              <Stack spacing={3} sx={{ mt: 1 }}>
+                <TextField
+                  fullWidth
+                  label={t('work.title') || 'Título da Demanda'}
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  required
+                  variant="outlined"
+                />
+                <TextField
+                  fullWidth
+                  label={t('work.demandDescription') || 'Descrição'}
+                  multiline
+                  rows={4}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  required
+                  variant="outlined"
+                />
+                <TextField
+                  fullWidth
+                  label={t('work.reward') || 'Valor da Recompensa (Surreal)'}
+                  type="number"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  required
+                  InputProps={{ inputProps: { min: 1 } }}
+                />
+                {isAdmin && (
+                  <TextField
+                    fullWidth
+                    select
+                    label={t('work.executor') || 'Atribuir a um Membro (Opcional)'}
+                    value={editWorkerId}
+                    onChange={(e) => setEditWorkerId(e.target.value)}
+                    disabled={loadingMembers}
+                    helperText={t('work.executorHelper') || 'Deixe em branco para permitir que qualquer um assuma'}
+                  >
+                    <MenuItem value="">
+                      <em>{t('common.none') || 'Nenhum'}</em>
+                    </MenuItem>
+                    {members.map((member) => (
+                      <MenuItem key={member.id} value={member.id}>
+                        {member.full_name || member.email}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+                <Box>
+                  <Divider sx={{ my: 1 }} />
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2 }}>
+                    {t('work.demandAttachments') || 'Documentos de Referência'}
+                  </Typography>
+                  <FileUploader 
+                    onUploadComplete={setEditAttachments} 
+                    maxFiles={5}
+                    bucket="task-evidence"
+                    existingAttachments={editAttachments}
+                  />
+                </Box>
+              </Stack>
+            </form>
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button 
+              onClick={() => setEditDialogOpen(false)} 
+              disabled={editLoading}
+              variant="outlined"
+              sx={{ borderRadius: '12px' }}
+            >
+              {t('common.cancel') || 'Cancelar'}
+            </Button>
+            <Button 
+              onClick={handleEditSubmit} 
+              variant="contained" 
+              color="primary"
+              disabled={editLoading}
+              startIcon={editLoading ? <CircularProgress size={20} /> : undefined}
+              sx={{ borderRadius: '12px', px: 3 }}
+            >
+              {t('common.save') || 'Salvar'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity} 
+          sx={{ width: '100%', borderRadius: '12px' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
