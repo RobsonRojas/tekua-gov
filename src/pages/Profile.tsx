@@ -21,7 +21,8 @@ import {
   useTheme,
   useMediaQuery,
   Menu,
-  MenuItem
+  MenuItem,
+  IconButton
 } from '@mui/material';
 import { 
   Shield, 
@@ -31,7 +32,9 @@ import {
   User,
   Settings,
   Wallet,
-  ChevronDown
+  ChevronDown,
+  Camera,
+  Trash2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -42,6 +45,7 @@ import ActivityTab from './components/ActivityTab';
 import PrivacyTab from './components/PrivacyTab';
 import { logActivity } from '../utils/activityLogger';
 import { InstallPrompt } from '../components/pwa/InstallPrompt';
+import { uploadFile, getFileUrl } from '../utils/storage';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -86,6 +90,11 @@ const Profile: React.FC = () => {
   const [targetProfile, setTargetProfile] = useState<any>(null);
   const [loadingTarget, setLoadingTarget] = useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+  // Photo states
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
   const isAdminView = !!id && id !== authUser?.id;
   const currentProfile = isAdminView ? targetProfile : profile;
   const isLoading = authLoading || (isAdminView && loadingTarget);
@@ -120,8 +129,10 @@ const Profile: React.FC = () => {
   useEffect(() => {
     if (isAdminView) {
       fetchTargetProfile();
+      setPhotoPreview(null);
     } else if (profile) {
       setFullName(profile.full_name || '');
+      setPhotoPreview(profile.avatar_url || null);
       fetchBalance();
     }
   }, [id, profile, authUser]);
@@ -134,6 +145,7 @@ const Profile: React.FC = () => {
       if (error) throw new Error(error);
       setTargetProfile(data);
       setFullName(data?.full_name || '');
+      setPhotoPreview(data?.avatar_url || null);
       
       // Fetch balance for target user if requester is admin
       if (profile?.roles?.includes('admin')) {
@@ -166,7 +178,7 @@ const Profile: React.FC = () => {
     
     try {
       const { error } = await apiClient.invoke('api-members', 'updateProfile', {
-        fullName
+        updates: { full_name: fullName }
       });
 
       if (error) throw new Error(error);
@@ -183,6 +195,94 @@ const Profile: React.FC = () => {
       setMessage({ type: 'error', text: err.message || t('profile.updateError') });
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5242880) {
+        setMessage({ type: 'error', text: 'O tamanho da foto não deve exceder 5MB.' });
+        return;
+      }
+
+      setUploadingPhoto(true);
+      setMessage(null);
+      
+      const objectUrl = URL.createObjectURL(file);
+      setPhotoPreview(objectUrl);
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const path = `avatars/${fileName}`;
+
+        // Upload and compress image using utility
+        await uploadFile(file, {
+          bucket: 'member-photos',
+          path
+        });
+
+        // Get public URL
+        const newAvatarUrl = await getFileUrl('member-photos', path, true);
+
+        // Update user profile via api-members Edge Function
+        const { error } = await apiClient.invoke('api-members', 'updateProfile', {
+          updates: { avatar_url: newAvatarUrl }
+        });
+
+        if (error) throw new Error(error);
+
+        // Log user activity
+        if (authUser) {
+          logActivity(authUser.id, 'profile_update', {
+            pt: 'Foto de perfil atualizada',
+            en: 'Profile photo updated'
+          });
+        }
+
+        setMessage({ type: 'success', text: 'Foto de perfil atualizada com sucesso!' });
+      } catch (err: any) {
+        console.error('Error uploading photo:', err);
+        setMessage({ type: 'error', text: err.message || 'Erro ao fazer upload da foto.' });
+        setPhotoPreview(profile?.avatar_url || null); // revert preview on error
+      } finally {
+        setUploadingPhoto(false);
+      }
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!window.confirm('Tem certeza que deseja remover sua foto de perfil?')) {
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setMessage(null);
+
+    try {
+      // Update user profile setting avatar_url to null via api-members
+      const { error } = await apiClient.invoke('api-members', 'updateProfile', {
+        updates: { avatar_url: null }
+      });
+
+      if (error) throw new Error(error);
+
+      // Log user activity
+      if (authUser) {
+        logActivity(authUser.id, 'profile_update', {
+          pt: 'Foto de perfil removida',
+          en: 'Profile photo removed'
+        });
+      }
+
+      setPhotoPreview(null);
+      setMessage({ type: 'success', text: 'Foto de perfil removida com sucesso!' });
+    } catch (err: any) {
+      console.error('Error removing photo:', err);
+      setMessage({ type: 'error', text: err.message || 'Erro ao remover a foto de perfil.' });
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -341,38 +441,83 @@ const Profile: React.FC = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
               }}
             >
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                badgeContent={
-                  <Box 
+              <Box sx={{ position: 'relative', width: { xs: 90, sm: 120 }, height: { xs: 90, sm: 120 }, mx: 'auto', mb: 3 }}>
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  badgeContent={
+                    <Box 
+                      sx={{ 
+                        bgcolor: currentProfile?.roles?.includes('admin') ? 'primary.main' : 'secondary.main', 
+                        p: 0.5, 
+                        borderRadius: '50%',
+                        border: '4px solid #1e293b'
+                      }}
+                    >
+                      <Shield size={14} color="white" />
+                    </Box>
+                  }
+                  sx={{ width: '100%', height: '100%' }}
+                >
+                  <Avatar 
+                    src={photoPreview || currentProfile?.avatar_url || undefined}
                     sx={{ 
-                      bgcolor: currentProfile?.roles?.includes('admin') ? 'primary.main' : 'secondary.main', 
-                      p: 0.5, 
-                      borderRadius: '50%',
-                      border: '4px solid #1e293b'
+                      width: '100%', 
+                      height: '100%', 
+                      bgcolor: 'primary.main',
+                      fontSize: { xs: '2rem', sm: '3rem' },
+                      fontWeight: 700,
+                      boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
                     }}
                   >
-                    <Shield size={14} color="white" />
-                  </Box>
-                }
-              >
-                <Avatar 
-                  src={currentProfile?.avatar_url}
-                  sx={{ 
-                    width: { xs: 90, sm: 120 }, 
-                    height: { xs: 90, sm: 120 }, 
-                    mx: 'auto', 
-                    mb: 3, 
-                    bgcolor: 'primary.main',
-                    fontSize: { xs: '2rem', sm: '3rem' },
-                    fontWeight: 700,
-                    boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
-                  }}
-                >
-                  {currentProfile?.full_name?.charAt(0) || currentProfile?.email?.charAt(0) || '?'}
-                </Avatar>
-              </Badge>
+                    {currentProfile?.full_name?.charAt(0) || currentProfile?.email?.charAt(0) || '?'}
+                  </Avatar>
+                </Badge>
+                {!isAdminView && (
+                  <IconButton
+                    component="label"
+                    disabled={uploadingPhoto}
+                    sx={{
+                      position: 'absolute',
+                      bottom: -4,
+                      right: -4,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      p: 0.75,
+                      border: '2px solid',
+                      borderColor: 'background.paper',
+                      zIndex: 10,
+                      '&:hover': {
+                        bgcolor: 'primary.dark',
+                      }
+                    }}
+                  >
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handlePhotoChange}
+                    />
+                    {uploadingPhoto ? <CircularProgress size={14} color="inherit" /> : <Camera size={14} />}
+                  </IconButton>
+                )}
+              </Box>
+
+              {!isAdminView && currentProfile?.avatar_url && (
+                <Box sx={{ mt: -2, mb: 2 }}>
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="text"
+                    startIcon={<Trash2 size={12} />}
+                    onClick={handleRemovePhoto}
+                    disabled={uploadingPhoto}
+                    sx={{ textTransform: 'none', py: 0 }}
+                  >
+                    Remover Foto
+                  </Button>
+                </Box>
+              )}
 
               <Typography 
                 variant="h3" 
