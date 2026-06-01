@@ -12,10 +12,15 @@ import {
   CircularProgress,
   Stack,
   Autocomplete,
-  Chip as MuiChip
+  Chip as MuiChip,
+  Avatar,
+  IconButton,
+  Typography
 } from '@mui/material';
+import { Camera, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMembers } from '../../hooks/useMembers';
+import { uploadFile, getFileUrl } from '../../utils/storage';
 
 interface NewMemberModalProps {
   open: boolean;
@@ -33,6 +38,31 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Photo states
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5242880) {
+        setError('O tamanho da foto não deve exceder 5MB.');
+        return;
+      }
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setError(null);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoPreview(null);
+  };
+
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -44,15 +74,33 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
     setLoading(true);
     setError(null);
 
-    const result = await inviteMember(email, fullName, roles, functions);
+    try {
+      let avatarUrl = null;
+      if (photoFile) {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const path = `avatars/${fileName}`;
+        await uploadFile(photoFile, {
+          bucket: 'member-photos',
+          path
+        });
+        avatarUrl = await getFileUrl('member-photos', path, true);
+      }
 
-    if (result.success) {
-      onSuccess();
-      handleClose();
-    } else {
-      setError(result.error || t('common.error'));
+      const result = await inviteMember(email, fullName, roles, functions, avatarUrl);
+
+      if (result.success) {
+        onSuccess();
+        handleClose();
+      } else {
+        setError(result.error || t('common.error'));
+      }
+    } catch (err: any) {
+      console.error('Error in handleInvite:', err);
+      setError(err.message || t('common.error'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleClose = () => {
@@ -60,6 +108,11 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
     setFullName('');
     setRoles(['member']);
     setFunctions([]);
+    setPhotoFile(null);
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoPreview(null);
     setError(null);
     onClose();
   };
@@ -85,6 +138,68 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
           {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '8px' }}>{error}</Alert>}
           
           <Stack spacing={3}>
+            {/* Foto de Perfil Uploader */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1 }}>
+              <Box sx={{ position: 'relative', width: 90, height: 90 }}>
+                <Avatar
+                  src={photoPreview || undefined}
+                  sx={{
+                    width: 90,
+                    height: 90,
+                    fontSize: '2rem',
+                    fontWeight: 700,
+                    border: '3px solid rgba(99, 102, 241, 0.5)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    bgcolor: 'primary.main',
+                  }}
+                >
+                  {fullName ? fullName.charAt(0).toUpperCase() : (email ? email.charAt(0).toUpperCase() : '?')}
+                </Avatar>
+                <IconButton
+                  component="label"
+                  sx={{
+                    position: 'absolute',
+                    bottom: -4,
+                    right: -4,
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    p: 0.75,
+                    border: '2px solid',
+                    borderColor: 'background.paper',
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    }
+                  }}
+                >
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handlePhotoChange}
+                  />
+                  <Camera size={14} />
+                </IconButton>
+              </Box>
+              <Box sx={{ mt: 1 }}>
+                {photoPreview ? (
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="text"
+                    startIcon={<Trash2 size={12} />}
+                    onClick={handleRemovePhoto}
+                    sx={{ textTransform: 'none', py: 0 }}
+                  >
+                    Remover Foto
+                  </Button>
+                ) : (
+                  <Typography variant="caption" color="text.secondary">
+                    Formatos: JPG, PNG, WEBP (Máx: 5MB)
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+
             <TextField
               fullWidth
               label="Email"

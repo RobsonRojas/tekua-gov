@@ -42,13 +42,14 @@ export function useMembers() {
     }
   };
 
-  const inviteMember = async (email: string, fullName: string, roles: string[], functions: string[] = []) => {
+  const inviteMember = async (email: string, fullName: string, roles: string[], functions: string[] = [], avatarUrl?: string | null) => {
     try {
       const { error } = await apiClient.invoke('api-members', 'inviteMember', {
         email,
         full_name: fullName,
         roles,
-        functions
+        functions,
+        avatar_url: avatarUrl
       });
 
       if (error) throw new Error(error);

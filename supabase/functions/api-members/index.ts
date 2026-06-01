@@ -222,7 +222,7 @@ serve(async (req) => {
       }
 
       case 'inviteMember': {
-        const { email, roles, full_name, functions } = params
+        const { email, roles, full_name, functions, avatar_url } = params
         if (!email) throw new Error('Missing email')
 
         // 1. Verify requester is admin
@@ -241,6 +241,7 @@ serve(async (req) => {
             email: email, // ensure email is passed in meta data
             roles: roles || ['member'],
             functions: functions || [],
+            avatar_url: avatar_url || null,
             // Legacy fields for backward compatibility
             role: roles ? roles[0] : 'member',
             is_board_member: functions ? functions.length > 0 : false,
@@ -254,7 +255,10 @@ serve(async (req) => {
         if (inviteData?.user?.id) {
           await supabaseAdmin
             .from('profiles')
-            .update({ email: email })
+            .update({ 
+              email: email,
+              avatar_url: avatar_url || null
+            })
             .eq('id', inviteData.user.id);
         }
 

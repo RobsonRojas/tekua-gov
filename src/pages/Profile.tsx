@@ -358,6 +358,7 @@ const Profile: React.FC = () => {
                 }
               >
                 <Avatar 
+                  src={currentProfile?.avatar_url}
                   sx={{ 
                     width: { xs: 90, sm: 120 }, 
                     height: { xs: 90, sm: 120 }, 

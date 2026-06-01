@@ -2,7 +2,7 @@ import imageCompression from 'browser-image-compression';
 import { supabase } from '../lib/supabase';
 
 export interface UploadOptions {
-  bucket: 'task-evidence' | 'official-docs';
+  bucket: 'task-evidence' | 'official-docs' | 'member-photos';
   path: string;
   maxSizeMB?: number;
   maxWidthOrHeight?: number;
@@ -15,8 +15,8 @@ export const uploadFile = async (file: File, options: UploadOptions) => {
   // Get current user for metadata
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Compress image if it's an image and target is task-evidence or specified
-  if (file.type.startsWith('image/') && options.bucket === 'task-evidence') {
+  // Compress image if it's an image and target is task-evidence, member-photos or specified
+  if (file.type.startsWith('image/') && (options.bucket === 'task-evidence' || options.bucket === 'member-photos')) {
     const compressionOptions = {
       maxSizeMB: options.maxSizeMB || 1,
       maxWidthOrHeight: options.maxWidthOrHeight || 1920,

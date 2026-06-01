@@ -126,7 +126,7 @@ const MemberManagement: React.FC = () => {
                 <TableRow key={member.id} hover>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
+                      <Avatar src={member.avatar_url} sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
                         {member.full_name?.charAt(0) || member.email?.charAt(0)}
                       </Avatar>
                       <Typography variant="body2" fontWeight={600}>

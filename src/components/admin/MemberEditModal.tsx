@@ -16,10 +16,14 @@ import {
   Chip as MuiChip,
   Switch,
   FormControlLabel,
-  Divider
+  Divider,
+  Avatar,
+  IconButton
 } from '@mui/material';
+import { Camera, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMembers } from '../../hooks/useMembers';
+import { uploadFile, getFileUrl } from '../../utils/storage';
 
 interface MemberEditModalProps {
   open: boolean;
@@ -39,6 +43,11 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Photo states
+  const [avatarUrl, setAvatarUrl] = useState(member?.avatar_url || '');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(member?.avatar_url || null);
+
   useEffect(() => {
     if (member) {
       setFullName(member.full_name || '');
@@ -50,8 +59,35 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
       
       setIsBoardMember(initialFunctions.length > 0 || !!member.is_board_member);
       setIsTransversalCouncil(initialRoles.includes('transversal_council'));
+
+      setAvatarUrl(member.avatar_url || '');
+      setPhotoPreview(member.avatar_url || null);
+      setPhotoFile(null);
     }
   }, [member]);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5242880) {
+        setError('O tamanho da foto não deve exceder 5MB.');
+        return;
+      }
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setAvatarUrl(''); // Reset since we have a new file
+      setError(null);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    if (photoPreview && photoPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoPreview(null);
+    setAvatarUrl('');
+  };
 
   const handleSave = async () => {
     // Basic validation: ensure at least one admin remains
@@ -71,36 +107,55 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
     setSaving(true);
     setError(null);
 
-    // Sync roles array with toggles
-    let finalRoles = roles.filter(r => r !== 'transversal_council');
-    if (isTransversalCouncil) {
-      finalRoles.push('transversal_council');
-    }
+    try {
+      let finalAvatarUrl = avatarUrl;
+      if (photoFile) {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const path = `avatars/${fileName}`;
+        await uploadFile(photoFile, {
+          bucket: 'member-photos',
+          path
+        });
+        finalAvatarUrl = await getFileUrl('member-photos', path, true);
+      }
 
-    // Ensure primary role exists (admin or member)
-    if (!finalRoles.includes('admin') && !finalRoles.includes('member')) {
-      finalRoles.push('member');
-    }
+      // Sync roles array with toggles
+      let finalRoles = roles.filter(r => r !== 'transversal_council');
+      if (isTransversalCouncil) {
+        finalRoles.push('transversal_council');
+      }
 
-    const finalFunctions = isBoardMember ? functions : [];
+      // Ensure primary role exists (admin or member)
+      if (!finalRoles.includes('admin') && !finalRoles.includes('member')) {
+        finalRoles.push('member');
+      }
 
-    const success = await updateMember(member.id, { 
-      full_name: fullName,
-      roles: finalRoles,
-      functions: finalFunctions,
-      // Legacy compatibility
-      role: finalRoles.includes('admin') ? 'admin' : (finalRoles.includes('transversal_council') ? 'transversal_council' : 'member'),
-      is_board_member: isBoardMember,
-      board_role: finalFunctions.length > 0 ? finalFunctions[0] : null
-    });
-    
-    if (success) {
-      onSave();
-      onClose();
-    } else {
-      setError('Erro ao salvar as alterações.');
+      const finalFunctions = isBoardMember ? functions : [];
+
+      const success = await updateMember(member.id, { 
+        full_name: fullName,
+        roles: finalRoles,
+        functions: finalFunctions,
+        avatar_url: finalAvatarUrl || null,
+        // Legacy compatibility
+        role: finalRoles.includes('admin') ? 'admin' : (finalRoles.includes('transversal_council') ? 'transversal_council' : 'member'),
+        is_board_member: isBoardMember,
+        board_role: finalFunctions.length > 0 ? finalFunctions[0] : null
+      });
+      
+      if (success) {
+        onSave();
+        onClose();
+      } else {
+        setError('Erro ao salvar as alterações.');
+      }
+    } catch (err: any) {
+      console.error('Error saving member changes:', err);
+      setError(err.message || 'Erro ao salvar as alterações.');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (
@@ -111,13 +166,77 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
       <DialogContent dividers>
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
         
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="caption" color="text.secondary" gutterBottom>
-            Email
-          </Typography>
-          <Typography variant="body1">
-            {member?.email}
-          </Typography>
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="caption" color="text.secondary" gutterBottom>
+              Email
+            </Typography>
+            <Typography variant="body1">
+              {member?.email}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Foto de Perfil Uploader */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ position: 'relative', width: 90, height: 90 }}>
+            <Avatar
+              src={photoPreview || undefined}
+              sx={{
+                width: 90,
+                height: 90,
+                fontSize: '2rem',
+                fontWeight: 700,
+                border: '3px solid rgba(99, 102, 241, 0.5)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                bgcolor: 'primary.main',
+              }}
+            >
+              {fullName ? fullName.charAt(0).toUpperCase() : (member?.email ? member.email.charAt(0).toUpperCase() : '?')}
+            </Avatar>
+            <IconButton
+              component="label"
+              sx={{
+                position: 'absolute',
+                bottom: -4,
+                right: -4,
+                bgcolor: 'primary.main',
+                color: 'white',
+                p: 0.75,
+                border: '2px solid',
+                borderColor: 'background.paper',
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                }
+              }}
+            >
+              <input
+                type="file"
+                hidden
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handlePhotoChange}
+              />
+              <Camera size={14} />
+            </IconButton>
+          </Box>
+          <Box sx={{ mt: 1 }}>
+            {photoPreview ? (
+              <Button
+                size="small"
+                color="error"
+                variant="text"
+                startIcon={<Trash2 size={12} />}
+                onClick={handleRemovePhoto}
+                sx={{ textTransform: 'none', py: 0 }}
+              >
+                Remover Foto
+              </Button>
+            ) : (
+              <Typography variant="caption" color="text.secondary">
+                Formatos: JPG, PNG, WEBP (Máx: 5MB)
+              </Typography>
+            )}
+          </Box>
         </Box>
 
         <Stack spacing={3}>
