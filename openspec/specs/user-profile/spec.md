@@ -51,5 +51,5 @@ The system SHALL allow authenticated users to upload, update, and remove their o
 #### Scenario: Remove Profile Photo
 - **GIVEN** An authenticated user with a profile photo.
 - **WHEN** The user clicks to remove their profile photo.
-- **THEN** The user's `avatar_url` is set to `null` in the profiles table, and the UI falls back to displaying the user's initials.
+- **THEN** O `avatar_url` do usuário é definido como `null` na tabela de perfis e a interface do usuário imediatamente e de forma síncrona/reagente (sem necessidade de recarregamento manual da página) passa a exibir as iniciais do nome como fallback, ocultando também o botão de remoção.
 

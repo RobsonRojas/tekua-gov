@@ -460,7 +460,7 @@ const Profile: React.FC = () => {
                   sx={{ width: '100%', height: '100%' }}
                 >
                   <Avatar 
-                    src={photoPreview || currentProfile?.avatar_url || undefined}
+                    src={photoPreview || undefined}
                     sx={{ 
                       width: '100%', 
                       height: '100%', 
@@ -503,7 +503,7 @@ const Profile: React.FC = () => {
                 )}
               </Box>
 
-              {!isAdminView && currentProfile?.avatar_url && (
+              {!isAdminView && photoPreview && (
                 <Box sx={{ mt: -2, mb: 2 }}>
                   <Button
                     size="small"
