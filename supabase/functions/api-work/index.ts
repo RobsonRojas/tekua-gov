@@ -453,8 +453,8 @@ serve(async (req) => {
         
         if (!canModerate) throw new Error('Forbidden')
 
-        // 2. Call moderation RPC using admin client
-        const { error } = await supabaseAdmin.rpc('moderate_activity', {
+        // 2. Call moderation RPC using authenticated client
+        const { error } = await supabaseClient.rpc('moderate_activity', {
           p_activity_id: activityId,
           p_action: modAction
         })
