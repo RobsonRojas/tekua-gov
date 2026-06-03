@@ -236,11 +236,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 {activity.reward_amount} $S
               </Typography>
             </Stack>
-            <Tooltip title={t('common.share') || 'Compartilhar'}>
+            <Tooltip title={t('common.share', 'Compartilhar')}>
               <IconButton 
                 size="small" 
                 onClick={handleShare}
-                title={t('common.share') || 'Compartilhar'}
+                title={t('common.share', 'Compartilhar')}
                 sx={{ 
                   color: 'text.secondary', 
                   p: 0.5,
@@ -251,7 +251,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               </IconButton>
             </Tooltip>
             {(profile?.roles?.includes('admin') || profile?.role === 'admin') && (
-              <Tooltip title={t('common.delete') || 'Remover Atividade'}>
+              <Tooltip title={t('common.delete', 'Remover Atividade')}>
                 <IconButton 
                   size="small" 
                   onClick={(e) => { e.stopPropagation(); setDeleteModalOpen(true); }}
@@ -283,7 +283,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             {activity.urgency && (
               <Chip 
                 icon={<Flame size={12} />} 
-                label={t('work.urgency') || 'Urgente'} 
+                label={t('work.urgency', 'Urgente')} 
                 size="small" 
                 color="error" 
                 variant="outlined"
@@ -293,7 +293,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             {activity.importance && (
               <Chip 
                 icon={<Star size={12} />} 
-                label={t('work.importance') || 'Importante'} 
+                label={t('work.importance', 'Importante')} 
                 size="small" 
                 color="warning" 
                 variant="outlined"
@@ -322,7 +322,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                onClick={(e) => e.stopPropagation()}
                sx={{ textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}
              >
-               <PlayCircle size={14} /> {t('work.viewEvidence') || 'Ver Evidência'}
+               <PlayCircle size={14} /> {t('work.viewEvidence', 'Ver Evidência')}
              </Typography>
           </Box>
         )}
@@ -387,7 +387,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               disabled={loading || isOwner}
               sx={{ borderRadius: '12px', py: 1.5 }}
             >
-              {t('work.accept') || 'Assumir Tarefa'}
+              {t('work.accept', 'Assumir Tarefa')}
             </Button>
           )}
 
@@ -400,7 +400,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               onClick={() => navigate(`/tasks/${activity.id}/submit`)}
               sx={{ borderRadius: '12px', py: 1.5 }}
             >
-              {t('work.submit') || 'Concluir e Enviar'}
+              {t('work.submit', 'Concluir e Enviar')}
             </Button>
           )}
 
@@ -462,7 +462,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           </Alert>
         ) : (
           <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%', borderRadius: '12px' }}>
-            {t('work.linkCopied') || 'Link da tarefa copiado!'}
+            {t('work.linkCopied', 'Link da tarefa copiado!')}
           </Alert>
         )}
       </Snackbar>
@@ -472,16 +472,16 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         onClose={() => !isDeleting && setDeleteModalOpen(false)}
         onClick={(e) => e.stopPropagation()}
       >
-        <DialogTitle>{t('work.deleteTitle') || 'Remover Atividade'}</DialogTitle>
+        <DialogTitle>{t('work.deleteTitle', 'Remover Atividade')}</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
-            {t('work.deleteConfirmMessage') || 'Tem certeza que deseja remover esta atividade? Esta ação exige uma justificativa e será auditada.'}
+            {t('work.deleteConfirmMessage', 'Tem certeza que deseja remover esta atividade? Esta ação exige uma justificativa e será auditada.')}
           </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
             id="justification"
-            label={t('work.justification') || 'Justificativa'}
+            label={t('work.justification', 'Justificativa')}
             type="text"
             fullWidth
             variant="outlined"
@@ -496,7 +496,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         </DialogContent>
         <DialogActions sx={{ p: 2, pt: 0 }}>
           <Button onClick={() => setDeleteModalOpen(false)} disabled={isDeleting}>
-            {t('common.cancel') || 'Cancelar'}
+            {t('common.cancel', 'Cancelar')}
           </Button>
           <Button 
             onClick={handleDelete} 
@@ -504,7 +504,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             variant="contained"
             disabled={isDeleting || justification.length < 10}
           >
-            {isDeleting ? (t('common.loading') || 'Processando...') : (t('common.delete') || 'Remover')}
+            {isDeleting ? (t('common.loading', 'Processando...')) : (t('common.delete', 'Remover'))}
           </Button>
         </DialogActions>
       </Dialog>

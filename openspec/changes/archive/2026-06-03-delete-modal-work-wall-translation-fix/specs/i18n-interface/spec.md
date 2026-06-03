@@ -1,8 +1,5 @@
-# i18n-interface Specification
+## MODIFIED Requirements
 
-## Purpose
-Garantir que todos os elementos da interface do usuário sejam devidamente localizados e que o sistema lide graciosamente com falhas na resolução de chaves de tradução.
-## Requirements
 ### Requirement: Layout-Related Translation Resolution
 The system SHALL ensure that all translation keys used in the layout (e.g., navigation labels, page titles, deletion modal elements) are properly defined and resolved in all supported languages, preventing raw keys from being visible to the user.
 
@@ -15,4 +12,3 @@ The system SHALL ensure that all translation keys used in the layout (e.g., navi
 - **WHEN** the deletion modal for work wall tasks is rendered.
 - **THEN** the title, confirm message, justification field label, and delete button label SHALL be translated correctly in the active language (PT or EN).
 - **AND** if a translation key is missing, the system SHALL fallback to a human-readable default label instead of the raw dot-notated key.
-

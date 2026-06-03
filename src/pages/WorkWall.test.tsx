@@ -5,11 +5,15 @@ import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { BrowserRouter } from 'react-router-dom';
 
-// Mock dependencies
 vi.mock('../lib/api', () => ({
   apiClient: {
     invoke: vi.fn(),
   },
+}));
+
+vi.mock('../lib/db', () => ({
+  getCachedData: vi.fn().mockResolvedValue(null),
+  cacheData: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../context/useAuth', () => ({
@@ -19,6 +23,7 @@ vi.mock('../context/useAuth', () => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    i18n: { language: 'pt' },
   }),
 }));
 

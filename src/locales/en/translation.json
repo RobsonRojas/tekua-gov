@@ -153,7 +153,8 @@
     "reject": "Reject",
     "back": "Back",
     "retry": "Retry",
-    "status": "Status"
+    "status": "Status",
+    "delete": "Delete"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",
@@ -279,7 +280,10 @@
     "demandAttachments": "Reference Documents",
     "clickToUpload": "Click to upload files",
     "uploadHint": "Images, PDFs or documents up to 10MB",
-    "maxFilesReached": "File limit reached"
+    "maxFilesReached": "File limit reached",
+    "deleteTitle": "Delete Activity",
+    "deleteConfirmMessage": "Are you sure you want to delete this activity? This action requires a justification and will be audited.",
+    "justification": "Justification"
   },
   "governance": {
     "config": "Governance Configuration",

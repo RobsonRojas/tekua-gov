@@ -158,7 +158,8 @@
     "reject": "Reprovar",
     "back": "Voltar",
     "retry": "Tentar Novamente",
-    "status": "Status"
+    "status": "Status",
+    "delete": "Remover"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",
@@ -287,7 +288,10 @@
     "demandAttachments": "Documentos de Referência",
     "clickToUpload": "Clique para anexar arquivos",
     "uploadHint": "Imagens, PDFs ou documentos até 10MB",
-    "maxFilesReached": "Limite de arquivos atingido"
+    "maxFilesReached": "Limite de arquivos atingido",
+    "deleteTitle": "Remover Atividade",
+    "deleteConfirmMessage": "Tem certeza que deseja remover esta atividade? Esta ação exige uma justificativa e será auditada.",
+    "justification": "Justificativa"
   },
   "governance": {
     "config": "Configuração de Governança",

@@ -114,6 +114,17 @@ vi.mock('lucide-react', () => {
     Gavel: IconMock('Gavel'),
     LayoutPanelLeft: IconMock('LayoutPanelLeft'),
     Sparkles: IconMock('Sparkles'),
+    Trophy: IconMock('Trophy'),
+    PlayCircle: IconMock('PlayCircle'),
+    CheckCircle2: IconMock('CheckCircle2'),
+    Trash2: IconMock('Trash2'),
+    Flame: IconMock('Flame'),
+    Star: IconMock('Star'),
+    HelpCircle: IconMock('HelpCircle'),
+    AlertCircle: IconMock('AlertCircle'),
+    CheckCircle: IconMock('CheckCircle'),
+    LogIn: IconMock('LogIn'),
+    Lock: IconMock('Lock')
   };
 });
 
