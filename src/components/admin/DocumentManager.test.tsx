@@ -14,6 +14,12 @@ vi.mock('../../hooks/useDocuments', () => ({
   useDocuments: vi.fn(),
 }));
 
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  return { ...actual };
+});
+
+
 describe('DocumentManager Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();

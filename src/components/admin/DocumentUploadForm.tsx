@@ -45,6 +45,12 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
     if (uploadType === 'file' && !file) return;
     if (uploadType === 'link' && !externalUrl) return;
 
+    // Validate allowed MIME types (PDF and images only)
+    if (uploadType === 'file' && file) {
+      const isAllowed = file.type === 'application/pdf' || file.type.startsWith('image/');
+      if (!isAllowed) return; // reject silently – the accept attr already restricts the picker
+    }
+
     const metadata: DocumentMetadata = {
       title: { pt: titlePt, en: titleEn },
       description: { pt: descPt, en: descEn },
@@ -156,11 +162,11 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
                 disabled={loading}
                 fullWidth
               >
-                {file ? file.name : t('docs.selectFileAny', 'Selecionar Arquivo')}
+                {file ? file.name : t('docs.selectFilePdfImage', 'Selecionar PDF ou Imagem')}
                 <input
                   type="file"
                   hidden
-                  accept="*/*"
+                  accept="application/pdf,image/*"
                   onChange={handleFileChange}
                 />
               </Button>

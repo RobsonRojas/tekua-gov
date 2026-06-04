@@ -53,13 +53,14 @@ describe('useDocuments Hook', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('uploads document and saves metadata', async () => {
+  it('uploads PDF document and saves metadata', async () => {
     vi.mocked(mockStorageFrom.upload).mockResolvedValue({ error: null } as any);
     vi.mocked(mockFrom.insert).mockResolvedValue({ error: null } as any);
     vi.mocked(mockFrom.order).mockResolvedValue({ data: [], error: null } as any);
 
     const { result } = renderHook(() => useDocuments());
 
+    // PDF files should be accepted
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
     const metadata = {
       title: { pt: 'Teste', en: 'Test' },

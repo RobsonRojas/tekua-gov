@@ -19,6 +19,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Trash2 as DeleteIcon, Eye as ViewIcon } from 'lucide-react';
 import type { Document } from '../../hooks/useDocuments';
+import { DocumentViewerModal } from '../common/DocumentViewerModal';
 
 interface DocumentListProps {
   documents: Document[];
@@ -36,17 +37,28 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete, onView
     doc: null
   });
 
+  const [viewerState, setViewerState] = useState<{
+    open: boolean;
+    title: string;
+    url: string | null;
+    filePath?: string;
+  }>({ open: false, title: '', url: null });
+
   const handleView = async (doc: Document) => {
+    const docTitle = doc.title[currentLang] || doc.title.pt;
     if (doc.external_url) {
-      window.open(doc.external_url, '_blank', 'noopener,noreferrer');
+      // External links (e.g. Google Drive public view) are opened in viewer
+      setViewerState({ open: true, title: docTitle, url: doc.external_url });
       return;
     }
     if (doc.file_path) {
       const url = await onView(doc.file_path);
-      if (url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }
+      setViewerState({ open: true, title: docTitle, url, filePath: doc.file_path });
     }
+  };
+
+  const handleViewerClose = () => {
+    setViewerState({ open: false, title: '', url: null });
   };
 
   const handleDeleteConfirm = async () => {
@@ -149,6 +161,15 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete, onView
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Secure Document Viewer */}
+      <DocumentViewerModal
+        open={viewerState.open}
+        onClose={handleViewerClose}
+        title={viewerState.title}
+        url={viewerState.url}
+        filePath={viewerState.filePath}
+      />
     </>
   );
 };
