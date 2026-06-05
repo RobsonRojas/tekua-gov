@@ -197,6 +197,7 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({ onUpload, loadi
             variant="contained"
             color="primary"
             disabled={(!file && uploadType === 'file') || (!externalUrl && uploadType === 'link') || !titlePt || !titleEn || !category || loading}
+            sx={{ color: 'white' }}
           >
             {loading ? t('common.loading', 'Carregando...') : t('docs.upload', 'Enviar Documento')}
           </Button>
