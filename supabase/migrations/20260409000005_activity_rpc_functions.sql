@@ -47,11 +47,14 @@ DECLARE
   v_user_id UUID;
   v_activity RECORD;
   v_confirm_count INTEGER;
+  v_user_role TEXT;
 BEGIN
   v_user_id := auth.uid();
   IF v_user_id IS NULL THEN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
+
+  SELECT role INTO v_user_role FROM profiles WHERE id = v_user_id;
 
   -- 1. Get activity info
   SELECT * INTO v_activity FROM activities WHERE id = p_activity_id FOR UPDATE;
@@ -66,8 +69,8 @@ BEGIN
 
   -- 2. Logic based on validation method
   IF v_activity.validation_method = 'requester_approval' THEN
-    IF v_user_id != v_activity.requester_id THEN
-      RAISE EXCEPTION 'Only the requester can approve this activity';
+    IF v_user_id != v_activity.requester_id AND v_user_role != 'admin' THEN
+      RAISE EXCEPTION 'Only the requester or an administrator can approve this activity';
     END IF;
     
     -- Approve and payout

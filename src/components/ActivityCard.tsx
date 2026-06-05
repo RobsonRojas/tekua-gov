@@ -66,6 +66,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
   
   const isOwner = user?.id === activity.requester_id;
   const isWorker = user?.id === activity.worker_id;
+  const isAdmin = profile?.roles?.includes('admin') || profile?.role === 'admin';
+  const canConfirm = activity.validation_method === 'community_consensus' || 
+                    (activity.validation_method === 'requester_approval' && (isOwner || isAdmin));
   const confirmCount = activity.confirmations?.[0]?.count || 0;
   const threshold = activity.min_confirmations || 3;
   const progress = (confirmCount / threshold) * 100;
@@ -404,7 +407,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             </Button>
           )}
 
-          {localStatus === 'pending_validation' && (
+          {localStatus === 'pending_validation' && canConfirm && (
             <Tooltip title={isWorker ? t('work.ownWorkError') : ''}>
               <Box>
                 <Button 

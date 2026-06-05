@@ -216,6 +216,9 @@ const TaskDetail: React.FC = () => {
   const confirmCount = activity.confirmations?.length || 0;
   const threshold = activity.min_confirmations || 3;
   const progress = (confirmCount / threshold) * 100;
+  
+  const canConfirm = activity.validation_method === 'community_consensus' || 
+                    (activity.validation_method === 'requester_approval' && (isOwner || isAdmin));
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -527,7 +530,7 @@ const TaskDetail: React.FC = () => {
               </Button>
             )}
 
-            {activity.status === 'pending_validation' && (
+            {activity.status === 'pending_validation' && canConfirm && (
               <Button 
                 fullWidth 
                 variant="contained" 
