@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/useAuth';
@@ -24,6 +25,7 @@ export interface Document extends DocumentMetadata {
 }
 
 export function useDocuments() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,7 +102,19 @@ export function useDocuments() {
       return true;
     } catch (err: any) {
       console.error('Error uploading document:', err);
-      setError(err.message || 'Failed to upload document.');
+      
+      let userFriendlyMessage = t('docs.errors.uploadFailed', 'Failed to upload document.');
+      const errStr = String(err?.message || err || '');
+      
+      if (errStr.includes('exceeded the maximum allowed size')) {
+        userFriendlyMessage = t('docs.errors.fileTooLarge', 'The file exceeds the maximum allowed size (20MB).');
+      } else if (errStr.includes('violates row-level security policy') || errStr.includes('Permission denied')) {
+        userFriendlyMessage = t('docs.errors.permissionDenied', 'Access denied. You do not have permission to manage documents.');
+      } else if (errStr.includes('already exists') || errStr.includes('Duplicate')) {
+        userFriendlyMessage = t('docs.errors.alreadyExists', 'A file with this name already exists.');
+      }
+      
+      setError(userFriendlyMessage);
       return false;
     } finally {
       setLoading(false);
@@ -129,7 +143,15 @@ export function useDocuments() {
       return true;
     } catch (err: any) {
       console.error('Error deleting document:', err);
-      setError(err.message || 'Failed to delete document.');
+      
+      let userFriendlyMessage = t('docs.errors.deleteFailed', 'Failed to delete document.');
+      const errStr = String(err?.message || err || '');
+      
+      if (errStr.includes('violates row-level security policy') || errStr.includes('Permission denied')) {
+        userFriendlyMessage = t('docs.errors.permissionDenied', 'Access denied. You do not have permission to manage documents.');
+      }
+      
+      setError(userFriendlyMessage);
       return false;
     } finally {
       setLoading(false);

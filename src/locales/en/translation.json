@@ -338,6 +338,14 @@
     "noUrl": "Invalid document URL.",
     "unsupportedFormat": "Unsupported Format",
     "unsupportedFormatDesc": "For security reasons, this file format cannot be displayed directly to prevent downloads. Please request conversion to PDF or image if needed.",
+    "errors": {
+      "fileTooLarge": "The file exceeds the maximum allowed size (20MB).",
+      "permissionDenied": "Access denied. You do not have permission to manage documents.",
+      "alreadyExists": "A file with this name already exists.",
+      "uploadFailed": "Failed to upload the document. Please try again.",
+      "deleteFailed": "Failed to delete the document.",
+      "validationFailed": "Please fill in all required fields and select a valid file."
+    },
     "categories": {
       "estatuto": "Statute",
       "atas": "Minutes",
