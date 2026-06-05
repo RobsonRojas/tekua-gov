@@ -47,8 +47,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete, onView
   const handleView = async (doc: Document) => {
     const docTitle = doc.title[currentLang] || doc.title.pt;
     if (doc.external_url) {
-      // External links (e.g. Google Drive public view) are opened in viewer
-      setViewerState({ open: true, title: docTitle, url: doc.external_url });
+      window.open(doc.external_url, '_blank', 'noopener,noreferrer');
       return;
     }
     if (doc.file_path) {
