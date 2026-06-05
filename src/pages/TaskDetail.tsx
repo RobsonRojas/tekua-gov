@@ -43,6 +43,7 @@ import AttachmentList from '../components/common/AttachmentList';
 import { QRCodeSVG } from 'qrcode.react';
 import FileUploader from '../components/common/FileUploader';
 import type { Attachment } from '../components/common/FileUploader';
+import { EvidenceViewerModal } from '../components/common/EvidenceViewerModal';
 
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,6 +68,7 @@ const TaskDetail: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [viewerState, setViewerState] = useState<{ open: boolean; url: string | null }>({ open: false, url: null });
 
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
@@ -399,7 +401,7 @@ const TaskDetail: React.FC = () => {
                         component="img" 
                         src={ev.evidence_url} 
                         sx={{ width: '100%', borderRadius: '12px', mb: 2, cursor: 'pointer' }} 
-                        onClick={() => window.open(ev.evidence_url, '_blank')}
+                        onClick={() => setViewerState({ open: true, url: ev.evidence_url })}
                       />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="caption" color="text.secondary">
@@ -669,6 +671,12 @@ const TaskDetail: React.FC = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      <EvidenceViewerModal 
+        open={viewerState.open}
+        evidenceUrl={viewerState.url}
+        onClose={() => setViewerState({ open: false, url: null })}
+      />
     </Container>
   );
 };

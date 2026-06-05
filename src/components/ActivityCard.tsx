@@ -40,6 +40,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
+import { EvidenceViewerModal } from './common/EvidenceViewerModal';
 
 interface ActivityCardProps {
   activity: any;
@@ -55,6 +56,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
   const [localStatus, setLocalStatus] = useState(activity.status);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{ open: boolean; url: string | null }>({ open: false, url: null });
   
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [justification, setJustification] = useState('');
@@ -318,12 +320,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
              <Typography 
                variant="caption" 
                color="primary.main" 
-               component="a" 
-               href={evidenceUrl} 
-               target="_blank" 
-               rel="noopener noreferrer"
-               onClick={(e) => e.stopPropagation()}
-               sx={{ textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}
+               component="span" 
+               onClick={(e) => { e.stopPropagation(); setViewerState({ open: true, url: evidenceUrl }); }}
+               sx={{ textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}
              >
                <PlayCircle size={14} /> {t('work.viewEvidence', 'Ver Evidência')}
              </Typography>
@@ -511,6 +510,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           </Button>
         </DialogActions>
       </Dialog>
+      
+      <EvidenceViewerModal 
+        open={viewerState.open}
+        evidenceUrl={viewerState.url}
+        onClose={() => setViewerState({ open: false, url: null })}
+      />
     </Card>
   );
 };
