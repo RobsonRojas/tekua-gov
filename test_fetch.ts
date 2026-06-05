@@ -13,27 +13,44 @@ envContent.split('\n').forEach(line => {
 })
 
 const supabaseUrl = env.VITE_SUPABASE_URL
-const supabaseKey = env.VITE_SUPABASE_ANON_KEY
+const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function testFetch() {
-  console.log('Testing fetchActivities query...')
-  const { data, error } = await supabase
-    .from('activities')
-    .select(`
-      *,
-      requester:profiles!requester_id (id, full_name),
-      worker:profiles!worker_id (id, full_name),
-      confirmations:activity_confirmations (count),
-      evidence:activity_evidence (evidence_url)
-    `)
-    .limit(1)
+  console.log('Fetching profiles list...')
+  const { data: profiles, error: pError } = await supabase
+    .from('profiles')
+    .select('*')
   
-  if (error) {
-    console.error('Fetch Error:', JSON.stringify(error, null, 2))
+  if (pError) {
+    console.error('Profiles Fetch Error:', pError)
   } else {
-    console.log('Fetch Success:', JSON.stringify(data, null, 2))
+    console.log('Profiles:', JSON.stringify(profiles, null, 2))
+  }
+
+  console.log('Fetching storage buckets...')
+  const { data: buckets, error: bError } = await supabase
+    .from('storage.buckets')
+    .select('*')
+  if (bError) {
+    console.error('Buckets Fetch Error:', bError)
+  } else {
+    console.log('Buckets:', JSON.stringify(buckets, null, 2))
+  }
+
+  console.log('Fetching storage policies...')
+  // We can query pg_policies using an RPC if exec_sql exists, let's try querying pg_policies
+  // Since we have service_role, we might not have a direct table view for pg_policies unless we run raw SQL.
+  // Let's run a select on storage.objects to see if there are any objects
+  const { data: objects, error: oError } = await supabase
+    .from('storage.objects')
+    .select('*')
+    .limit(5)
+  if (oError) {
+    console.error('Storage Objects Fetch Error:', oError)
+  } else {
+    console.log('Storage Objects:', JSON.stringify(objects, null, 2))
   }
 }
 
