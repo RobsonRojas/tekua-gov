@@ -44,8 +44,9 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       const isSave = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's';
       const isPrint = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p';
+      const isCopy = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c';
       
-      if (isSave || isPrint) {
+      if (isSave || isPrint || isCopy) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -103,6 +104,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
+      onCopy={(e) => e.preventDefault()}
       maxWidth="lg"
       fullWidth
       aria-labelledby="document-viewer-dialog-title"
@@ -172,14 +174,28 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
             </Typography>
           </Box>
         ) : fileType === 'pdf' ? (
-          <iframe
-            src={getSecurePdfUrl(url)}
-            title={title}
-            width="100%"
-            height="700px"
-            style={{ border: 'none', display: loading ? 'none' : 'block' }}
-            onLoad={handleIframeLoad}
-          />
+          <Box sx={{ position: 'relative', width: '100%', height: '700px', display: loading ? 'none' : 'block' }}>
+            <Box 
+              onContextMenu={(e) => e.preventDefault()}
+              sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                width: 'calc(100% - 24px)', 
+                height: '100%', 
+                zIndex: 10, 
+                cursor: 'default' 
+              }} 
+            />
+            <iframe
+              src={getSecurePdfUrl(url)}
+              title={title}
+              width="100%"
+              height="100%"
+              style={{ border: 'none' }}
+              onLoad={handleIframeLoad}
+            />
+          </Box>
         ) : fileType === 'image' ? (
           <Box 
             onContextMenu={(e) => e.preventDefault()}
