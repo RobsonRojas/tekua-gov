@@ -413,7 +413,7 @@ serve(async (req) => {
       }
 
       case 'postInteraction': {
-        const { activityId, content, metadata = {} } = params
+        const { activityId, content, metadata = {}, mentionedUserIds = [] } = params
         if (!activityId || !content) throw new Error('Missing activityId or content')
 
         const { data, error } = await supabaseClient
@@ -431,6 +431,31 @@ serve(async (req) => {
           .single()
 
         if (error) throw error
+
+        if (Array.isArray(mentionedUserIds) && mentionedUserIds.length > 0) {
+           const { data: activity } = await supabaseClient.from('activities').select('title').eq('id', activityId).single()
+           try {
+             await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/notify-engine`, {
+               method: 'POST',
+               headers: {
+                 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                 'Content-Type': 'application/json'
+               },
+               body: JSON.stringify({
+                 event: 'activity.interaction_mention',
+                 payload: {
+                   activity_id: activityId,
+                   title: activity?.title,
+                   content: content,
+                   mentionedUserIds: mentionedUserIds
+                 }
+               })
+             })
+           } catch (err) {
+             console.error('Failed to invoke notify-engine for mentions:', err)
+           }
+        }
+
         responseData = data
         break
       }

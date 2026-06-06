@@ -10,7 +10,13 @@ import {
   CircularProgress,
   Divider,
   IconButton,
-  Tooltip
+  Tooltip,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Popover,
+  ListItemButton
 } from '@mui/material';
 import { Send, RefreshCw, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +34,14 @@ const TaskInteractions: React.FC<TaskInteractionsProps> = ({ activityId }) => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [content, setContent] = useState('');
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
+  
+  // Mention states
+  const [mentionAnchorEl, setMentionAnchorEl] = useState<HTMLElement | null>(null);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionCursorPos, setMentionCursorPos] = useState<number | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
 
   const dateLocale = i18n.language === 'pt' ? ptBR : enUS;
 
@@ -58,18 +72,80 @@ const TaskInteractions: React.FC<TaskInteractionsProps> = ({ activityId }) => {
     try {
       const { data, error } = await apiClient.invoke('api-work', 'postInteraction', {
         activityId,
-        content: content.trim()
+        content: content.trim(),
+        mentionedUserIds
       });
 
       if (error) throw new Error(error);
       
       setInteractions([...interactions, data]);
       setContent('');
+      setMentionedUserIds([]);
     } catch (err) {
       console.error('Error posting interaction:', err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Mention logic
+  const fetchMentionUsers = async (query: string) => {
+    setSearchingUsers(true);
+    try {
+      const { data, error } = await apiClient.invoke('api-members', 'fetchUsers', { 
+        search: query,
+        limit: 5
+      });
+      if (error) throw new Error(error);
+      setUsers(data || []);
+    } catch (err) {
+      console.error('Error fetching users for mention:', err);
+    } finally {
+      setSearchingUsers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (mentionAnchorEl !== null) {
+      const delayDebounceFn = setTimeout(() => {
+        fetchMentionUsers(mentionQuery);
+      }, 300);
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [mentionQuery, mentionAnchorEl]);
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setContent(val);
+
+    const cursorPos = e.target.selectionStart || 0;
+    const textBeforeCursor = val.slice(0, cursorPos);
+    
+    // Check if the last word starts with @
+    const match = textBeforeCursor.match(/@([a-zA-Z0-9_]*)$/);
+    if (match) {
+      setMentionQuery(match[1]);
+      setMentionCursorPos(cursorPos);
+      setMentionAnchorEl(e.target as HTMLElement);
+    } else {
+      setMentionAnchorEl(null);
+    }
+  };
+
+  const handleMentionSelect = (user: any) => {
+    if (mentionCursorPos === null) return;
+    
+    const textBeforeMention = content.slice(0, mentionCursorPos - mentionQuery.length - 1); // -1 for the @
+    const textAfterCursor = content.slice(mentionCursorPos);
+    
+    const newContent = `${textBeforeMention}@${user.full_name || user.email} ${textAfterCursor}`;
+    setContent(newContent);
+    
+    if (!mentionedUserIds.includes(user.id)) {
+      setMentionedUserIds([...mentionedUserIds, user.id]);
+    }
+    
+    setMentionAnchorEl(null);
   };
 
   return (
@@ -145,7 +221,7 @@ const TaskInteractions: React.FC<TaskInteractionsProps> = ({ activityId }) => {
             rows={2}
             placeholder={t('work.askQuestion')}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={handleContentChange}
             disabled={submitting}
             variant="outlined"
             sx={{ 
@@ -155,6 +231,55 @@ const TaskInteractions: React.FC<TaskInteractionsProps> = ({ activityId }) => {
               }
             }}
           />
+          <Popover
+            open={Boolean(mentionAnchorEl)}
+            anchorEl={mentionAnchorEl}
+            onClose={() => setMentionAnchorEl(null)}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            disableAutoFocus
+            disableEnforceFocus
+            PaperProps={{
+              sx: { width: 300, maxHeight: 200, bgcolor: 'background.paper', borderRadius: 2 }
+            }}
+          >
+            {searchingUsers ? (
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                <CircularProgress size={20} />
+              </Box>
+            ) : users.length === 0 ? (
+              <Box sx={{ p: 2 }}>
+                <Typography variant="body2" color="text.secondary">Nenhum usuário encontrado</Typography>
+              </Box>
+            ) : (
+              <List sx={{ p: 0 }}>
+                {users.map(user => (
+                  <ListItem disablePadding key={user.id}>
+                    <ListItemButton 
+                      onClick={() => handleMentionSelect(user)}
+                      sx={{ '&:hover': { bgcolor: 'action.hover' } }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar src={user.avatar_url} sx={{ width: 24, height: 24 }}>
+                          {user.full_name?.charAt(0) || user.email?.charAt(0)}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText 
+                        primary={user.full_name || user.email} 
+                        primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Popover>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <Button
               type="submit"

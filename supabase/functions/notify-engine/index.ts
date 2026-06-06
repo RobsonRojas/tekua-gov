@@ -81,6 +81,17 @@ serve(async (req) => {
         pushBody: title,
         link: '/wallet'
       }
+    } else if (event === 'activity.interaction_mention') {
+      recipients = payload.mentionedUserIds || []
+      const interactionContent = payload.content || ''
+      const shortContent = interactionContent.length > 100 ? interactionContent.substring(0, 100) + '...' : interactionContent
+      template = {
+        subject: `Você foi mencionado em uma tarefa: ${title}`,
+        body: `Você foi mencionado no comentário da tarefa "${title}": "${shortContent}".`,
+        pushTitle: 'Você foi mencionado',
+        pushBody: `Em: ${title}`,
+        link: `/tasks/${payload.activity_id}`
+      }
     }
 
     // 2. Deliver Notifications
