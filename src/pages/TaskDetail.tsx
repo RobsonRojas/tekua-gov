@@ -384,6 +384,7 @@ const TaskDetail: React.FC = () => {
               {activity.attachments && activity.attachments.filter((a: any) => a.is_evidence).length > 0 && (
                 <AttachmentList 
                   attachments={activity.attachments.filter((a: any) => a.is_evidence)} 
+                  onView={(url) => setViewerState({ open: true, url })}
                 />
               )}
 

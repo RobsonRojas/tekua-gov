@@ -16,7 +16,8 @@ import {
   File, 
   FileText, 
   Image as ImageIcon,
-  ExternalLink
+  ExternalLink,
+  Eye
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Attachment } from './FileUploader';
@@ -24,9 +25,10 @@ import type { Attachment } from './FileUploader';
 interface AttachmentListProps {
   attachments: Attachment[];
   title?: string;
+  onView?: (url: string) => void;
 }
 
-const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, title }) => {
+const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, title, onView }) => {
   const { t } = useTranslation();
 
   if (!attachments || attachments.length === 0) return null;
@@ -56,18 +58,26 @@ const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, title }) =
               key={index}
               divider={index < attachments.length - 1}
               secondaryAction={
-                <Stack direction="row" spacing={1}>
-                  <Tooltip title={t('common.download', 'Download')}>
-                    <IconButton edge="end" size="small" onClick={() => handleDownload(att.file_url)}>
-                      <Download size={18} />
+                onView ? (
+                  <Tooltip title={t('common.view', 'Visualizar')}>
+                    <IconButton edge="end" size="small" onClick={() => onView(att.file_url)}>
+                      <Eye size={18} />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={t('common.open', 'Abrir')}>
-                    <IconButton edge="end" size="small" component="a" href={att.file_url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink size={18} />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
+                ) : (
+                  <Stack direction="row" spacing={1}>
+                    <Tooltip title={t('common.download', 'Download')}>
+                      <IconButton edge="end" size="small" onClick={() => handleDownload(att.file_url)}>
+                        <Download size={18} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('common.open', 'Abrir')}>
+                      <IconButton edge="end" size="small" component="a" href={att.file_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={18} />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                )
               }
             >
               <ListItemIcon sx={{ color: 'primary.main' }}>

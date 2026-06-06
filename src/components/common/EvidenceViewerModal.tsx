@@ -61,6 +61,27 @@ export const EvidenceViewerModal: React.FC<EvidenceViewerModalProps> = ({
     }
   };
 
+  React.useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'c')) {
+        e.preventDefault();
+      }
+    };
+    
+    const handleGlobalContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    if (open) {
+      window.addEventListener('keydown', handleGlobalKeyDown);
+      window.addEventListener('contextmenu', handleGlobalContextMenu);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('contextmenu', handleGlobalContextMenu);
+    };
+  }, [open]);
+
   return (
     <Dialog
       open={open}
@@ -99,7 +120,22 @@ export const EvidenceViewerModal: React.FC<EvidenceViewerModalProps> = ({
       </Box>
 
       {/* Content */}
-      <DialogContent sx={{ p: 0, bgcolor: '#0f172a', position: 'relative', minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <DialogContent 
+        sx={{ 
+          p: 0, 
+          bgcolor: '#0f172a', 
+          position: 'relative', 
+          minHeight: '400px', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none'
+        }}
+      >
         {loading && evidenceUrl && fileType !== 'unknown' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, position: 'absolute' }}>
             <CircularProgress color="primary" />
@@ -137,13 +173,14 @@ export const EvidenceViewerModal: React.FC<EvidenceViewerModalProps> = ({
                 maxWidth: '100%',
                 maxHeight: '100%',
                 objectFit: 'contain',
-                display: loading ? 'none' : 'block'
+                display: loading ? 'none' : 'block',
+                pointerEvents: 'none' // Evita arrastar a imagem
               }}
             />
           </Box>
         ) : fileType === 'pdf' ? (
           <iframe
-            src={evidenceUrl}
+            src={`${evidenceUrl}#toolbar=0&navpanes=0&scrollbar=0`}
             width="100%"
             height="700px"
             style={{ border: 'none', display: loading ? 'none' : 'block' }}
