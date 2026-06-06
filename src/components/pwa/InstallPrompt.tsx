@@ -28,7 +28,7 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
   onClose, 
   variant = 'dialog' 
 }) => {
-  const { isInstallable, installApp, platform, isInstalled } = usePWA();
+  const { isInstallable, installApp, platform, browser, isInstalled } = usePWA();
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -79,6 +79,28 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
     </Box>
   );
 
+  const iOSChromeInstructions = (
+    <Box sx={{ mt: 2, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
+      <Typography variant="subtitle2" gutterBottom color="primary">
+        Para instalar pelo Google Chrome:
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+        <Box sx={{ display: 'flex', p: 0.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1 }}>
+          <Share size={16} color={theme.palette.primary.main} />
+        </Box>
+        <Typography variant="body2">1. Toque no botão "Compartilhar" no canto superior direito</Typography>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', p: 0.5, bgcolor: 'white', borderRadius: 1, boxShadow: 1 }}>
+          <PlusSquare size={16} color={theme.palette.primary.main} />
+        </Box>
+        <Typography variant="body2">2. Selecione "Adicionar à Tela de Início"</Typography>
+      </Box>
+    </Box>
+  );
+
+  const activeIOSInstructions = browser === 'chrome' ? iOSChromeInstructions : iOSInstructions;
+
   if (variant === 'button') {
     return (
       <>
@@ -104,7 +126,7 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
               <Typography variant="body1">
                 {t('pwa.install_description', 'Adicione o Tekuá Gov à sua tela inicial para acesso rápido e uma experiência nativa.')}
               </Typography>
-              {iOSInstructions}
+              {activeIOSInstructions}
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setInternalOpen(false)}>{t('common.close', 'Fechar')}</Button>
@@ -168,7 +190,7 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
               </IconButton>
             </DialogTitle>
             <DialogContent>
-              {iOSInstructions}
+              {activeIOSInstructions}
             </DialogContent>
           </Dialog>
         )}
@@ -188,7 +210,7 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
         <Typography variant="body1">
           {t('pwa.install_description', 'Adicione o Tekuá Gov à sua tela inicial para acesso rápido e uma experiência nativa.')}
         </Typography>
-        {platform === 'ios' ? iOSInstructions : (
+        {platform === 'ios' ? activeIOSInstructions : (
           <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
             O aplicativo ocupará pouquíssimo espaço e facilitará seu dia a dia.
           </Typography>

@@ -5,6 +5,7 @@ interface PWAContextType {
   installApp: () => Promise<void>;
   isInstalled: boolean;
   platform: 'android' | 'ios' | 'desktop' | 'unknown';
+  browser: 'safari' | 'chrome' | 'other';
 }
 
 const PWAContext = createContext<PWAContextType | undefined>(undefined);
@@ -14,10 +15,19 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [platform, setPlatform] = useState<'android' | 'ios' | 'desktop' | 'unknown'>('unknown');
+  const [browser, setBrowser] = useState<'safari' | 'chrome' | 'other'>('other');
 
   useEffect(() => {
     // Detect platform
     const userAgent = window.navigator.userAgent.toLowerCase();
+    
+    // Detect browser
+    if (userAgent.includes('crios') || userAgent.includes('chrome')) {
+      setBrowser('chrome');
+    } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+      setBrowser('safari');
+    }
+    
     if (/iphone|ipad|ipod/.test(userAgent)) {
       setPlatform('ios');
     } else if (/android/.test(userAgent)) {
@@ -79,7 +89,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   return (
-    <PWAContext.Provider value={{ isInstallable, installApp, isInstalled, platform }}>
+    <PWAContext.Provider value={{ isInstallable, installApp, isInstalled, platform, browser }}>
       {children}
     </PWAContext.Provider>
   );
