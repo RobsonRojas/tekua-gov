@@ -221,6 +221,7 @@ const TaskDetail: React.FC = () => {
   
   const canConfirm = activity.validation_method === 'community_consensus' || 
                     (activity.validation_method === 'requester_approval' && (isOwner || isAdmin));
+  const isAdminForcing = isAdmin && !isOwner && activity.validation_method === 'requester_approval';
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -537,12 +538,15 @@ const TaskDetail: React.FC = () => {
                 fullWidth 
                 variant="contained" 
                 size="large"
+                color={isAdminForcing ? "error" : "primary"}
                 startIcon={<CheckCircle2 />}
                 onClick={handleAction}
                 disabled={actionLoading || isWorker || activity.user_has_confirmed}
                 sx={{ borderRadius: '16px', py: 2, fontSize: '1.1rem', fontWeight: 700 }}
               >
-                {activity.user_has_confirmed ? (t('work.alreadyConfirmed') || 'Já Confirmado') : (t('work.confirm') || 'Confirmar Tarefa')}
+                {activity.user_has_confirmed 
+                  ? (t('work.alreadyConfirmed') || 'Já Confirmado') 
+                  : (isAdminForcing ? 'Forçar Confirmação (Admin)' : (t('work.confirm') || 'Confirmar Tarefa'))}
               </Button>
             )}
           </Box>
