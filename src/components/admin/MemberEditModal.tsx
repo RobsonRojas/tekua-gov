@@ -40,6 +40,8 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
   const [functions, setFunctions] = useState<string[]>(member?.functions || []);
   const [isBoardMember, setIsBoardMember] = useState(false);
   const [isTransversalCouncil, setIsTransversalCouncil] = useState(false);
+  const [isBeneficiary, setIsBeneficiary] = useState(false);
+  const [villageId, setVillageId] = useState<string>(member?.village_id || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +61,8 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
       
       setIsBoardMember(initialFunctions.length > 0 || !!member.is_board_member);
       setIsTransversalCouncil(initialRoles.includes('transversal_council'));
+      setIsBeneficiary(initialRoles.includes('beneficiary'));
+      setVillageId(member.village_id || '');
 
       setAvatarUrl(member.avatar_url || '');
       setPhotoPreview(member.avatar_url || null);
@@ -121,9 +125,12 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
       }
 
       // Sync roles array with toggles
-      let finalRoles = roles.filter(r => r !== 'transversal_council');
+      let finalRoles = roles.filter(r => r !== 'transversal_council' && r !== 'beneficiary');
       if (isTransversalCouncil) {
         finalRoles.push('transversal_council');
+      }
+      if (isBeneficiary) {
+        finalRoles.push('beneficiary');
       }
 
       // Ensure primary role exists (admin or member)
@@ -138,6 +145,7 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
         roles: finalRoles,
         functions: finalFunctions,
         avatar_url: finalAvatarUrl || null,
+        village_id: isBeneficiary && villageId ? villageId : null,
         // Legacy compatibility
         role: finalRoles.includes('admin') ? 'admin' : (finalRoles.includes('transversal_council') ? 'transversal_council' : 'member'),
         is_board_member: isBoardMember,
@@ -296,7 +304,33 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
                 </Typography>
               }
             />
+
+            <FormControlLabel
+              control={
+                <Switch 
+                  checked={isBeneficiary} 
+                  onChange={(e) => setIsBeneficiary(e.target.checked)} 
+                  color="primary"
+                />
+              }
+              label={
+                <Typography variant="body1" fontWeight={500}>
+                  Beneficiário de Vila
+                </Typography>
+              }
+            />
           </Stack>
+
+          {isBeneficiary && (
+            <TextField
+              fullWidth
+              label="ID da Vila"
+              placeholder="Cole o UUID da vila"
+              value={villageId}
+              onChange={(e) => setVillageId(e.target.value)}
+              helperText="O UUID da vila à qual este usuário será associado"
+            />
+          )}
 
           {isBoardMember && (
             <Autocomplete

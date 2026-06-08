@@ -141,8 +141,24 @@ const MemberManagement: React.FC = () => {
                         {member.roles?.map((role: string) => (
                           <Chip 
                             key={role}
-                            label={role === 'admin' ? 'Admin' : role === 'transversal_council' ? 'Conselho' : 'Membro'} 
-                            color={role === 'admin' ? 'secondary' : role === 'transversal_council' ? 'info' : 'default'}
+                            label={
+                              role === 'admin' 
+                                ? 'Admin' 
+                                : role === 'transversal_council' 
+                                ? 'Conselho' 
+                                : role === 'beneficiary'
+                                ? 'Beneficiário (Vila)'
+                                : 'Membro'
+                            } 
+                            color={
+                              role === 'admin' 
+                                ? 'secondary' 
+                                : role === 'transversal_council' 
+                                ? 'info'
+                                : role === 'beneficiary'
+                                ? 'success'
+                                : 'default'
+                            }
                             size="small"
                             variant="outlined"
                           />

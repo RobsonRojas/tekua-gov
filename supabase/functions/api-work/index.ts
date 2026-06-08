@@ -464,17 +464,47 @@ serve(async (req) => {
         const { activityId, action: modAction } = params
         if (!activityId || !modAction) throw new Error('Missing moderation details')
         
-        // 1. Verify role
+        // 1. Verify role and fetch user profile with village_id
         const { data: profile } = await supabaseClient
           .from('profiles')
-          .select('role, roles')
+          .select('role, roles, village_id')
           .eq('id', user.id)
           .single()
         
-        const canModerate = profile?.role === 'admin' || 
-                           profile?.roles?.includes('admin') || 
-                           profile?.role === 'transversal_council' ||
-                           profile?.roles?.includes('transversal_council')
+        const isAdmin = profile?.role === 'admin' || 
+                       profile?.roles?.includes('admin') || 
+                       profile?.role === 'transversal_council' ||
+                       profile?.roles?.includes('transversal_council')
+        
+        const isBeneficiary = profile?.roles?.includes('beneficiary')
+        
+        // 2. If not admin/council, check if beneficiary can confirm this specific activity
+        if (!isAdmin) {
+          if (!isBeneficiary) {
+            throw new Error('Only transversal council or admins can moderate activities')
+          }
+          
+          // Beneficiary can only confirm (not approve/reject other actions)
+          if (modAction !== 'confirm') {
+            throw new Error('Beneficiary users can only confirm activities')
+          }
+          
+          // Fetch activity to check beneficiary match
+          const { data: activity } = await supabaseClient
+            .from('activities')
+            .select('beneficiary_type, beneficiary_id')
+            .eq('id', activityId)
+            .single()
+          
+          if (!activity) throw new Error('Activity not found')
+          
+          // Check if activity is for village and matches user's village_id
+          if (activity.beneficiary_type !== 'village' || activity.beneficiary_id !== profile?.village_id) {
+            throw new Error('You can only confirm activities for your assigned village')
+          }
+        }
+        
+        const canModerate = isAdmin || isBeneficiary
         
         if (!canModerate) throw new Error('Forbidden')
 
