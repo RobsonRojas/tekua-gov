@@ -22,8 +22,8 @@ O sistema SHALL garantir o reconhecimento do valor do trabalho através da moeda
 - **THEN** o sistema captura as coordenadas de GPS no momento do upload e envia para validação do requisitante.
 
 #### Scenario: Pagamento Virtual (Wallet)
-- **WHEN** o requisitante clica em "Aprovar Execução" após revisar as fotos.
-- **THEN** o sistema transfere o valor em Surreais do requisitante para a carteira (Wallet) do executor e gera um log de transação.
+- **WHEN** o requisitante ou administrador confirma a execução do trabalho.
+- **THEN** o sistema SHALL criar (emitir a partir da Tesouraria) e creditar o valor em Surreais correspondente na carteira (Wallet) do executor (worker) e registrar a transação no ledger de forma vinculada ao ID da atividade correspondente.
 
 ### Requirement: Cobertura de Testes Automatizados
 O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.
