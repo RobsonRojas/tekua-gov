@@ -59,8 +59,10 @@ import FinancialIntegrity from '../components/admin/FinancialIntegrity';
 import PayoutAudit from '../components/admin/PayoutAudit';
 import ActivityHistoryTab from '../components/admin/ActivityHistoryTab';
 import NewMemberModal from '../components/admin/NewMemberModal';
+import EconomyTab from '../components/admin/EconomyTab';
 import { useAuth } from '../context/useAuth';
-import { History } from 'lucide-react';
+import { useMembers } from '../hooks/useMembers';
+import { History, TrendingUp } from 'lucide-react';
 
 const AdminPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -75,6 +77,7 @@ const AdminPanel: React.FC = () => {
   const [isNewMemberModalOpen, setIsNewMemberModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user: authUser } = useAuth();
+  const { fetchMembersWithBalances } = useMembers();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
@@ -86,8 +89,9 @@ const AdminPanel: React.FC = () => {
     { id: 'config', label: t('governance.config'), icon: <Settings size={18} />, value: 1 },
     { id: 'docs', label: t('docs.docsTitle', 'Documentação'), icon: <FileText size={18} />, value: 2 },
     { id: 'financial', label: t('admin.financial'), icon: <DollarSign size={18} />, value: 3 },
-    { id: 'payouts', label: t('admin.payoutAudit'), icon: <ShieldCheck size={18} />, value: 4 },
-    { id: 'activity', label: t('audit.title'), icon: <History size={18} />, value: 5 }
+    { id: 'economy', label: 'Economia', icon: <TrendingUp size={18} />, value: 4 },
+    { id: 'payouts', label: t('admin.payoutAudit'), icon: <ShieldCheck size={18} />, value: 5 },
+    { id: 'activity', label: t('audit.title'), icon: <History size={18} />, value: 6 }
   ];
 
   const [tabValue, setTabValue] = useState(() => {
@@ -139,8 +143,7 @@ const AdminPanel: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await apiClient.invoke('api-members', 'fetchUsers');
-      if (error) throw new Error(error);
+      const data = await fetchMembersWithBalances();
       setUsers(data || []);
     } catch (err: any) {
       console.error('Error fetching users:', err);
@@ -468,13 +471,14 @@ const AdminPanel: React.FC = () => {
                     <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colEmail')}</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colRole')}</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{t('admin.colStatus')}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}>Saldo SR$</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredUsers.length === 0 && !loading ? (
                     <TableRow>
-                      <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                      <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
                         <Typography variant="body1" color="text.secondary">
                           {t('admin.noUsersFound')}
                         </Typography>
@@ -546,6 +550,11 @@ const AdminPanel: React.FC = () => {
                             />
                             <Typography variant="body2">{t('admin.active')}</Typography>
                           </Box>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" fontWeight={600}>
+                            {user.surreal_balance?.toFixed(2) || '0.00'} SR$
+                          </Typography>
                         </TableCell>
                         <TableCell align="right">
                           <IconButton onClick={(e: React.MouseEvent<HTMLElement>) => handleMenuOpen(e, user)}>
@@ -641,11 +650,16 @@ const AdminPanel: React.FC = () => {
                         )}
                       </Stack>
                       
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'secondary.main' }} />
-                        <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                          {t('admin.active')}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="body2" fontWeight={600} color="primary.main">
+                          {user.surreal_balance?.toFixed(2) || '0.00'} SR$
                         </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'secondary.main' }} />
+                          <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                            {t('admin.active')}
+                          </Typography>
+                        </Box>
                       </Box>
                     </Box>
                   </Paper>
@@ -744,8 +758,10 @@ const AdminPanel: React.FC = () => {
       ) : tabValue === 3 ? (
         <FinancialIntegrity />
       ) : tabValue === 4 ? (
-        <PayoutAudit />
+        <EconomyTab />
       ) : tabValue === 5 ? (
+        <PayoutAudit />
+      ) : tabValue === 6 ? (
         <ActivityHistoryTab />
       ) : null}
 

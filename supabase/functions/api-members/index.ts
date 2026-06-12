@@ -109,6 +109,141 @@ serve(async (req) => {
         break
       }
 
+      case 'fetchUsersWithBalances': {
+        // 1. Fetch requester profile to check role
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('roles')
+          .eq('id', user.id)
+          .single()
+        
+        const isAdmin = profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
+
+        // 2. Fetch all users with wallets
+        const { data, error } = await supabaseAdmin
+          .from('profiles')
+          .select('*, wallet:wallets(balance)')
+          .order('full_name', { ascending: true })
+
+        if (error) throw error
+
+        // 3. Map result
+        responseData = data.map((u: any) => {
+          const balanceArray = Array.isArray(u.wallet) ? u.wallet : (u.wallet ? [u.wallet] : []);
+          const balanceObj = balanceArray[0];
+          return {
+            ...u,
+            surreal_balance: balanceObj?.balance ?? 0
+          }
+        })
+        break
+      }
+
+      case 'fetchEconomyStats': {
+        // 1. Fetch requester profile to check role
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('roles')
+          .eq('id', user.id)
+          .single()
+        
+        const isAdmin = profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
+
+        // Fetch Treasury Balance (wallet where profile_id IS NULL)
+        const { data: treasuryData } = await supabaseAdmin
+          .from('wallets')
+          .select('balance')
+          .is('profile_id', null)
+          .single()
+        const treasuryBalance = treasuryData?.balance || 0;
+
+        // Fetch Total In Circulation
+        const { data: circulatingData } = await supabaseAdmin
+          .from('wallets')
+          .select('balance')
+          .not('profile_id', 'is', null)
+        const totalCirculating = (circulatingData || []).reduce((acc: number, w: any) => acc + (w.balance || 0), 0);
+
+        // Total Transactions
+        const { count: totalTransactions } = await supabaseAdmin
+          .from('ledger_entries')
+          .select('*', { count: 'exact', head: true })
+
+        // Top 10 Contributors
+        // Since Supabase REST doesn't easily support GROUP BY with JOIN in a single call without RPC, 
+        // we'll fetch activities, group them in JS, or use a custom query.
+        // Wait, standard supabase js doesn't have group by. 
+        // Let's use RPC if available, or just fetch all completed activities and group in JS (assuming small scale for now).
+        const { data: activitiesData } = await supabaseAdmin
+          .from('activities')
+          .select('worker_id')
+          .eq('status', 'completed')
+          .not('worker_id', 'is', null)
+
+        const contributorCounts: Record<string, number> = {}
+        if (activitiesData) {
+          activitiesData.forEach((a: any) => {
+            contributorCounts[a.worker_id] = (contributorCounts[a.worker_id] || 0) + 1
+          })
+        }
+        const topContributorIds = Object.entries(contributorCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+        
+        const topContributors = [];
+        if (topContributorIds.length > 0) {
+          const { data: contributorsProfiles } = await supabaseAdmin
+            .from('profiles')
+            .select('id, full_name, avatar_url, wallet:wallets(balance)')
+            .in('id', topContributorIds.map(t => t[0]))
+          
+          if (contributorsProfiles) {
+            topContributorIds.forEach(([id, count], index) => {
+              const p = contributorsProfiles.find((p: any) => p.id === id)
+              if (p) {
+                const balanceArray = Array.isArray(p.wallet) ? p.wallet : (p.wallet ? [p.wallet] : []);
+                const balanceObj = balanceArray[0];
+                topContributors.push({
+                  position: index + 1,
+                  id: p.id,
+                  full_name: p.full_name,
+                  avatar_url: p.avatar_url,
+                  completed_tasks: count,
+                  surreal_balance: balanceObj?.balance ?? 0
+                })
+              }
+            })
+          }
+        }
+
+        // Top 10 Holders
+        const { data: topHoldersData } = await supabaseAdmin
+          .from('wallets')
+          .select('profile_id, balance, profile:profiles(id, full_name, avatar_url)')
+          .not('profile_id', 'is', null)
+          .order('balance', { ascending: false })
+          .limit(10)
+
+        const topHolders = (topHoldersData || []).map((w: any, idx: number) => ({
+          position: idx + 1,
+          id: w.profile_id,
+          full_name: w.profile?.full_name,
+          avatar_url: w.profile?.avatar_url,
+          surreal_balance: w.balance
+        }))
+
+        responseData = {
+          totalCirculating,
+          treasuryBalance,
+          totalTransactions: totalTransactions || 0,
+          topContributors,
+          topHolders
+        }
+        break
+      }
+
       case 'updateProfile': {
         const { updates } = params
         if (!updates) throw new Error('Missing updates')
