@@ -30,12 +30,16 @@ import {
   Send, 
   RefreshCw,
   Info,
-  User
+  User,
+  QrCode,
+  Scan
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { apiClient } from '../lib/api';
+import QRScanner from '../components/QRScanner';
 
 interface Transaction {
   id: string;
@@ -73,6 +77,10 @@ const Wallet: React.FC = () => {
   // Users Search State
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
+
+  // QR Code State
+  const [openQrModal, setOpenQrModal] = useState(false);
+  const [openScannerModal, setOpenScannerModal] = useState(false);
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (!user) return;
@@ -167,7 +175,7 @@ const Wallet: React.FC = () => {
         <Typography variant="h2" color="primary.main">
           {t('wallet.title')}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button 
             variant="outlined" 
             startIcon={<RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />}
@@ -175,6 +183,14 @@ const Wallet: React.FC = () => {
             disabled={refreshing}
           >
             {t('admin.refresh')}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<QrCode size={18} />}
+            onClick={() => setOpenQrModal(true)}
+            color="secondary"
+          >
+            Meu QR Code
           </Button>
           <Button 
             variant="contained" 
@@ -378,8 +394,20 @@ const Wallet: React.FC = () => {
           sx: { borderRadius: '24px', p: 2, maxWidth: 450, width: '100%' }
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
+        <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h3">{t('wallet.send')}</Typography>
+          <Button
+            size="small"
+            startIcon={<Scan size={16} />}
+            onClick={() => {
+              setOpenTransfer(false);
+              setOpenScannerModal(true);
+            }}
+            variant="text"
+            color="secondary"
+          >
+            Escanear
+          </Button>
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -479,6 +507,62 @@ const Wallet: React.FC = () => {
             {t('wallet.confirm')}
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* My QR Code Dialog */}
+      <Dialog
+        open={openQrModal}
+        onClose={() => setOpenQrModal(false)}
+        PaperProps={{ sx: { borderRadius: '24px', p: 3, maxWidth: 350, width: '100%', textAlign: 'center' } }}
+      >
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Avatar src={user?.user_metadata?.avatar_url} sx={{ width: 64, height: 64, mb: 2, bgcolor: 'primary.main' }}>
+            {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || <User />}
+          </Avatar>
+          <Typography variant="h4" gutterBottom>
+            {user?.user_metadata?.full_name || 'Usuário Tekuá'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+            {user?.email}
+          </Typography>
+
+          <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 2, display: 'inline-block' }}>
+            {user?.email && (
+              <QRCodeSVG value={user.email} size={200} level="H" includeMargin={false} />
+            )}
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+            Apresente este código para receber moedas de outro membro de forma rápida.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button variant="contained" onClick={() => setOpenQrModal(false)} fullWidth>
+            Fechar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* QR Scanner Dialog */}
+      <Dialog
+        open={openScannerModal}
+        onClose={() => setOpenScannerModal(false)}
+        PaperProps={{ sx: { borderRadius: '24px', p: 2, maxWidth: 450, width: '100%' } }}
+      >
+        <DialogTitle sx={{ pb: 1, textAlign: 'center' }}>
+          <Typography variant="h3">Escanear QR Code</Typography>
+        </DialogTitle>
+        <DialogContent sx={{ px: 1 }}>
+          {openScannerModal && (
+            <QRScanner
+              onScan={(result) => {
+                setRecipientEmail(result);
+                setOpenScannerModal(false);
+                setOpenTransfer(true);
+              }}
+              onCancel={() => setOpenScannerModal(false)}
+            />
+          )}
+        </DialogContent>
       </Dialog>
     </Box>
   );

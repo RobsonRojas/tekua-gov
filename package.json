@@ -18,6 +18,8 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@supabase/supabase-js": "^2.101.1",
+    "@zxing/browser": "^0.2.0",
+    "@zxing/library": "^0.21.3",
     "browser-image-compression": "^2.0.2",
     "date-fns": "^4.1.0",
     "dompurify": "^3.4.1",
