@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import { Box, CircularProgress } from '@mui/material';
+import GlobalErrorBoundary from './components/GlobalErrorBoundary';
 
 // Lazy loading pages
 const Home = lazy(() => import('./pages/Home'));
@@ -41,6 +42,7 @@ const LoadingFallback = () => (
 export const router = createBrowserRouter([
   {
     path: '/login',
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <Suspense fallback={<LoadingFallback />}>
         <Login />
@@ -73,6 +75,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
+    errorElement: <GlobalErrorBoundary />,
     element: <MainLayout />,
     children: [
       {
