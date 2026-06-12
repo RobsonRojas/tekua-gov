@@ -19,7 +19,8 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  Tooltip
+  Tooltip,
+  Autocomplete
 } from '@mui/material';
 import { 
   Wallet as WalletIcon, 
@@ -68,6 +69,10 @@ const Wallet: React.FC = () => {
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [transferSuccess, setTransferSuccess] = useState(false);
+  
+  // Users Search State
+  const [users, setUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (!user) return;
@@ -100,6 +105,26 @@ const Wallet: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const fetchAvailableUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const { data, error } = await apiClient.invoke('api-members', 'fetchUsers');
+      if (error) throw new Error(error);
+      const filteredUsers = (data || []).filter((u: any) => u.id !== user?.id);
+      setUsers(filteredUsers);
+    } catch (err) {
+      console.error('Error fetching users for transfer:', err);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (openTransfer && users.length === 0) {
+      fetchAvailableUsers();
+    }
+  }, [openTransfer]);
 
   const handleTransfer = async () => {
     setTransferError(null);
@@ -364,16 +389,57 @@ const Wallet: React.FC = () => {
           {transferError && <Alert severity="error" sx={{ mb: 3 }}>{transferError}</Alert>}
           
           <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
-            <TextField
-              fullWidth
-              label={t('wallet.recipient')}
-              variant="outlined"
-              placeholder="email@tekua.com"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              InputProps={{
-                startAdornment: <User size={18} style={{ marginRight: 8, color: '#94a3b8' }} />
+            <Autocomplete
+              options={users}
+              loading={usersLoading}
+              getOptionLabel={(option) => option.email}
+              isOptionEqualToValue={(option, value) => option.email === value.email}
+              onChange={(_event, newValue) => {
+                setRecipientEmail(newValue ? newValue.email : '');
               }}
+              renderOption={(props, option) => {
+                const { key, ...optionProps } = props as any;
+                return (
+                  <Box component="li" key={key} {...optionProps} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar src={option.avatar_url} sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
+                      {option.full_name ? option.full_name.charAt(0).toUpperCase() : option.email.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {option.full_name || option.email}
+                      </Typography>
+                      {option.full_name && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {option.email}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t('wallet.recipient')}
+                  placeholder="Pesquisar por nome ou email..."
+                  variant="outlined"
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <>
+                        <User size={18} style={{ marginRight: 8, marginLeft: 8, color: '#94a3b8' }} />
+                        {params.InputProps.startAdornment}
+                      </>
+                    ),
+                    endAdornment: (
+                      <>
+                        {usersLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    )
+                  }}
+                />
+              )}
             />
             <TextField
               fullWidth
