@@ -51,6 +51,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/invite/task/:inviteToken',
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <Suspense fallback={<LoadingFallback />}>
         <TaskInviteLanding />
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/forgot-password',
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <Suspense fallback={<LoadingFallback />}>
         <ForgotPassword />
@@ -67,6 +69,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/reset-password',
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <Suspense fallback={<LoadingFallback />}>
         <ResetPassword />

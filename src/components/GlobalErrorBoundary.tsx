@@ -45,16 +45,16 @@ export default function GlobalErrorBoundary() {
         }}
       >
         <Typography variant="h4" color="error" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Ops, algo deu errado!
+          <span>Ops, algo deu errado!</span>
         </Typography>
         
         <Typography variant="body1" color="text.secondary" paragraph>
-          Nossa aplicação encontrou um problema inesperado ao renderizar esta página.
+          <span>Nossa aplicação encontrou um problema inesperado ao renderizar esta página.</span>
         </Typography>
 
         <Box sx={{ my: 3, p: 2, bgcolor: 'grey.100', borderRadius: 1, textAlign: 'left', overflowX: 'auto' }}>
           <Typography variant="body2" color="error" sx={{ fontFamily: 'monospace' }}>
-            {errorMessage}
+            <span>{errorMessage}</span>
           </Typography>
         </Box>
 
@@ -65,7 +65,7 @@ export default function GlobalErrorBoundary() {
             startIcon={<RefreshCcw size={20} />}
             onClick={handleReload}
           >
-            Recarregar Página
+            <span>Recarregar Página</span>
           </Button>
           <Button
             variant="outlined"
@@ -73,7 +73,7 @@ export default function GlobalErrorBoundary() {
             startIcon={<Home size={20} />}
             onClick={handleGoHome}
           >
-            Ir para o Início
+            <span>Ir para o Início</span>
           </Button>
         </Box>
       </Paper>
