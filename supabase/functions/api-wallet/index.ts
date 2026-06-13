@@ -112,8 +112,16 @@ serve(async (req) => {
             .eq('email', toEmail)
             .single()
           
-          if (recipientError) throw new Error('Recipient not found')
-          targetId = recipient.id
+          if (recipientError && recipientError.code === 'PGRST116') {
+            // Recipient not found, invite as external user
+            const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(toEmail)
+            if (inviteError) throw new Error(`Failed to invite external user: ${inviteError.message}`)
+            targetId = inviteData.user.id
+          } else if (recipientError) {
+            throw new Error('Error finding recipient')
+          } else {
+            targetId = recipient.id
+          }
         }
 
         if (!targetId || amount <= 0) throw new Error('Invalid transfer parameters')

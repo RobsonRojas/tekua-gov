@@ -92,6 +92,17 @@ serve(async (req) => {
         pushBody: `Em: ${title}`,
         link: `/tasks/${payload.activity_id}`
       }
+    } else if (event === 'governance.agenda_created') {
+      // Notificamos todos os usuários ativos ou membros
+      const { data: members } = await supabaseClient.from('profiles').select('id')
+      recipients = members?.map(m => m.id) || []
+      template = {
+        subject: `Nova Pauta para Votação: ${title}`,
+        body: `Uma nova pauta de governança foi criada e está disponível para discussão e votação: "${title}". Acesse o portal para participar.`,
+        pushTitle: 'Nova Pauta de Governança',
+        pushBody: title,
+        link: `/voting/${payload.topic_id}`
+      }
     }
 
     // 2. Deliver Notifications

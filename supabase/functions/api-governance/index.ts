@@ -155,6 +155,26 @@ serve(async (req) => {
 
         if (error) throw error
         responseData = data
+
+        // Dispara o email de notificação assincronamente
+        if (data && data[0]) {
+          const topic = data[0]
+          fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/notify-engine`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+            },
+            body: JSON.stringify({
+              event: 'governance.agenda_created',
+              payload: {
+                topic_id: topic.id,
+                title: topic.title
+              }
+            })
+          }).catch(err => console.error('Failed to notify agenda creation:', err))
+        }
+
         break
       }
 

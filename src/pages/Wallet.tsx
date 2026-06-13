@@ -73,6 +73,8 @@ const Wallet: React.FC = () => {
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [isExternalEmail, setIsExternalEmail] = useState(false);
+  const [isValidEmail, setIsValidEmail] = useState(false);
   
   // Users Search State
   const [users, setUsers] = useState<any[]>([]);
@@ -411,19 +413,46 @@ const Wallet: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Envie moedas Surreal para outro membro informando seu email corporativo.
+            Envie moedas Surreal para outro membro informando seu email corporativo ou convide alguém externo.
           </Typography>
           
           {transferError && <Alert severity="error" sx={{ mb: 3 }}>{transferError}</Alert>}
+          {isExternalEmail && isValidEmail && (
+            <Alert severity="info" sx={{ mb: 3, borderRadius: '12px' }}>
+              Este email não está cadastrado. Enviaremos um convite automaticamente junto com os Surreais!
+            </Alert>
+          )}
           
           <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
             <Autocomplete
+              freeSolo
               options={users}
               loading={usersLoading}
-              getOptionLabel={(option) => option.email}
-              isOptionEqualToValue={(option, value) => option.email === value.email}
+              getOptionLabel={(option) => typeof option === 'string' ? option : option.email}
+              isOptionEqualToValue={(option, value) => {
+                if (typeof option === 'string' || typeof value === 'string') return option === value;
+                return option.email === value.email;
+              }}
+              onInputChange={(_event, newInputValue) => {
+                setRecipientEmail(newInputValue);
+                // Check if it's external and valid email
+                const foundUser = users.find(u => u.email === newInputValue);
+                setIsExternalEmail(!foundUser && newInputValue.length > 0);
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                setIsValidEmail(emailRegex.test(newInputValue));
+              }}
               onChange={(_event, newValue) => {
-                setRecipientEmail(newValue ? newValue.email : '');
+                let emailStr = '';
+                if (typeof newValue === 'string') {
+                  emailStr = newValue;
+                } else if (newValue && typeof newValue === 'object') {
+                  emailStr = newValue.email;
+                }
+                setRecipientEmail(emailStr);
+                const foundUser = users.find(u => u.email === emailStr);
+                setIsExternalEmail(!foundUser && emailStr.length > 0);
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                setIsValidEmail(emailRegex.test(emailStr));
               }}
               renderOption={(props, option) => {
                 const { key, ...optionProps } = props as any;
@@ -501,7 +530,7 @@ const Wallet: React.FC = () => {
             onClick={handleTransfer}
             data-testid="confirm-transfer-button"
             scroll-behavior="smooth"
-            disabled={transferLoading || !amount || !recipientEmail}
+            disabled={transferLoading || !amount || !recipientEmail || (isExternalEmail && !isValidEmail)}
             startIcon={transferLoading && <CircularProgress size={18} color="inherit" />}
           >
             {t('wallet.confirm')}
