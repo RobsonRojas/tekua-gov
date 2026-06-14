@@ -20,7 +20,8 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
-  Autocomplete
+  Autocomplete,
+  InputAdornment
 } from '@mui/material';
 import { 
   Wallet as WalletIcon, 
@@ -397,7 +398,7 @@ const Wallet: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h3">{t('wallet.send')}</Typography>
+          <Typography variant="h3" component="span">{t('wallet.send')}</Typography>
           <Button
             size="small"
             startIcon={<Scan size={16} />}
@@ -483,16 +484,16 @@ const Wallet: React.FC = () => {
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: (
-                      <>
+                      <InputAdornment position="start">
                         <User size={18} style={{ marginRight: 8, marginLeft: 8, color: '#94a3b8' }} />
                         {params.InputProps.startAdornment}
-                      </>
+                      </InputAdornment>
                     ),
                     endAdornment: (
-                      <>
+                      <InputAdornment position="end">
                         {usersLoading ? <CircularProgress color="inherit" size={20} /> : null}
                         {params.InputProps.endAdornment}
-                      </>
+                      </InputAdornment>
                     )
                   }}
                 />
@@ -507,7 +508,7 @@ const Wallet: React.FC = () => {
               onChange={(e) => setAmount(e.target.value)}
               inputProps={{ "data-testid": "amount-input" }}
               InputProps={{
-                startAdornment: <Typography sx={{ mr: 1, fontWeight: 700, color: 'primary.main' }}>$S</Typography>
+                startAdornment: <InputAdornment position="start"><Typography sx={{ mr: 1, fontWeight: 700, color: 'primary.main' }}>$S</Typography></InputAdornment>
               }}
             />
             <TextField
@@ -529,7 +530,6 @@ const Wallet: React.FC = () => {
             variant="contained" 
             onClick={handleTransfer}
             data-testid="confirm-transfer-button"
-            scroll-behavior="smooth"
             disabled={transferLoading || !amount || !recipientEmail || (isExternalEmail && !isValidEmail)}
             startIcon={transferLoading && <CircularProgress size={18} color="inherit" />}
           >
