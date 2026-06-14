@@ -12,7 +12,11 @@ import {
   CircularProgress,
   Breadcrumbs,
   Link as MuiLink,
-  MenuItem
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { 
   Assignment as TaskIcon, 
@@ -40,6 +44,13 @@ const CreateDemand: React.FC = () => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [workerId, setWorkerId] = useState<string>('');
   const [members, setMembers] = useState<any[]>([]);
+  const [projectId, setProjectId] = useState<string>('');
+  const [projects, setProjects] = useState<any[]>([]);
+  
+  const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [creatingProject, setCreatingProject] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -48,10 +59,21 @@ const CreateDemand: React.FC = () => {
   const canAssignTask = profile?.role === 'admin' || profile?.roles?.includes('admin') || profile?.role === 'transversal_council' || profile?.roles?.includes('transversal_council');
 
   useEffect(() => {
+    fetchProjects();
     if (canAssignTask) {
       fetchMembers();
     }
   }, [canAssignTask]);
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await apiClient.invoke('api-work', 'fetchProjects');
+      if (error) throw new Error(error);
+      setProjects(data || []);
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+    }
+  };
 
   const fetchMembers = async () => {
     setLoadingMembers(true);
@@ -78,7 +100,8 @@ const CreateDemand: React.FC = () => {
         rewardAmount: Number(amount),
         type: 'task',
         attachments,
-        workerId: workerId || null
+        workerId: workerId || null,
+        projectId: projectId || null
       });
 
       if (error) throw new Error(error);
@@ -95,6 +118,29 @@ const CreateDemand: React.FC = () => {
       setMessage({ type: 'error', text: err.message || t('common.error') });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) return;
+    setCreatingProject(true);
+    try {
+      const { data, error } = await apiClient.invoke('api-work', 'createProject', {
+        name: newProjectName,
+        description: newProjectDescription
+      });
+      if (error) throw new Error(error);
+      
+      await fetchProjects();
+      setProjectId(data.id);
+      setIsNewProjectDialogOpen(false);
+      setNewProjectName('');
+      setNewProjectDescription('');
+      setMessage({ type: 'success', text: t('work.projectCreated') || 'Projeto criado com sucesso!' });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Erro ao criar projeto.' });
+    } finally {
+      setCreatingProject(false);
     }
   };
 
@@ -160,6 +206,34 @@ const CreateDemand: React.FC = () => {
                 required
                 InputProps={{ inputProps: { min: 1 } }}
               />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  select
+                  label={t('work.project') || 'Projeto (Opcional)'}
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>{t('common.none') || 'Nenhum'}</em>
+                  </MenuItem>
+                  {projects.map((project) => (
+                    <MenuItem key={project.id} value={project.id}>
+                      {project.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => setIsNewProjectDialogOpen(true)}
+                  sx={{ whiteSpace: 'nowrap' }}
+                >
+                  {t('work.newProject') || 'Novo Projeto'}
+                </Button>
+              </Box>
             </Grid>
 
             {canAssignTask && (
@@ -235,6 +309,40 @@ const CreateDemand: React.FC = () => {
           {message?.text}
         </Alert>
       </Snackbar>
+      <Dialog open={isNewProjectDialogOpen} onClose={() => setIsNewProjectDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('work.createProject') || 'Criar Novo Projeto'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label={t('common.name') || 'Nome do Projeto'}
+            fullWidth
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            required
+            sx={{ mb: 2, mt: 1 }}
+          />
+          <TextField
+            margin="dense"
+            label={t('common.description') || 'Descrição'}
+            fullWidth
+            multiline
+            rows={3}
+            value={newProjectDescription}
+            onChange={(e) => setNewProjectDescription(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsNewProjectDialogOpen(false)}>{t('common.cancel') || 'Cancelar'}</Button>
+          <Button 
+            onClick={handleCreateProject} 
+            variant="contained" 
+            disabled={creatingProject || !newProjectName.trim()}
+          >
+            {creatingProject ? <CircularProgress size={24} /> : (t('common.create') || 'Criar')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

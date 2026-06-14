@@ -42,7 +42,8 @@ serve(async (req) => {
           startDate,
           endDate,
           requesterId,
-          workerId
+          workerId,
+          projectId
         } = params
         
         // Fetch user profile to check roles
@@ -78,6 +79,7 @@ serve(async (req) => {
         if (endDate) query = query.lte('created_at', endDate)
         if (requesterId) query = query.eq('requester_id', requesterId)
         if (workerId) query = query.eq('worker_id', workerId)
+        if (projectId) query = query.eq('project_id', projectId)
 
         if (!canSeeAll) {
           query = query.or(`status.neq.pending_approval,requester_id.eq.${user.id}`)
@@ -149,7 +151,8 @@ serve(async (req) => {
           urgency = false,
           importance = false,
           attachments = [],
-          workerId = null
+          workerId = null,
+          projectId = null
         } = params
         if (!title || !description) throw new Error('Missing activity title or description')
         
@@ -179,7 +182,8 @@ serve(async (req) => {
             min_confirmations: minConfirmations,
             urgency,
             importance,
-            worker_id: workerId
+            worker_id: workerId,
+            project_id: projectId
           })
           .select()
           .single()
@@ -587,6 +591,7 @@ serve(async (req) => {
           description, 
           rewardAmount, 
           workerId,
+          projectId,
           attachments = []
         } = params
         
@@ -631,6 +636,9 @@ serve(async (req) => {
         }
         if (workerId !== undefined) {
           updates.worker_id = workerId || null
+        }
+        if (projectId !== undefined) {
+          updates.project_id = projectId || null
         }
         
         const { data: updatedData, error: updateError } = await supabaseAdmin
@@ -716,6 +724,36 @@ serve(async (req) => {
         if (updateError) throw updateError
 
         responseData = { success: true }
+        break
+      }
+
+      case 'fetchProjects': {
+        const { data, error } = await supabaseClient
+          .from('projects')
+          .select('*')
+          .order('name', { ascending: true })
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'createProject': {
+        const { name, description } = params
+        if (!name) throw new Error('Missing project name')
+
+        const { data, error } = await supabaseClient
+          .from('projects')
+          .insert({
+            name,
+            description,
+            created_by: user.id
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+        responseData = data
         break
       }
 

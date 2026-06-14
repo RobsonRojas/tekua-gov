@@ -60,7 +60,8 @@ const WorkWall: React.FC = () => {
     const { data, error } = await apiClient.invoke('api-work', 'fetchActivities', {
       requesterId: filters.requesterId || undefined,
       workerId: filters.workerId || undefined,
-      type: filters.type !== 'all' ? filters.type : undefined
+      type: filters.type !== 'all' ? filters.type : undefined,
+      projectId: filters.projectId || undefined
     });
 
     if (error) return { data: null, error };

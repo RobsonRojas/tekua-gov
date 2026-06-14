@@ -21,6 +21,7 @@ export interface WorkFilterValues {
   requesterId?: string;
   workerId?: string;
   type?: string;
+  projectId?: string;
 }
 
 interface WorkFiltersProps {
@@ -31,10 +32,12 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [filters, setFilters] = useState<WorkFilterValues>({
     requesterId: '',
     workerId: '',
-    type: 'all'
+    type: 'all',
+    projectId: ''
   });
 
   useEffect(() => {
@@ -44,7 +47,14 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
         setMembers(data);
       }
     };
+    const fetchProjects = async () => {
+      const { data, error } = await supabase.from('projects').select('id, name').order('name');
+      if (!error && data) {
+        setProjects(data);
+      }
+    };
     fetchMembers();
+    fetchProjects();
   }, []);
 
   const handleChange = (field: keyof WorkFilterValues, value: string) => {
@@ -54,7 +64,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
   };
 
   const clearFilters = () => {
-    const reset = { requesterId: '', workerId: '', type: 'all' };
+    const reset = { requesterId: '', workerId: '', type: 'all', projectId: '' };
     setFilters(reset);
     onFilterChange(reset);
   };
@@ -69,7 +79,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
         >
           {expanded ? t('common.hideFilters') || 'Ocultar Filtros' : t('common.showFilters') || 'Mostrar Filtros'}
         </Button>
-        {(filters.requesterId || filters.workerId || (filters.type && filters.type !== 'all')) && (
+        {(filters.requesterId || filters.workerId || (filters.type && filters.type !== 'all') || filters.projectId) && (
           <Button 
             startIcon={<ClearIcon />} 
             onClick={clearFilters}
@@ -84,7 +94,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
       <Collapse in={expanded}>
         <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>{t('work.requester') || 'Demandante'}</InputLabel>
                 <Select
@@ -99,7 +109,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>{t('profile.member') || 'Membro Executor'}</InputLabel>
                 <Select
@@ -114,7 +124,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>{t('activity.type.task') || 'Tipo'}</InputLabel>
                 <Select
@@ -125,6 +135,21 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
                   <MenuItem value="all">{t('common.all') || 'Todos'}</MenuItem>
                   <MenuItem value="task">{t('activity.type.task') || 'Tarefa'}</MenuItem>
                   <MenuItem value="contribution">{t('activity.type.contribution') || 'Contribuição'}</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>{t('work.project') || 'Projeto'}</InputLabel>
+                <Select
+                  value={filters.projectId || ''}
+                  label={t('work.project') || 'Projeto'}
+                  onChange={(e: SelectChangeEvent) => handleChange('projectId', e.target.value)}
+                >
+                  <MenuItem value="">{t('common.all') || 'Todos'}</MenuItem>
+                  {projects.map(p => (
+                    <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
