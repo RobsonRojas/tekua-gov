@@ -70,7 +70,7 @@ const AIAgent: React.FC = () => {
       }).join('\n');
 
       const instruction = `
-        You are the Tekua AI Agent, an assistant for the Tekua Association. 
+        You are the Tekua Oracle, an AI assistant for the Tekua Association. 
         Your role is to help members with questions about governance, documents, rules, and the digital currency (Surreal).
         Be helpful, professional, and friendly.
         If a question is outside the scope of Tekua, politely inform that you only answer questions related to the association.
@@ -91,7 +91,7 @@ const AIAgent: React.FC = () => {
       // Welcome message
       setMessages([{ 
         role: 'model', 
-        content: t('ai.welcome') || 'Olá! Eu sou o Agente Tekua. Como posso ajudar você hoje?' 
+        content: t('ai.welcome') || 'Olá! Eu sou o Oráculo. Como posso ajudar você hoje?' 
       }]);
     } catch (err) {
       console.error('Error fetching AI context:', err);
@@ -158,7 +158,7 @@ const AIAgent: React.FC = () => {
           <HomeIcon size={16} />
           {t('layout.dashboard')}
         </MuiLink>
-        <Typography color="primary.main" fontWeight={600}>{t('ai.title') || 'Agente IA'}</Typography>
+        <Typography color="primary.main" fontWeight={600}>{t('ai.title') || 'Oráculo'}</Typography>
       </Breadcrumbs>
 
       <Paper 
@@ -178,8 +178,8 @@ const AIAgent: React.FC = () => {
             <Bot size={24} />
           </Avatar>
           <Box>
-            <Typography variant="subtitle1" fontWeight={700}>Tekuá AI</Typography>
-            <Typography variant="caption" sx={{ opacity: 0.8 }}>Experimental Assistant</Typography>
+            <Typography variant="subtitle1" fontWeight={700}>Oráculo</Typography>
+            <Typography variant="caption" sx={{ opacity: 0.8 }}>Experimental Oracle</Typography>
           </Box>
           <Box sx={{ ml: 'auto' }}>
             <Sparkles size={20} />

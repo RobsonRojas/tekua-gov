@@ -376,13 +376,13 @@
     }
   },
   "ai": {
-    "title": "Agente Tekua IA",
-    "welcome": "Olá! Eu sou o Agente Tekua. Como posso ajudar você hoje?",
-    "placeholder": "Digite sua pergunta aqui...",
+    "title": "Oráculo",
+    "welcome": "Olá! Eu sou o Oráculo. Como posso ajudar você hoje?",
+    "placeholder": "Pergunte algo ao Oráculo...",
     "disclaimer": "As respostas são geradas por IA. Consulte os documentos oficiais para validação legal.",
     "thinking": "Pensando...",
     "error": "Desculpe, ocorreu um erro ao processar sua pergunta.",
-    "nav": "Assistente IA"
+    "nav": "Oráculo"
   },
   "offline": {
     "banner": "Você está em modo offline. Algumas ações serão sincronizadas quando houver conexão.",
