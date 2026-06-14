@@ -5,7 +5,8 @@ import {
   Wallet as WalletIcon,
   FileText as MuralIcon,
   Bot,
-  Wrench
+  Wrench,
+  Gift
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -39,6 +40,11 @@ export const useNavigation = () => {
       path: '/sharing',
       label: t('layout.sharing'),
       icon: <Wrench size={20} />,
+    },
+    {
+      path: '/gifts',
+      label: t('gifts.area') || 'Dádivas',
+      icon: <Gift size={20} />,
     },
     {
       path: '/ai-agent',

@@ -60,6 +60,7 @@ const Wallet: React.FC = () => {
   const { user } = useAuth();
   
   const [balance, setBalance] = useState<number>(0);
+  const [giftPoints, setGiftPoints] = useState<number>(0);
   const [lockedBalance, setLockedBalance] = useState<number>(0);
   const [auditPendingBalance, setAuditPendingBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -101,6 +102,7 @@ const Wallet: React.FC = () => {
       if (transRes.error) throw new Error(transRes.error);
 
       setBalance(walletRes.data?.balance || 0);
+      setGiftPoints(walletRes.data?.gift_points || 0);
       setLockedBalance(walletRes.data?.locked_balance || 0);
       setAuditPendingBalance(walletRes.data?.pending_audit_balance || 0);
       setTransactions(transRes.data || []);
@@ -239,6 +241,15 @@ const Wallet: React.FC = () => {
               <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 {t('wallet.surreais')}
               </Typography>
+              
+              <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 1, opacity: 0.9 }}>
+                <Typography variant="body2" fontWeight={700}>
+                  Pontos de Dádiva:
+                </Typography>
+                <Typography variant="body2">
+                  {giftPoints}
+                </Typography>
+              </Box>
             </Box>
             
             {/* Decorative background circle */}

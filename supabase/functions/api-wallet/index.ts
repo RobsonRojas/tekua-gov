@@ -44,10 +44,10 @@ serve(async (req) => {
 
     switch (action) {
       case 'getBalance': {
-        // 1. Fetch main balance
+        // 1. Fetch main balance and gift points
         const { data: wallet, error: walletError } = await supabaseClient
           .from('wallets')
-          .select('balance')
+          .select('balance, gift_points')
           .eq('profile_id', user.id) // Fixed column name from profile_id to user_id? Wait, check DB.
           .single()
         
@@ -76,6 +76,7 @@ serve(async (req) => {
 
         responseData = { 
           balance: wallet?.balance || 0, 
+          gift_points: wallet?.gift_points || 0,
           locked_balance, 
           pending_audit_balance 
         }

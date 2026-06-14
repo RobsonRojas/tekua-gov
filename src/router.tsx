@@ -32,6 +32,7 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 const TaskDetail = lazy(() => import('./pages/TaskDetail'));
 const SharingMarketplace = lazy(() => import('./pages/Sharing/index'));
 const SharingItemDetail = lazy(() => import('./pages/Sharing/SharingItemDetail'));
+const GiftsArea = lazy(() => import('./pages/GiftsArea'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -127,6 +128,16 @@ export const router = createBrowserRouter([
           <Suspense fallback={<LoadingFallback />}>
             <SharingItemDetail />
           </Suspense>
+        ),
+      },
+      {
+        path: 'gifts',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <GiftsArea />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
