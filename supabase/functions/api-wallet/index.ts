@@ -136,6 +136,34 @@ serve(async (req) => {
         if (error) throw error
         if (data && !data.success) throw new Error(data.error)
         
+        // 3. Notify the recipient
+        try {
+          // Fetch sender's name for the notification
+          const { data: senderData } = await supabaseClient
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', user.id)
+            .single()
+            
+          const senderName = senderData?.full_name || senderData?.email || 'Um membro'
+          
+          await supabaseAdmin.from('notifications').insert({
+            user_id: targetId,
+            type: 'finance',
+            title: {
+              pt: 'Transferência Recebida',
+              en: 'Transfer Received'
+            },
+            message: {
+              pt: `Você recebeu $S ${amount} de ${senderName}`,
+              en: `You received $S ${amount} from ${senderName}`
+            },
+            link: '/wallet'
+          })
+        } catch (notifError) {
+          console.error('Failed to create notification for transfer:', notifError)
+        }
+
         responseData = data
         break
       }
