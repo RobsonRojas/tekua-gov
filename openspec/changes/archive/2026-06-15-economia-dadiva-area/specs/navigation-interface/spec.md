@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: Layout Responsivo e Navegação
+### Requirement: Responsive Navigation Support
 O sistema SHALL implementar um design responsivo primariamente orientado a mobile ("mobile-first"), com uma barra de navegação inferior (bottom navigation) em telas pequenas e um menu lateral em telas maiores, adaptando-se a todos os tamanhos de viewport. Adicionalmente, o menu de navegação SHALL incluir um acesso rápido à nova Área de Dádivas.
 
 #### Scenario: Acesso à Área de Dádivas

@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Suporte a Múltiplos Idiomas
 A interface do usuário SHALL suportar internacionalização usando `react-i18next`, provendo no mínimo suporte para Inglês (en) e Português (pt). Todos os textos visíveis aos usuários na interface MUST ser extraídos dos arquivos de tradução correspondentes. Em particular, a funcionalidade do assistente baseada em IA SHALL ser referenciada pelo nome "Oráculo" em português e "Oracle" em inglês.

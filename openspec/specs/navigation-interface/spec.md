@@ -2,9 +2,7 @@
 
 ## Purpose
 This specification defines the requirements for the platform's navigation interface, including the sidebar, mobile drawer, and URL synchronization, ensuring a consistent and responsive user experience across all devices.
-
 ## Requirements
-
 ### Requirement: Sidebar Navigation Integrity (navigation-interface)
 The system SHALL ensure all navigation items in the sidebar and mobile drawer point to valid, defined routes in the application router.
 
@@ -24,29 +22,12 @@ The system SHALL ensure all navigation items in the sidebar and mobile drawer po
 - **WHEN** an administrator clicks on the "Painel Administrativo" menu item
 - **THEN** the system SHALL navigate to the `/admin-panel` route
 
-
-
 ### Requirement: Responsive Navigation Support
-O sistema de navegação **SHALL** se adaptar dinamicamente a diferentes tamanhos de tela para garantir a melhor ergonomia e usabilidade em qualquer dispositivo, garantindo que rótulos e ícones não sobreponham em telas pequenas.
+O sistema SHALL implementar um design responsivo primariamente orientado a mobile ("mobile-first"), com uma barra de navegação inferior (bottom navigation) em telas pequenas e um menu lateral em telas maiores, adaptando-se a todos os tamanhos de viewport. Adicionalmente, o menu de navegação SHALL incluir um acesso rápido à nova Área de Dádivas.
 
-#### Scenario: Mobile View (Smartphone)
-- **GIVEN** uma largura de tela inferior a 768px.
-- **WHEN** o usuário interage com a aplicação.
-- **THEN** o sistema **SHALL** exibir uma Barra de Navegação Inferior (Bottom Navigation) contendo as ações principais (Dashboard, Mural, Perfil).
-- **AND** os rótulos dos itens de navegação SHALL ser legíveis e não ultrapassar os limites do item, utilizando abreviações ou redimensionamento de fonte se necessário.
-- **AND** o menu lateral **SHALL** ser acessível através de um menu hambúrguer para acesso a configurações e recursos administrativos.
-- **AND** o seletor de idioma **SHALL** estar permanentemente visível e acessível dentro do menu hambúrguer (MobileDrawer), sem exigir rolagem excessiva para ser localizado.
-- **AND** o botão de "Instalar App" **SHALL** ser visível no topo do menu hambúrguer ou como uma ação destacada se aplicável.
-
-#### Scenario: Tablet View
-- **GIVEN** uma largura de tela entre 768px e 1024px.
-- **WHEN** o usuário interage com a navegação.
-- **THEN** o sistema **SHALL** exibir o Sidebar em modo colapsado para maximizar a área de conteúdo, permitindo expansão sob demanda.
-
-#### Scenario: Desktop View
-- **GIVEN** uma largura de tela superior a 1024px.
-- **WHEN** o usuário interage com a navegação.
-- **THEN** o sistema **SHALL** exibir o Sidebar permanentemente visível na lateral esquerda.
+#### Scenario: Acesso à Área de Dádivas
+- **WHEN** o usuário abre o menu principal de navegação (sidebar ou bottom nav).
+- **THEN** o sistema SHALL apresentar um link intitulado "Dádivas" (com ícone representativo de presente ou troca) que redireciona o usuário para a rota `/gifts`.
 
 ### Requirement: Layout Adaptation
 A interface de usuário **SHALL** reorganizar e redimensionar seus componentes principais para otimizar a legibilidade e o uso do espaço disponível, garantindo fluidez total em smartphones.
