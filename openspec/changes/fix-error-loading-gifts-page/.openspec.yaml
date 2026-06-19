@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../.openspec.yaml
+schema: https://raw.githubusercontent.com/anomaly/opencode/refs/heads/main/schema/openspec-v1.json
+name: fix-error-loading-gifts-page
+description: Aplicar migration de FK faltante para corrigir erro HTTP 400 na Área de Dádivas
+status: proposed
+author: ai
+created: 2026-06-19
