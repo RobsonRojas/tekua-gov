@@ -67,7 +67,7 @@ export default defineConfig({
     })
   ],
   build: {
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 400,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -94,6 +94,30 @@ export default defineConfig({
             }
             if (id.includes('recharts') || id.includes('d3')) {
               return 'vendor-charts';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-animation';
+            }
+            if (id.includes('react-quill-new')) {
+              return 'vendor-editor';
+            }
+            if (id.includes('@zxing')) {
+              return 'vendor-barcode';
+            }
+            if (id.includes('i18next')) {
+              return 'vendor-i18n';
+            }
+            if (id.includes('react-markdown') || id.includes('dompurify')) {
+              return 'vendor-markdown';
+            }
+            if (id.includes('date-fns')) {
+              return 'vendor-date';
+            }
+            if (id.includes('@reduxjs/toolkit') || id.includes('/redux/') || id.includes('react-redux') || id.includes('immer') || id.includes('reselect') || id.includes('redux-thunk')) {
+              return 'vendor-state';
+            }
+            if (id.includes('lodash') || id.includes('es-toolkit')) {
+              return 'vendor-utils';
             }
             return 'vendor-core';
           }
