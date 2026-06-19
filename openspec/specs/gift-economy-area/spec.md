@@ -12,5 +12,13 @@ O sistema SHALL permitir que usuários cadastrem ofertas não-financeiras (dádi
 
 #### Scenario: Explorar Dádivas
 - **WHEN** o usuário acessa a página da Área de Dádivas.
-- **THEN** o sistema SHALL listar todas as dádivas ativas, exibindo a descrição e quem a está ofertando.
+- **THEN** o sistema SHALL listar todas as dádivas ativas, exibindo a descrição, nome de quem a está ofertando e seu avatar.
+
+#### Scenario: Listagem com dados do provedor
+- **WHEN** o sistema busca as dádivas ativas
+- **THEN** o sistema SHALL incluir os dados do perfil do provedor (nome e avatar) na resposta, sem erro de schema
+
+#### Scenario: Interface traduzida
+- **WHEN** o usuário visualiza a Área de Dádivas
+- **THEN** todos os títulos, botões, labels e placeholders DEVEM estar traduzidos conforme o idioma selecionado (pt ou en)
 
