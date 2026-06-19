@@ -18,3 +18,10 @@ O sistema **SHALL** prover um hub centralizado para que os usuários visualizem 
 - **WHEN** O usuário clica em "Marcar todas como lidas".
 - **THEN** O sistema atualiza o status de todos os alertas pendentes para `is_read: true` e remove o badge do header.
 
+### Requirement: Notificações de Transferência Financeira
+O sistema de notificações SHALL suportar o tipo de evento `finance` para alertas relacionados à carteira digital.
+
+#### Scenario: Alerta de Recebimento de Surreais
+- **WHEN** um usuário recebe uma transferência de Surreais.
+- **THEN** uma notificação do tipo `finance` é gerada e o ícone de sino no header exibe um badge numérico atualizado.
+

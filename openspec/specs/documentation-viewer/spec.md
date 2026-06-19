@@ -4,7 +4,7 @@
 TBD - created by archiving change documentation. Update Purpose after archive.
 ## Requirements
 ### Requirement: Consulta de Documentação Oficial
-O sistema SHALL prover aos membros um local centralizado para consultar as regras e registros da associação.
+O sistema SHALL prover aos membros um local centralizado para consultar as regras e registros da associação, sem permitir o download dos arquivos.
 
 #### Scenario: Acesso via Dashboard
 - **WHEN** o usuário autenticado clica em "Acessar" no card de Documentação na Home.
@@ -12,7 +12,8 @@ O sistema SHALL prover aos membros um local centralizado para consultar as regra
 
 #### Scenario: Visualização de Documento
 - **WHEN** o usuário seleciona um documento da lista e clica em "Visualizar".
-- **THEN** o sistema gera uma URL assinada do Supabase Storage e abre o documento em uma nova aba.
+- **THEN** o sistema gera uma URL assinada do Supabase Storage e abre o documento em um modal de visualização segura integrado no frontend.
+- **AND** o visualizador SHALL ocultar recursos e botões de download e impressão.
 
 ### Requirement: Filtros e Organização
 O sistema SHALL organizar os documentos para facilitar a localização.
