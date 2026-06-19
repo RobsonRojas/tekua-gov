@@ -512,13 +512,24 @@ serve(async (req) => {
         
         if (!canModerate) throw new Error('Forbidden')
 
-        // 2. Call moderation RPC using authenticated client
-        const { error } = await supabaseClient.rpc('moderate_activity', {
-          p_activity_id: activityId,
-          p_action: modAction
-        })
+        // 2. Apply moderation action
+        if (isBeneficiary) {
+          // Beneficiary uses admin client to bypass RPC (which checks admin/council only)
+          const { error } = await supabaseAdmin
+            .from('activities')
+            .update({ status: 'open', updated_at: new Date().toISOString() })
+            .eq('id', activityId)
+            .eq('status', 'pending_approval')
 
-        if (error) throw error
+          if (error) throw error
+        } else {
+          const { error } = await supabaseClient.rpc('moderate_activity', {
+            p_activity_id: activityId,
+            p_action: modAction
+          })
+
+          if (error) throw error
+        }
 
         // 3. Auto-transition to in_progress if approved and has worker_id
         if (modAction === 'approve') {
