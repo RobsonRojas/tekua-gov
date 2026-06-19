@@ -43,7 +43,7 @@ export const useNavigation = () => {
     },
     {
       path: '/gifts',
-      label: t('gifts.area') || 'Dádivas',
+      label: t('gifts.area'),
       icon: <Gift size={20} />,
     },
     {

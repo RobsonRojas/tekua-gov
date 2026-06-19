@@ -91,7 +91,7 @@ const GiftsArea: React.FC = () => {
       });
       if (error) throw new Error(error);
       
-      alert(t('gifts.usageRecorded') || 'Uso registrado! O provedor recebeu pontos de dádiva.');
+      alert(t('gifts.usageRecorded'));
     } catch (err: any) {
       alert('Error: ' + err.message);
     } finally {
@@ -105,7 +105,7 @@ const GiftsArea: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <GiftIcon sx={{ fontSize: 32, mr: 2, color: 'secondary.main' }} />
           <Typography variant="h4" component="h1" fontWeight={700}>
-            {t('gifts.area') || 'Economia de Dádivas'}
+            {t('gifts.area')}
           </Typography>
         </Box>
         <Button 
@@ -114,7 +114,7 @@ const GiftsArea: React.FC = () => {
           startIcon={<AddIcon />} 
           onClick={() => setIsDialogOpen(true)}
         >
-          {t('gifts.create') || 'Cadastrar Dádiva'}
+          {t('gifts.create')}
         </Button>
       </Box>
 
@@ -173,7 +173,7 @@ const GiftsArea: React.FC = () => {
                               onClick={() => handleRecordUsage(gift.id)}
                               disabled={isOwnGift || recordingUsageId === gift.id}
                             >
-                              {t('gifts.recordUsage') || 'Eu utilizei isso'}
+                              {t('gifts.recordUsage')}
                             </Button>
                           </span>
                         </Tooltip>
@@ -188,7 +188,7 @@ const GiftsArea: React.FC = () => {
       </Grid>
 
       <Dialog open={isDialogOpen} onClose={() => !submitting && setIsDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{t('gifts.create') || 'Cadastrar Dádiva'}</DialogTitle>
+        <DialogTitle>{t('gifts.create')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
             Ofereça algo para a comunidade (ex: Empréstimo de ferramenta, doação de sementes, carona). Quando alguém utilizar, você ganhará Pontos de Dádiva!

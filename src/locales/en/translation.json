@@ -116,6 +116,12 @@
     "logout": "Logout",
     "footer": "© {{year}} Tekua Association. All rights reserved."
   },
+  "gifts": {
+    "area": "Gift Economy",
+    "create": "Create Gift",
+    "recordUsage": "I used this",
+    "usageRecorded": "Usage recorded! The provider received gift points."
+  },
   "home": {
     "title": "Tekua Governance Portal",
     "subtitle": "Welcome to the central association services system. Here you can manage your account, access documents and participate in decisions.",

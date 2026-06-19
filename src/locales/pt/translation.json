@@ -120,6 +120,12 @@
     "logout": "Sair",
     "footer": "© {{year}} Tekua Associação. Todos os direitos reservados."
   },
+  "gifts": {
+    "area": "Economia de Dádivas",
+    "create": "Cadastrar Dádiva",
+    "recordUsage": "Eu utilizei isso",
+    "usageRecorded": "Uso registrado! O provedor recebeu pontos de dádiva."
+  },
   "home": {
     "title": "Portal de Governança Tekua",
     "subtitle": "Bem-vindo ao sistema central de serviços da associação. Aqui você pode gerenciar sua conta, acessar documentos e participar das decisões.",
