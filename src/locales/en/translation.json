@@ -160,7 +160,10 @@
     "back": "Back",
     "retry": "Retry",
     "status": "Status",
-    "delete": "Delete"
+    "delete": "Delete",
+    "title": "Title",
+    "description": "Description",
+    "publish": "Publish"
   },
   "auth": {
     "invalid_credentials": "Invalid login credentials.",

@@ -196,7 +196,7 @@ const GiftsArea: React.FC = () => {
           <TextField
             autoFocus
             margin="dense"
-            label={t('common.title') || 'Título da Dádiva'}
+            label={t('common.title')}
             fullWidth
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
@@ -205,7 +205,7 @@ const GiftsArea: React.FC = () => {
           />
           <TextField
             margin="dense"
-            label={t('common.description') || 'Descrição'}
+            label={t('common.description')}
             fullWidth
             multiline
             rows={4}
@@ -217,7 +217,7 @@ const GiftsArea: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsDialogOpen(false)} disabled={submitting}>
-            {t('common.cancel') || 'Cancelar'}
+            {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleCreateGift} 
@@ -225,7 +225,7 @@ const GiftsArea: React.FC = () => {
             color="secondary"
             disabled={submitting || !newTitle.trim() || !newDescription.trim()}
           >
-            {submitting ? <CircularProgress size={24} /> : (t('common.publish') || 'Publicar')}
+            {submitting ? <CircularProgress size={24} /> : t('common.publish')}
           </Button>
         </DialogActions>
       </Dialog>

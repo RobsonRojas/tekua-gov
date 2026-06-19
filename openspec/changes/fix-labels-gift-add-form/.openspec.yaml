@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../../.openspec.yaml
+schema: https://raw.githubusercontent.com/anomaly/opencode/refs/heads/main/schema/openspec-v1.json
+name: fix-labels-gift-add-form
+description: Adicionar chaves i18n faltantes para labels do formulário de criação de gifts
+status: proposed
+author: ai
+created: 2026-06-19

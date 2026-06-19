@@ -165,7 +165,10 @@
     "back": "Voltar",
     "retry": "Tentar Novamente",
     "status": "Status",
-    "delete": "Remover"
+    "delete": "Remover",
+    "title": "Título",
+    "description": "Descrição",
+    "publish": "Publicar"
   },
   "auth": {
     "invalid_credentials": "Email ou senha incorretos.",
