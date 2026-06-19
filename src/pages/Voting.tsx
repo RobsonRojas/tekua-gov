@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Paper, List, ListItem, ListItemButton, ListItemText, Chip, Container, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, Skeleton } from '@mui/material';
+import RichTextEditor from '../components/common/RichTextEditor';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
@@ -123,14 +124,10 @@ const Voting: React.FC = () => {
             onChange={(e) => setNewTopicTitle(e.target.value)}
             sx={{ mb: 2 }}
           />
-          <TextField
-            label={t('voting.topicContent', 'Conteúdo da Pauta')}
-            fullWidth
-            multiline
-            rows={12}
+          <RichTextEditor
             value={newTopicContent}
-            onChange={(e) => setNewTopicContent(e.target.value)}
-            helperText={t('voting.markdownSupport', 'Suporta formatação Markdown')}
+            onChange={setNewTopicContent}
+            placeholder={t('voting.topicContent', 'Conteúdo da Pauta')}
           />
         </DialogContent>
         <DialogActions>

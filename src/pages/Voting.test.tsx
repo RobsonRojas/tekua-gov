@@ -23,7 +23,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('react-quill', () => ({
+vi.mock('react-quill-new', () => ({
   default: () => <div data-testid="react-quill-mock" />
 }));
 
@@ -63,7 +63,7 @@ describe('Voting Page', () => {
 
   it('shows create button for admin and can open dialog', async () => {
     vi.mocked(useAuth).mockReturnValue({ acceptTerms: vi.fn(),
-      profile: { role: 'admin' },
+      profile: { role: 'admin', roles: ['admin'] },
     } as any);
 
     vi.mocked(apiClient.invoke).mockResolvedValue({ data: [], error: null });

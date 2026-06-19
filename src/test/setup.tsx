@@ -44,8 +44,8 @@ vi.mock('react-i18next', () => ({
   Translation: ({ children }: any) => children( (key: string) => key, { i18n: {} }, false),
 }));
 
-// Mock react-quill
-vi.mock('react-quill', () => ({
+// Mock react-quill-new
+vi.mock('react-quill-new', () => ({
   default: (props: any) => React.createElement('div', { 
     'data-testid': 'react-quill-mock',
     ...props 
