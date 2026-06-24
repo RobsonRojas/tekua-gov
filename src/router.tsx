@@ -33,6 +33,9 @@ const TaskDetail = lazy(() => import('./pages/TaskDetail'));
 const SharingMarketplace = lazy(() => import('./pages/Sharing/index'));
 const SharingItemDetail = lazy(() => import('./pages/Sharing/SharingItemDetail'));
 const GiftsArea = lazy(() => import('./pages/GiftsArea'));
+const JusticaRestaurativa = lazy(() => import('./pages/JusticaRestaurativa/index'));
+const JusticaRestaurativaAgente = lazy(() => import('./pages/JusticaRestaurativa/Agente'));
+const JusticaRestaurativaWizard = lazy(() => import('./pages/JusticaRestaurativa/Wizard'));
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -306,6 +309,36 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <Suspense fallback={<LoadingFallback />}>
               <Notifications />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'justica-restaurativa',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <JusticaRestaurativa />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'justica-restaurativa/agente',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <JusticaRestaurativaAgente />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'justica-restaurativa/wizard',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <JusticaRestaurativaWizard />
             </Suspense>
           </ProtectedRoute>
         ),

@@ -6,7 +6,8 @@ import {
   FileText as MuralIcon,
   Bot,
   Wrench,
-  Gift
+  Gift,
+  Scale
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -50,6 +51,11 @@ export const useNavigation = () => {
       path: '/ai-agent',
       label: t('ai.nav'),
       icon: <Bot size={20} />,
+    },
+    {
+      path: '/justica-restaurativa',
+      label: 'Justiça Restaurativa',
+      icon: <Scale size={20} />,
     },
     {
       path: '/admin-panel',
