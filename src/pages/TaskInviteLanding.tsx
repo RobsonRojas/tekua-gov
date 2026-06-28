@@ -79,7 +79,11 @@ const TaskInviteLanding: React.FC = () => {
         navigate('/login');
       }, 3000);
     } catch (err: any) {
-      setRegisterError(err.message || 'Erro ao registrar.');
+      let errorMsg = err.message || 'Erro ao registrar.';
+      if (typeof errorMsg === 'string' && errorMsg.includes('email rate limit exceeded')) {
+        errorMsg = 'Muitas tentativas. Por favor, aguarde alguns minutos antes de tentar novamente.';
+      }
+      setRegisterError(errorMsg);
     } finally {
       setRegistering(false);
     }

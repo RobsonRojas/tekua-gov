@@ -93,11 +93,19 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
         onSuccess();
         handleClose();
       } else {
-        setError(result.error || t('common.error'));
+        let errorMsg = result.error || t('common.error');
+        if (typeof errorMsg === 'string' && errorMsg.includes('email rate limit exceeded')) {
+          errorMsg = 'Muitas tentativas de convite. Por favor, aguarde alguns minutos antes de tentar novamente.';
+        }
+        setError(errorMsg);
       }
     } catch (err: any) {
       console.error('Error in handleInvite:', err);
-      setError(err.message || t('common.error'));
+      let errorMsg = err.message || t('common.error');
+      if (typeof errorMsg === 'string' && errorMsg.includes('email rate limit exceeded')) {
+        errorMsg = 'Muitas tentativas de convite. Por favor, aguarde alguns minutos antes de tentar novamente.';
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
