@@ -67,7 +67,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
   const description = activity.description?.[lang] || activity.description?.pt || 'No description';
   
   const isOwner = user?.id === activity.requester_id;
-  const isWorker = user?.id === activity.worker_id;
+  const isWorker = user?.id === activity.worker_id || (activity.executor_ids && activity.executor_ids.includes(user?.id));
   const isAdmin = profile?.roles?.includes('admin') || profile?.role === 'admin';
   const canConfirm = activity.validation_method === 'community_consensus' || 
                     (activity.validation_method === 'requester_approval' && (isOwner || isAdmin));
@@ -367,14 +367,20 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               {activity.type === 'task' ? t('work.requester') : t('work.beneficiary')}: {activity.requester?.full_name || 'Tekuá'}
             </Typography>
           </Box>
-          {activity.worker && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Avatar sx={{ width: 24, height: 24, bgcolor: 'secondary.main', fontSize: '0.75rem' }}>
-                <User size={14} />
-              </Avatar>
-              <Typography variant="caption" color="text.secondary">
-                {activity.worker.full_name}
-              </Typography>
+          {activity.executors && activity.executors.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {activity.executors.slice(0, 3).map((executor: any, idx: number) => (
+                <Tooltip key={executor.id || idx} title={executor.full_name}>
+                  <Avatar src={executor.avatar_url} sx={{ width: 24, height: 24, bgcolor: 'secondary.main', fontSize: '0.75rem', ml: idx > 0 ? -1 : 0, border: '2px solid', borderColor: 'background.paper' }}>
+                    <User size={14} />
+                  </Avatar>
+                </Tooltip>
+              ))}
+              {activity.executors.length > 3 && (
+                <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5, fontWeight: 700 }}>
+                  +{activity.executors.length - 3}
+                </Typography>
+              )}
             </Box>
           )}
         </Stack>

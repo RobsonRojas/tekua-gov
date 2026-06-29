@@ -78,7 +78,7 @@ serve(async (req) => {
         if (startDate) query = query.gte('created_at', startDate)
         if (endDate) query = query.lte('created_at', endDate)
         if (requesterId) query = query.eq('requester_id', requesterId)
-        if (workerId) query = query.eq('worker_id', workerId)
+        if (workerId) query = query.or(`worker_id.eq.${workerId},executor_ids.cs.{${workerId}}`)
         if (projectId) query = query.eq('project_id', projectId)
 
         if (!canSeeAll) {
@@ -92,6 +92,26 @@ serve(async (req) => {
 
         if (activitiesError) throw activitiesError
 
+        // Fetch executor profiles
+        const allExecutorIds = new Set<string>();
+        activities?.forEach(a => {
+          if (a.executor_ids && Array.isArray(a.executor_ids)) {
+            a.executor_ids.forEach((id: string) => allExecutorIds.add(id));
+          }
+        });
+
+        let executorsMap: Record<string, any> = {};
+        if (allExecutorIds.size > 0) {
+          const { data: profiles } = await supabaseClient
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', Array.from(allExecutorIds));
+          
+          if (profiles) {
+            profiles.forEach(p => executorsMap[p.id] = p);
+          }
+        }
+
         // 2. Fetch user's confirmations to mark "user_has_confirmed"
         const { data: userConfirms } = await supabaseClient
           .from('activity_confirmations')
@@ -102,7 +122,8 @@ serve(async (req) => {
 
         responseData = activities?.map(item => ({
           ...item,
-          user_has_confirmed: confirmedIds.has(item.id)
+          user_has_confirmed: confirmedIds.has(item.id),
+          executors: item.executor_ids ? item.executor_ids.map((id: string) => executorsMap[id]).filter(Boolean) : (item.worker ? [item.worker] : [])
         })) || []
         break
       }
@@ -134,8 +155,20 @@ serve(async (req) => {
           .eq('user_id', user.id)
           .maybeSingle()
 
+        let executors = [];
+        if (activity.executor_ids && activity.executor_ids.length > 0) {
+          const { data: profiles } = await supabaseClient
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', activity.executor_ids);
+          executors = profiles || [];
+        } else if (activity.worker) {
+          executors = [activity.worker];
+        }
+
         responseData = {
           ...activity,
+          executors,
           user_has_confirmed: !!userConfirm
         }
         break
@@ -307,7 +340,7 @@ serve(async (req) => {
       }
 
       case 'submitActivity': {
-        const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false, attachments = [], workerId = null } = params
+        const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false, attachments = [], executorIds = [] } = params
         
         const validationMethod = (requesterId && requesterId.trim() !== '') ? 'requester_approval' : 'community_consensus';
 
@@ -321,7 +354,7 @@ serve(async (req) => {
           p_validation_method: validationMethod,
           p_urgency: urgency,
           p_importance: importance,
-          p_worker_id: workerId
+          p_executor_ids: executorIds
         })
 
         if (error) throw error

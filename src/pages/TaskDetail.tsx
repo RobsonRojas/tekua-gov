@@ -20,8 +20,8 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  MenuItem,
-  Snackbar
+  Snackbar,
+  Autocomplete
 } from '@mui/material';
 import { 
   ArrowLeft, 
@@ -60,7 +60,7 @@ const TaskDetail: React.FC = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editAmount, setEditAmount] = useState<number | string>('');
-  const [editWorkerId, setEditWorkerId] = useState<string>('');
+  const [editExecutorIds, setEditExecutorIds] = useState<string[]>([]);
   const [editAttachments, setEditAttachments] = useState<Attachment[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -118,7 +118,7 @@ const TaskDetail: React.FC = () => {
     setEditTitle(activity.title?.[lang] || activity.title?.pt || '');
     setEditDescription(activity.description?.[lang] || activity.description?.pt || '');
     setEditAmount(activity.reward_amount || '');
-    setEditWorkerId(activity.worker_id || '');
+    setEditExecutorIds(activity.executor_ids || (activity.worker_id ? [activity.worker_id] : []));
     const existingRefs = activity.attachments
       ? activity.attachments
           .filter((a: any) => !a.is_evidence)
@@ -143,7 +143,7 @@ const TaskDetail: React.FC = () => {
         title: editTitle,
         description: editDescription,
         rewardAmount: Number(editAmount),
-        workerId: editWorkerId || null,
+        executorIds: editExecutorIds,
         attachments: editAttachments
       });
 
@@ -214,7 +214,7 @@ const TaskDetail: React.FC = () => {
 
   const title = activity.title?.[lang] || activity.title?.pt || 'Untitled';
   const description = activity.description?.[lang] || activity.description?.pt || 'No description';
-  const isWorker = user?.id === activity.worker_id;
+  const isWorker = user?.id === activity.worker_id || (activity.executor_ids && activity.executor_ids.includes(user?.id));
   const confirmCount = activity.confirmations?.length || 0;
   const threshold = activity.min_confirmations || 3;
   const progress = (confirmCount / threshold) * 100;
@@ -330,19 +330,23 @@ const TaskDetail: React.FC = () => {
                   </Box>
                 </Box>
 
-                {activity.worker && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar src={activity.worker?.avatar_url} sx={{ bgcolor: 'secondary.main' }}>
-                      <User size={20} />
-                    </Avatar>
-                    <Box>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        {t('work.executor') || 'Executor'}
-                      </Typography>
-                      <Typography variant="body1" fontWeight={600}>
-                        {activity.worker.full_name}
-                      </Typography>
-                    </Box>
+                {activity.executors && activity.executors.length > 0 && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {activity.executors.map((executor: any) => (
+                      <Box key={executor.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar src={executor.avatar_url} sx={{ bgcolor: 'secondary.main' }}>
+                          <User size={20} />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle2" color="text.secondary">
+                            {t('work.executor') || 'Executor'}
+                          </Typography>
+                          <Typography variant="body1" fontWeight={600}>
+                            {executor.full_name}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
                   </Box>
                 )}
               </Stack>
@@ -605,24 +609,27 @@ const TaskDetail: React.FC = () => {
                   InputProps={{ inputProps: { min: 1 } }}
                 />
                 {isAdmin && (
-                  <TextField
-                    fullWidth
-                    select
-                    label={t('work.executor') || 'Atribuir a um Membro (Opcional)'}
-                    value={editWorkerId}
-                    onChange={(e) => setEditWorkerId(e.target.value)}
+                  <Autocomplete
+                    multiple
+                    options={members}
+                    getOptionLabel={(option) => option.full_name || option.email}
+                    value={members.filter(m => editExecutorIds.includes(m.id))}
+                    onChange={(_, newValue) => setEditExecutorIds(newValue.map(n => n.id))}
                     disabled={loadingMembers}
-                    helperText={t('work.executorHelper') || 'Deixe em branco para permitir que qualquer um assuma'}
-                  >
-                    <MenuItem value="">
-                      <em>{t('common.none') || 'Nenhum'}</em>
-                    </MenuItem>
-                    {members.map((member) => (
-                      <MenuItem key={member.id} value={member.id}>
-                        {member.full_name || member.email}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="outlined"
+                        label={t('work.executors', 'Atribuir a Membros (Opcional)')}
+                        helperText={t('work.executorHelper') || 'Deixe em branco para permitir que qualquer um assuma'}
+                      />
+                    )}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip label={option.full_name || option.email} {...getTagProps({ index })} size="small" color="primary" />
+                      ))
+                    }
+                  />
                 )}
                 <Box>
                   <Divider sx={{ my: 1 }} />

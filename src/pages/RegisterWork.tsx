@@ -12,7 +12,9 @@ import {
   Snackbar,
   CircularProgress,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  Autocomplete,
+  Chip
 } from '@mui/material';
 import { 
   Work as WorkIcon, 
@@ -40,8 +42,7 @@ const RegisterWork: React.FC = () => {
   const [amount, setAmount] = useState<number | string>('');
   const [beneficiaryType, setBeneficiaryType] = useState<'tekua' | 'member'>('tekua');
   const [beneficiaryId, setBeneficiaryId] = useState<string>('');
-  const [executorType, setExecutorType] = useState<'me' | 'other'>('me');
-  const [executorId, setExecutorId] = useState<string>('');
+  const [executorIds, setExecutorIds] = useState<string[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   
@@ -61,8 +62,7 @@ const RegisterWork: React.FC = () => {
       const { data, error } = await apiClient.invoke('api-members', 'fetchUsers');
       
       if (error) throw new Error(error);
-      // Filter out self if necessary, though api-members usually returns all
-      setMembers(data?.filter((m: any) => m.id !== user?.id) || []);
+      setMembers(data || []);
     } catch (err) {
       console.error('Error fetching members:', err);
     } finally {
@@ -103,7 +103,7 @@ const RegisterWork: React.FC = () => {
         p_reward_amount: Number(amount),
         p_evidence_url: evidenceUrl,
         p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null,
-        p_worker_id: executorType === 'other' ? executorId : user.id,
+        p_executor_ids: executorIds.length > 0 ? executorIds : [user.id],
         attachments
       };
 
@@ -122,7 +122,7 @@ const RegisterWork: React.FC = () => {
         rewardAmount: submissionData.p_reward_amount,
         evidenceUrl: submissionData.p_evidence_url,
         requesterId: submissionData.p_requester_id,
-        workerId: submissionData.p_worker_id,
+        executorIds: submissionData.p_executor_ids,
         attachments: submissionData.attachments
       });
 
@@ -247,38 +247,29 @@ const RegisterWork: React.FC = () => {
               </Grid>
             )}
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                select
-                label={t('work.executor', 'Quem executou o trabalho?')}
-                value={executorType}
-                onChange={(e) => setExecutorType(e.target.value as any)}
-              >
-                <MenuItem value="me">{t('work.me', 'Eu mesmo')}</MenuItem>
-                <MenuItem value="other">{t('work.otherExecutor', 'Outro Membro')}</MenuItem>
-              </TextField>
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                multiple
+                options={members}
+                getOptionLabel={(option) => option.full_name || option.email}
+                value={members.filter(m => executorIds.includes(m.id))}
+                onChange={(_, newValue) => setExecutorIds(newValue.map(n => n.id))}
+                disabled={loadingMembers}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label={t('work.executors', 'Quem executou o trabalho? (Deixe vazio se foi apenas você)')}
+                    placeholder="Buscar membros..."
+                  />
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip label={option.full_name || option.email} {...getTagProps({ index })} size="small" color="primary" />
+                  ))
+                }
+              />
             </Grid>
-
-            {executorType === 'other' && (
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  select
-                  label={t('work.selectExecutor', 'Selecione o Membro')}
-                  value={executorId}
-                  onChange={(e) => setExecutorId(e.target.value)}
-                  required
-                  disabled={loadingMembers}
-                >
-                  {members.map((member) => (
-                    <MenuItem key={member.id} value={member.id}>
-                      {member.full_name || member.email}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            )}
 
             <Grid size={{ xs: 12 }} sx={{ mt: 2, display: 'flex', gap: 2 }}>
               <Button
