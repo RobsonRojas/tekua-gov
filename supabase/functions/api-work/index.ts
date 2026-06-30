@@ -184,7 +184,7 @@ serve(async (req) => {
           urgency = false,
           importance = false,
           attachments = [],
-          workerId = null,
+          executorIds = [],
           projectId = null
         } = params
         if (!title || !description) throw new Error('Missing activity title or description')
@@ -215,7 +215,7 @@ serve(async (req) => {
             min_confirmations: minConfirmations,
             urgency,
             importance,
-            worker_id: workerId,
+            executor_ids: executorIds,
             project_id: projectId
           })
           .select()

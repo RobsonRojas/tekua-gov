@@ -45,8 +45,12 @@ serve(async (req) => {
     const title = typeof payload.title === 'string' ? payload.title : (payload.title?.pt || payload.title?.en || 'Tarefa')
 
     if (event === 'activity.created') {
-      const { data: members } = await supabaseClient.from('profiles').select('id')
-      recipients = members?.map(m => m.id) || []
+      if (payload.executor_ids && payload.executor_ids.length > 0) {
+        recipients = payload.executor_ids
+      } else {
+        const { data: members } = await supabaseClient.from('profiles').select('id')
+        recipients = members?.map(m => m.id) || []
+      }
       template = {
         subject: `Nova Demanda: ${title}`,
         body: `Uma nova oportunidade de trabalho foi publicada: "${title}". Acesse o portal para assumir esta tarefa.`,
@@ -73,7 +77,7 @@ serve(async (req) => {
         link: '/work'
       }
     } else if (event === 'activity.completed') {
-      recipients = [payload.worker_id]
+      recipients = payload.executor_ids && payload.executor_ids.length > 0 ? payload.executor_ids : (payload.worker_id ? [payload.worker_id] : [])
       template = {
         subject: `Trabalho Validado: ${title}`,
         body: `Seu trabalho na tarefa "${title}" foi validado e o pagamento foi processado.`,

@@ -16,7 +16,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Autocomplete,
+  Chip
 } from '@mui/material';
 import { 
   Assignment as TaskIcon, 
@@ -42,7 +44,7 @@ const CreateDemand: React.FC = () => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number | string>('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [workerId, setWorkerId] = useState<string>('');
+  const [executorIds, setExecutorIds] = useState<string[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [projectId, setProjectId] = useState<string>('');
   const [projects, setProjects] = useState<any[]>([]);
@@ -100,7 +102,7 @@ const CreateDemand: React.FC = () => {
         rewardAmount: Number(amount),
         type: 'task',
         attachments,
-        workerId: workerId || null,
+        executorIds: executorIds.length > 0 ? executorIds : [],
         projectId: projectId || null
       });
 
@@ -238,24 +240,27 @@ const CreateDemand: React.FC = () => {
 
             {canAssignTask && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  select
-                  label={t('work.executor') || 'Atribuir a um Membro (Opcional)'}
-                  value={workerId}
-                  onChange={(e) => setWorkerId(e.target.value)}
+                <Autocomplete
+                  multiple
+                  options={members}
+                  getOptionLabel={(option) => option.full_name || option.email}
+                  value={members.filter(m => executorIds.includes(m.id))}
+                  onChange={(_, newValue) => setExecutorIds(newValue.map(n => n.id))}
                   disabled={loadingMembers}
-                  helperText={t('work.executorHelper') || 'Deixe em branco para permitir que qualquer um assuma'}
-                >
-                  <MenuItem value="">
-                    <em>{t('common.none') || 'Nenhum'}</em>
-                  </MenuItem>
-                  {members.map((member) => (
-                    <MenuItem key={member.id} value={member.id}>
-                      {member.full_name || member.email}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label={t('work.executor') || 'Atribuir a Membros (Opcional)'}
+                      placeholder={t('work.executorHelper') || 'Buscar membros...'}
+                    />
+                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip label={option.full_name || option.email} {...getTagProps({ index })} size="small" color="primary" />
+                    ))
+                  }
+                />
               </Grid>
             )}
 
