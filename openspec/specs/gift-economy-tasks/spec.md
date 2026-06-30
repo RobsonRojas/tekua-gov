@@ -11,11 +11,11 @@ O sistema SHALL permitir que membros acessem um quadro central para cadastrar e 
 - **THEN** a tarefa é registrada com status `pending_approval` e aguarda moderação do Conselho Transversal.
 
 #### Scenario: Aceitação de Tarefa
-- **WHEN** um outro membro clica em "Assumir Tarefa".
-- **THEN** o status muda para "Em Execução" e o nome do executor é vinculado à tarefa.
+- **WHEN** um ou múltiplos membros são designados ou clicam em "Assumir Tarefa".
+- **THEN** o status muda para "Em Execução" e os nomes de todos os executores selecionados (array `executor_ids`) são vinculados à tarefa.
 
 ### Requirement: Economia Surreal e Provas
-O sistema SHALL garantir o reconhecimento do valor do trabalho através da moeda Surreal e evidências físicas.
+O sistema SHALL garantir o reconhecimento do valor do trabalho através da moeda Surreal e evidências físicas, estendendo as recompensas a todos os executores envolvidos.
 
 #### Scenario: Envio de Prova Georreferenciada
 - **WHEN** the executor clica em "Concluir Tarefa" e anexa uma foto.
@@ -23,7 +23,7 @@ O sistema SHALL garantir o reconhecimento do valor do trabalho através da moeda
 
 #### Scenario: Pagamento Virtual (Wallet)
 - **WHEN** o requisitante ou administrador confirma a execução do trabalho.
-- **THEN** o sistema SHALL criar (emitir a partir da Tesouraria) e creditar o valor em Surreais correspondente na carteira (Wallet) do executor (worker) e registrar a transação no ledger de forma vinculada ao ID da atividade correspondente.
+- **THEN** o sistema SHALL criar (emitir a partir da Tesouraria) e creditar o valor TOTAL em Surreais correspondente na carteira (Wallet) de **CADA UM** dos executores vinculados à tarefa, e registrar as transações no ledger de forma vinculada ao ID da atividade correspondente.
 
 ### Requirement: Cobertura de Testes Automatizados
 O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.

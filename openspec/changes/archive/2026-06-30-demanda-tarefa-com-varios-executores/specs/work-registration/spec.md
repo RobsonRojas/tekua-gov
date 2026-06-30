@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: Registro de Trabalho em Nome de Outro Membro ou Múltiplos Membros
+### Requirement: Registro de Trabalho em Nome de Outro Membro
 The system SHALL allow an authenticated user to register a work activity on behalf of one or more members, specifying those members as the actual executors (authors) of the work. Se não houver seleção, o sistema deve registrar a tarefa em nome do próprio usuário autenticado.
 
 #### Scenario: Registering work for multiple members
