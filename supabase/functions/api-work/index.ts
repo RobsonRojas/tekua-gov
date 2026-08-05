@@ -6,6 +6,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || ''
+
+async function createStripePaymentIntent(amount: number, currency = 'brl') {
+  if (!STRIPE_SECRET_KEY) {
+    console.warn('Stripe secret key is not configured; skipping payment intent creation')
+    return null
+  }
+
+  const body = new URLSearchParams()
+  body.append('amount', String(Math.round(amount * 100)))
+  body.append('currency', currency)
+  body.append('payment_method_types[]', 'pix')
+  body.append('payment_method_options[pix][expires_after_minutes]', '60')
+  body.append('description', 'Tekuá demand payment')
+
+  const response = await fetch('https://api.stripe.com/v1/payment_intents', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('Stripe payment intent creation failed:', errorText)
+    return null
+  }
+
+  const data = await response.json()
+  return data.id || null
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -159,7 +193,7 @@ serve(async (req) => {
         if (activity.executor_ids && activity.executor_ids.length > 0) {
           const { data: profiles } = await supabaseClient
             .from('profiles')
-            .select('id, full_name, avatar_url')
+            .select('id, full_name, avatar_url, pix_key, bank_name, account_type')
             .in('id', activity.executor_ids);
           executors = profiles || [];
         } else if (activity.worker) {
@@ -179,6 +213,10 @@ serve(async (req) => {
           title, 
           description, 
           rewardAmount, 
+          fiatAmount = 0,
+          currency = 'BRL',
+          paymentMethod = 'pix',
+          paymentStatus = 'pending',
           type = 'task', 
           geoRequired = false,
           urgency = false,
@@ -192,6 +230,10 @@ serve(async (req) => {
         const amount = Number(rewardAmount)
         if (isNaN(amount) || amount <= 0) throw new Error('Reward amount must be a positive number')
 
+        const fiat = Number(fiatAmount || 0)
+        if (isNaN(fiat) || fiat < 0) throw new Error('Fiat amount must be a valid non-negative number')
+        if (fiat > 0 && currency !== 'BRL') throw new Error('Only BRL fiat is supported')
+
         // Fetch min_confirmations from governance_settings
         const { data: govSettings } = await supabaseClient
           .from('governance_settings')
@@ -201,12 +243,22 @@ serve(async (req) => {
           
         const minConfirmations = govSettings?.min_contribution_confirmations || 3;
 
+        let stripePaymentIntentId = null
+        if (fiat > 0 && paymentMethod === 'pix') {
+          stripePaymentIntentId = await createStripePaymentIntent(fiat, currency.toLowerCase())
+        }
+
         const { data: activityData, error } = await supabaseClient
           .from('activities')
           .insert({ 
             title: typeof title === 'string' ? { pt: title, en: title } : title, 
             description: typeof description === 'string' ? { pt: description, en: description } : description, 
             reward_amount: amount,
+            fiat_amount: fiat,
+            currency,
+            payment_method: paymentMethod,
+            payment_status: fiat > 0 ? paymentStatus : 'not_required',
+            stripe_payment_intent_id: stripePaymentIntentId,
             type: type,
             requester_id: user.id,
             status: 'pending_approval',

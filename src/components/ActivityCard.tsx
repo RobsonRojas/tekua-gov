@@ -241,6 +241,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 {activity.reward_amount} $S
               </Typography>
             </Stack>
+            {activity.fiat_amount > 0 && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                R$ {Number(activity.fiat_amount).toFixed(2)} • {activity.payment_status || 'pending'}
+              </Typography>
+            )}
             <Tooltip title={t('common.share', 'Compartilhar')}>
               <IconButton 
                 size="small" 

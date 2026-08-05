@@ -82,6 +82,11 @@ const Profile: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [fullName, setFullName] = useState('');
+  const [pixKey, setPixKey] = useState('');
+  const [pixHolderName, setPixHolderName] = useState('');
+  const [pixHolderDocument, setPixHolderDocument] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountType, setAccountType] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -132,6 +137,11 @@ const Profile: React.FC = () => {
       setPhotoPreview(null);
     } else if (profile) {
       setFullName(profile.full_name || '');
+      setPixKey(profile.pix_key || '');
+      setPixHolderName(profile.pix_holder_name || '');
+      setPixHolderDocument(profile.pix_holder_document || '');
+      setBankName(profile.bank_name || '');
+      setAccountType(profile.account_type || '');
       setPhotoPreview(profile.avatar_url || null);
       fetchBalance();
     }
@@ -145,6 +155,11 @@ const Profile: React.FC = () => {
       if (error) throw new Error(error);
       setTargetProfile(data);
       setFullName(data?.full_name || '');
+      setPixKey(data?.pix_key || '');
+      setPixHolderName(data?.pix_holder_name || '');
+      setPixHolderDocument(data?.pix_holder_document || '');
+      setBankName(data?.bank_name || '');
+      setAccountType(data?.account_type || '');
       setPhotoPreview(data?.avatar_url || null);
       
       // Fetch balance for target user if requester is admin
@@ -177,8 +192,17 @@ const Profile: React.FC = () => {
     setMessage(null);
     
     try {
+      const updates: any = {
+        full_name: fullName,
+        pix_key: pixKey || null,
+        pix_holder_name: pixHolderName || null,
+        pix_holder_document: pixHolderDocument || null,
+        bank_name: bankName || null,
+        account_type: accountType || null
+      }
+
       const { error } = await apiClient.invoke('api-members', 'updateProfile', {
-        updates: { full_name: fullName }
+        updates
       });
 
       if (error) throw new Error(error);
@@ -636,6 +660,102 @@ const Profile: React.FC = () => {
                   <Typography variant="body1" fontWeight={500}>
                     {currentProfile?.email}
                   </Typography>
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                  <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    {t('profile.pixKey') || 'Chave Pix'}
+                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      value={pixKey}
+                      onChange={(e) => setPixKey(e.target.value)}
+                      placeholder="email, CPF, CNPJ ou chave aleatória"
+                    />
+                  ) : (
+                    <Typography variant="body1" fontWeight={500}>
+                      {currentProfile?.pix_key || t('profile.notInformed')}
+                    </Typography>
+                  )}
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    {t('profile.pixHolderName') || 'Nome do Favorecido'}
+                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      value={pixHolderName}
+                      onChange={(e) => setPixHolderName(e.target.value)}
+                    />
+                  ) : (
+                    <Typography variant="body1" fontWeight={500}>
+                      {currentProfile?.pix_holder_name || t('profile.notInformed')}
+                    </Typography>
+                  )}
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    {t('profile.pixHolderDocument') || 'CPF/CNPJ do Favorecido'}
+                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      value={pixHolderDocument}
+                      onChange={(e) => setPixHolderDocument(e.target.value)}
+                    />
+                  ) : (
+                    <Typography variant="body1" fontWeight={500}>
+                      {currentProfile?.pix_holder_document || t('profile.notInformed')}
+                    </Typography>
+                  )}
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    {t('profile.bankName') || 'Banco'}
+                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                    />
+                  ) : (
+                    <Typography variant="body1" fontWeight={500}>
+                      {currentProfile?.bank_name || t('profile.notInformed')}
+                    </Typography>
+                  )}
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    {t('profile.accountType') || 'Tipo de Conta'}
+                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      value={accountType}
+                      onChange={(e) => setAccountType(e.target.value)}
+                      placeholder="Conta Corrente, Poupança, etc."
+                    />
+                  ) : (
+                    <Typography variant="body1" fontWeight={500}>
+                      {currentProfile?.account_type || t('profile.notInformed')}
+                    </Typography>
+                  )}
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>

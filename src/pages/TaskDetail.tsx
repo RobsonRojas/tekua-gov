@@ -29,7 +29,6 @@ import {
   Trophy, 
   CheckCircle2, 
   PlayCircle, 
-  User,
   MapPin,
   Pencil
 } from 'lucide-react';
@@ -291,6 +290,16 @@ const TaskDetail: React.FC = () => {
                 {activity.reward_amount} $S
               </Typography>
             </Stack>
+            {activity.fiat_amount > 0 && (
+              <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {t('work.paymentInFiat') || 'Pagamento em fiat'}: R$ {Number(activity.fiat_amount).toFixed(2)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('work.paymentStatus') || 'Status do pagamento'}: {activity.payment_status || 'pending'}
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           <Typography variant="h3" component="h1" fontWeight={800} gutterBottom>
@@ -318,33 +327,33 @@ const TaskDetail: React.FC = () => {
               <Stack spacing={2} sx={{ mt: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar src={activity.requester?.avatar_url} sx={{ bgcolor: 'primary.main' }}>
-                    <User size={20} />
+                    {activity.requester?.full_name?.charAt(0) || '?'}
                   </Avatar>
                   <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      {activity.type === 'task' ? t('work.requester') : t('work.beneficiary')}
+                    <Typography variant="body1" fontWeight={700}>
+                      {activity.requester?.full_name || t('work.requester')}
                     </Typography>
-                    <Typography variant="body1" fontWeight={600}>
-                      {activity.requester?.full_name || 'Tekuá'}
+                    <Typography variant="body2" color="text.secondary">
+                      {t('work.requester') || 'Demandante'}
                     </Typography>
                   </Box>
                 </Box>
 
                 {activity.executors && activity.executors.length > 0 && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      {t('work.executors') || 'Executor(es)'}
+                    </Typography>
                     {activity.executors.map((executor: any) => (
-                      <Box key={executor.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar src={executor.avatar_url} sx={{ bgcolor: 'secondary.main' }}>
-                          <User size={20} />
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle2" color="text.secondary">
-                            {t('work.executor') || 'Executor'}
+                      <Box key={executor.id} sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Typography variant="body1" fontWeight={700}>
+                          {executor.full_name || executor.email}
+                        </Typography>
+                        {executor.pix_key && (
+                          <Typography variant="body2" color="text.secondary">
+                            {t('work.executorPixKey') || 'Chave Pix'}: {executor.pix_key}
                           </Typography>
-                          <Typography variant="body1" fontWeight={600}>
-                            {executor.full_name}
-                          </Typography>
-                        </Box>
+                        )}
                       </Box>
                     ))}
                   </Box>

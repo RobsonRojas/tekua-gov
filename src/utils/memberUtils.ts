@@ -6,6 +6,11 @@ export interface Profile {
   id: string;
   email?: string;
   full_name?: string;
+  pix_key?: string;
+  pix_holder_name?: string;
+  pix_holder_document?: string;
+  bank_name?: string;
+  account_type?: string;
   roles: ('admin' | 'member' | 'transversal_council')[];
   functions: string[];
   avatar_url?: string;

@@ -43,6 +43,7 @@ const CreateDemand: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number | string>('');
+  const [fiatAmount, setFiatAmount] = useState<number | string>('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [executorIds, setExecutorIds] = useState<string[]>([]);
   const [members, setMembers] = useState<any[]>([]);
@@ -100,6 +101,10 @@ const CreateDemand: React.FC = () => {
         title,
         description,
         rewardAmount: Number(amount),
+        fiatAmount: Number(fiatAmount || 0),
+        currency: 'BRL',
+        paymentMethod: fiatAmount ? 'pix' : 'none',
+        paymentStatus: fiatAmount ? 'pending' : 'not_required',
         type: 'task',
         attachments,
         executorIds: executorIds.length > 0 ? executorIds : [],
@@ -207,6 +212,18 @@ const CreateDemand: React.FC = () => {
                 onChange={(e) => setAmount(e.target.value)}
                 required
                 InputProps={{ inputProps: { min: 1 } }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                label={t('work.fiatAmount') || 'Valor a pagar em BRL'}
+                type="number"
+                value={fiatAmount}
+                onChange={(e) => setFiatAmount(e.target.value)}
+                InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                helperText={t('work.fiatAmountHelper') || 'Inserir valor em reais para pagamento via Pix'}
               />
             </Grid>
 
