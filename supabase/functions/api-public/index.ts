@@ -131,6 +131,41 @@ serve(async (req) => {
         break;
       }
 
+      case 'getShareSurrealReceipt': {
+        const { shareId } = params;
+        if (!shareId) {
+          throw new Error('Missing shareId');
+        }
+
+        const { data, error } = await supabaseAdmin
+          .from('transactions')
+          .select(
+            `id, amount, description, created_at,
+            from_profile:from_id (full_name, email),
+            to_profile:to_id (full_name, email)`
+          )
+          .eq('id', shareId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          throw new Error('Link inv�lido ou expirado.');
+        }
+
+        responseData = {
+          id: data.id,
+          amount: data.amount,
+          description: data.description,
+          createdAt: data.created_at,
+          senderName: data.from_profile?.full_name || data.from_profile?.email || null,
+          recipientName: data.to_profile?.full_name || data.to_profile?.email || null,
+        };
+        break;
+      }
+
       case 'sendResetPasswordOtp': {
         const { email } = params;
         if (!email) throw new Error('E-mail é obrigatório');

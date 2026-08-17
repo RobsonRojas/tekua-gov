@@ -9,6 +9,7 @@ import GlobalErrorBoundary from './components/GlobalErrorBoundary';
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
 const TaskInviteLanding = lazy(() => import('./pages/TaskInviteLanding'));
+const ShareSurrealLanding = lazy(() => import('./pages/ShareSurrealLanding'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -59,6 +60,15 @@ export const router = createBrowserRouter([
     element: (
       <Suspense fallback={<LoadingFallback />}>
         <TaskInviteLanding />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/share/surreal/:shareId',
+    errorElement: <GlobalErrorBoundary />,
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ShareSurrealLanding />
       </Suspense>
     ),
   },
