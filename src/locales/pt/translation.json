@@ -440,5 +440,29 @@
     "loginToAsk": "Faça login para fazer uma pergunta sobre este equipamento.",
     "loginToRent": "Faça login para alugar este equipamento e gerenciar a entrega.",
     "loginToRentBtn": "Entrar para Alugar"
+  },
+  "shareSurreal": {
+    "heading": "Recibo de Surreais",
+    "received": "recebeu",
+    "from": "de",
+    "cta": "Explorar demandas",
+    "ctaDesc": "Que tal ganhar seus próprios surreais? Explore as demandas da comunidade e contribua!",
+    "backHome": "Voltar para o início",
+    "errorTitle": "Não foi possível carregar este compartilhamento.",
+    "errorDesc": "O link pode ter expirado ou ser inválido. Tente acessar novamente ou volte ao início.",
+    "invalidLink": "Link inválido ou expirado."
+  },
+  "notifications": {
+    "pageTitle": "Centro de Notificações",
+    "pageDesc": "Acompanhe as atualizações importantes da plataforma.",
+    "empty": "Nenhuma notificação por aqui.",
+    "markAllRead": "Marcar todas como lidas",
+    "types": {
+      "surreal_receipt": "Surreais Ganhos",
+      "social": "Social",
+      "task": "Tarefa",
+      "vote": "Votação",
+      "system": "Sistema"
+    }
   }
 }

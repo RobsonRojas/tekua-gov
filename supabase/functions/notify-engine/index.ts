@@ -107,18 +107,42 @@ serve(async (req) => {
         pushBody: title,
         link: `/voting/${payload.topic_id}`
       }
+    } else if (event === 'notification.surreal_receipt') {
+      // Surreal receipt broadcast - notifications are already created by the DB trigger
+      // This handler only sends push and email notifications
+      const notifData = payload.data || {}
+      const recipientName = notifData.recipientName || 'Membro'
+      const senderName = notifData.senderName || 'Membro'
+      const amount = notifData.amount || 0
+      const transactionId = notifData.transactionId || ''
+      const description = notifData.description || ''
+
+      // Get all members except sender and recipient for broadcast
+      const { data: members } = await supabaseClient.from('profiles').select('id')
+      const excludeIds = [payload.from_id, payload.to_id].filter(Boolean)
+      recipients = members?.filter(m => !excludeIds.includes(m.id)).map(m => m.id) || []
+
+      template = {
+        subject: `🌟 ${recipientName} recebeu ${amount} $S na comunidade!`,
+        body: `${recipientName} recebeu ${amount} Surreais ($S) de ${senderName}${description ? ': "' + description + '"' : ''}. Que tal ganhar seus próprios surreais? Acesse o work-wall e descubra oportunidades.`,
+        pushTitle: `🌟 Surreais Ganhos!`,
+        pushBody: `${recipientName} recebeu ${amount} $S de ${senderName}`,
+        link: `/share/surreal/${transactionId}`
+      }
     }
 
     // 2. Deliver Notifications
     const notificationPromises = recipients.map(async (userId) => {
-      // a. Save In-App Notification
-      await supabaseClient.from('notifications').insert({
-        user_id: userId,
-        title: template.pushTitle,
-        content: template.pushBody,
-        type: 'task',
-        link: template.link
-      })
+      // a. Save In-App Notification (skip for surreal_receipt - already created by DB trigger)
+      if (event !== 'notification.surreal_receipt') {
+        await supabaseClient.from('notifications').insert({
+          user_id: userId,
+          title: template.pushTitle,
+          content: template.pushBody,
+          type: 'task',
+          link: template.link
+        })
+      }
 
       // b. Send Web Push
       const { data: subs } = await supabaseClient
@@ -157,6 +181,59 @@ serve(async (req) => {
 
         if (profile?.email) {
           try {
+            // Build email HTML based on event type
+            let emailHtml = ''
+            if (event === 'notification.surreal_receipt') {
+              const notifData = payload.data || {}
+              const baseUrl = 'https://tekua-gov.vercel.app'
+              emailHtml = `
+                <div style="font-family: 'Inter', 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; overflow: hidden;">
+                  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 32px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🌟</div>
+                    <h1 style="color: #1a1a2e; margin: 0; font-size: 22px; font-weight: 800;">Surreais Ganhos na Comunidade!</h1>
+                  </div>
+                  <div style="padding: 32px; color: #e2e8f0;">
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
+                      <p style="font-size: 14px; margin: 0 0 8px 0; color: #94a3b8;">${notifData.recipientName || 'Membro'} recebeu</p>
+                      <p style="font-size: 36px; font-weight: 800; margin: 0; color: #f59e0b;">${notifData.amount || 0} $S</p>
+                      <p style="font-size: 14px; margin: 8px 0 0 0; color: #94a3b8;">de ${notifData.senderName || 'Membro'}</p>
+                    </div>
+                    ${notifData.description ? `<p style="font-size: 14px; color: #94a3b8; text-align: center; font-style: italic; margin-bottom: 24px;">"${notifData.description}"</p>` : ''}
+                    <div style="text-align: center; margin-bottom: 16px;">
+                      <a href="${baseUrl}/share/surreal/${notifData.transactionId || ''}"
+                         style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #1a1a2e; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px;">
+                        Ver Recibo
+                      </a>
+                    </div>
+                    <div style="text-align: center;">
+                      <a href="${baseUrl}/work-wall"
+                         style="display: inline-block; background: transparent; color: #f59e0b; padding: 12px 24px; text-decoration: none; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 600; font-size: 14px;">
+                        🚀 Ganhe seus Surreais no Work-Wall
+                      </a>
+                    </div>
+                  </div>
+                  <div style="padding: 16px 32px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <p style="font-size: 11px; color: #64748b; text-align: center; margin: 0;">Este é um email automático da Tekuá. Não responda a esta mensagem.</p>
+                  </div>
+                </div>
+              `
+            } else {
+              emailHtml = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #6366f1;">Notificação de Governança</h2>
+                  <p>${template.body}</p>
+                  <div style="margin-top: 30px;">
+                    <a href="https://tekua-gov.vercel.app${template.link}" 
+                       style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                      Ver no Portal
+                    </a>
+                  </div>
+                  <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;" />
+                  <p style="font-size: 12px; color: #666;">Este é um email automático da Tekuá. Não responda a esta mensagem.</p>
+                </div>
+              `
+            }
+
             const emailRes = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: {
@@ -167,20 +244,7 @@ serve(async (req) => {
                 from: 'Tekuá Governança <alertas@tekua.org>',
                 to: profile.email,
                 subject: template.subject,
-                html: `
-                  <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #6366f1;">Notificação de Governança</h2>
-                    <p>${template.body}</p>
-                    <div style="margin-top: 30px;">
-                      <a href="https://tekua-gov.vercel.app${template.link}" 
-                         style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                        Ver no Portal
-                      </a>
-                    </div>
-                    <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;" />
-                    <p style="font-size: 12px; color: #666;">Este é um email automático da Tekuá. Não responda a esta mensagem.</p>
-                  </div>
-                `
+                html: emailHtml
               })
             })
             if (!emailRes.ok) {

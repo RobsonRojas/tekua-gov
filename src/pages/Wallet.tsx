@@ -20,6 +20,7 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  Snackbar,
   Autocomplete,
   InputAdornment
 } from '@mui/material';
@@ -33,7 +34,8 @@ import {
   Info,
   User,
   QrCode,
-  Scan
+  Scan,
+  Share2
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
@@ -66,6 +68,9 @@ const Wallet: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [shareSnackbarOpen, setShareSnackbarOpen] = useState(false);
+  const [shareSnackbarMessage, setShareSnackbarMessage] = useState('');
+  const [shareSnackbarSeverity, setShareSnackbarSeverity] = useState<'success' | 'error'>('success');
   
   // Transfer Modal State
   const [openTransfer, setOpenTransfer] = useState(false);
@@ -163,6 +168,21 @@ const Wallet: React.FC = () => {
       setTransferError(err.message || t('wallet.error'));
     } finally {
       setTransferLoading(false);
+    }
+  };
+
+  const handleShareReceipt = async (tx: Transaction) => {
+    const url = `${window.location.origin}/share/surreal/${tx.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareSnackbarMessage('Link de compartilhamento copiado!');
+      setShareSnackbarSeverity('success');
+      setShareSnackbarOpen(true);
+    } catch (err: any) {
+      console.error('Error copying share link:', err);
+      setShareSnackbarMessage('Falha ao copiar o link. Tente novamente.');
+      setShareSnackbarSeverity('error');
+      setShareSnackbarOpen(true);
     }
   };
 
@@ -363,6 +383,21 @@ const Wallet: React.FC = () => {
                               >
                                 {isDebit ? '-' : '+'}{tx.amount} $S
                               </Typography>
+                              {!isDebit && (
+                                <Tooltip title={t('wallet.shareReceipt') || 'Compartilhar recibo'}>
+                                  <IconButton 
+                                    size="small" 
+                                    color="primary" 
+                                    data-testid={`share-receipt-${tx.id}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleShareReceipt(tx);
+                                    }}
+                                  >
+                                    <Share2 size={16} />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
                             </Box>
                           }
                           secondary={
@@ -604,6 +639,17 @@ const Wallet: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <Snackbar
+        open={shareSnackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setShareSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShareSnackbarOpen(false)} severity={shareSnackbarSeverity} sx={{ width: '100%' }}>
+          {shareSnackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

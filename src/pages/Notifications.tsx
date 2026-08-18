@@ -20,7 +20,8 @@ import {
   Trophy, 
   Vote, 
   Info,
-  ChevronRight
+  ChevronRight,
+  Coins
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../context/NotificationContext';
@@ -43,6 +44,7 @@ const Notifications: React.FC = () => {
       case 'social': return <MessageSquare size={20} />;
       case 'task': return <Trophy size={20} />;
       case 'vote': return <Vote size={20} />;
+      case 'surreal_receipt': return <Coins size={20} />;
       default: return <Info size={20} />;
     }
   };
@@ -52,6 +54,7 @@ const Notifications: React.FC = () => {
       case 'social': return 'info';
       case 'task': return 'warning';
       case 'vote': return 'success';
+      case 'surreal_receipt': return 'secondary';
       default: return 'default';
     }
   };

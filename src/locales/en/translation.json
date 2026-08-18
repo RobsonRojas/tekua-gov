@@ -432,5 +432,29 @@
     "loginToAsk": "Log in to ask a question about this equipment.",
     "loginToRent": "Log in to rent this equipment and manage the handover.",
     "loginToRentBtn": "Log In to Rent"
+  },
+  "shareSurreal": {
+    "heading": "Surreal Receipt",
+    "received": "received",
+    "from": "from",
+    "cta": "Explore demands",
+    "ctaDesc": "Want to earn your own surreais? Explore community demands and contribute!",
+    "backHome": "Back to home",
+    "errorTitle": "Unable to load this share.",
+    "errorDesc": "The link may have expired or is invalid. Try again or go back to the home page.",
+    "invalidLink": "Invalid or expired link."
+  },
+  "notifications": {
+    "pageTitle": "Notification Center",
+    "pageDesc": "Track important platform updates.",
+    "empty": "No notifications here.",
+    "markAllRead": "Mark all as read",
+    "types": {
+      "surreal_receipt": "Surreal Received",
+      "social": "Social",
+      "task": "Task",
+      "vote": "Voting",
+      "system": "System"
+    }
   }
 }

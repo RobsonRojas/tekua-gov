@@ -12,6 +12,7 @@ interface Notification {
   link: string | null;
   is_read: boolean;
   created_at: string;
+  data?: Record<string, any> | null;
 }
 
 interface NotificationContextType {
