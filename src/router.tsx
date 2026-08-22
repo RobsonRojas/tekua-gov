@@ -14,6 +14,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const RewardRanking = lazy(() => import('./pages/RewardRanking'));
 const Wallet = lazy(() => import('./pages/Wallet'));
 const AdminTreasury = lazy(() => import('./pages/AdminTreasury'));
 const WorkWall = lazy(() => import('./pages/WorkWall'));
@@ -87,6 +88,15 @@ export const router = createBrowserRouter([
     element: (
       <Suspense fallback={<LoadingFallback />}>
         <ResetPassword />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/rewards/:id/ranking',
+    errorElement: <GlobalErrorBoundary />,
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <RewardRanking />
       </Suspense>
     ),
   },
