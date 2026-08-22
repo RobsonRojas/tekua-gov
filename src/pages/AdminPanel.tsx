@@ -62,7 +62,8 @@ import NewMemberModal from '../components/admin/NewMemberModal';
 import EconomyTab from '../components/admin/EconomyTab';
 import { useAuth } from '../context/useAuth';
 import { useMembers } from '../hooks/useMembers';
-import { History, TrendingUp } from 'lucide-react';
+import { History, TrendingUp, Gift } from 'lucide-react';
+import RewardsManager from '../components/admin/RewardsManager';
 
 const AdminPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -91,7 +92,8 @@ const AdminPanel: React.FC = () => {
     { id: 'financial', label: t('admin.financial'), icon: <DollarSign size={18} />, value: 3 },
     { id: 'economy', label: 'Economia', icon: <TrendingUp size={18} />, value: 4 },
     { id: 'payouts', label: t('admin.payoutAudit'), icon: <ShieldCheck size={18} />, value: 5 },
-    { id: 'activity', label: t('audit.title'), icon: <History size={18} />, value: 6 }
+    { id: 'activity', label: t('audit.title'), icon: <History size={18} />, value: 6 },
+    { id: 'rewards', label: 'Prêmios', icon: <Gift size={18} />, value: 7 }
   ];
 
   const [tabValue, setTabValue] = useState(() => {
@@ -763,6 +765,8 @@ const AdminPanel: React.FC = () => {
         <PayoutAudit />
       ) : tabValue === 6 ? (
         <ActivityHistoryTab />
+      ) : tabValue === 7 ? (
+        <RewardsManager />
       ) : null}
 
       <Menu

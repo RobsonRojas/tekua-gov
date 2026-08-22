@@ -46,6 +46,7 @@ import PrivacyTab from './components/PrivacyTab';
 import { logActivity } from '../utils/activityLogger';
 import { InstallPrompt } from '../components/pwa/InstallPrompt';
 import { uploadFile, getFileUrl } from '../utils/storage';
+import UserRewards from './components/UserRewards';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -688,6 +689,10 @@ const Profile: React.FC = () => {
                   </Typography>
                 </Grid>
               </Grid>
+              
+              {currentProfile?.id && (
+                <UserRewards userId={currentProfile.id} />
+              )}
 
               <Box sx={{ mt: 6 }}>
                 <Typography variant="h3" gutterBottom sx={{ mb: 3 }}>
