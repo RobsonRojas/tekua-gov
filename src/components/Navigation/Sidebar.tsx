@@ -166,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
               </ListItemIcon>
               {open && (
                 <ListItemText 
-                  primary={t('layout.profile')} 
+                  primary={profile?.full_name || t('layout.profile')} 
                   secondary={profile?.roles?.map(r => r === 'admin' ? 'Admin' : r === 'transversal_council' ? 'Conselho' : 'Membro').join(' / ')}
                   secondaryTypographyProps={{ variant: 'caption' }}
                 />

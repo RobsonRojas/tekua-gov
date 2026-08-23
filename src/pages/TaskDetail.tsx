@@ -171,13 +171,16 @@ const TaskDetail: React.FC = () => {
       if (activity.status === 'open' && activity.type === 'task') {
         const { error } = await apiClient.invoke('api-work', 'claimTask', { activityId: activity.id });
         if (error) throw new Error(error);
-      } else if (activity.status === 'pending_validation') {
+      } else if (activity.status === 'pending_approval') {
         const { error } = await apiClient.invoke('api-work', 'confirmActivity', { activityId: activity.id });
         if (error) throw new Error(error);
       }
       fetchDetail();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error performing action:', err);
+      setSnackbarMessage(err.message || t('common.error', 'Erro ao executar ação.'));
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     } finally {
       setActionLoading(false);
     }
@@ -227,7 +230,7 @@ const TaskDetail: React.FC = () => {
     switch (status) {
       case 'open': return 'primary';
       case 'in_progress': return 'warning';
-      case 'pending_validation': return 'info';
+      case 'pending_approval': return 'info';
       case 'completed': return 'success';
       case 'rejected': return 'error';
       default: return 'default';
@@ -258,7 +261,7 @@ const TaskDetail: React.FC = () => {
                 onClick={handleOpenEdit}
                 sx={{ borderRadius: '12px' }}
               >
-                {t('common.edit') || 'Editar'}
+                {t('common.edit', 'Editar')}
               </Button>
             )}
             <IconButton onClick={handleShare} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}>
@@ -371,6 +374,20 @@ const TaskDetail: React.FC = () => {
                   value={Math.min(100, progress)} 
                   sx={{ height: 10, borderRadius: 5, bgcolor: 'rgba(255,255,255,0.05)' }}
                 />
+                
+                {activity.status === 'pending_approval' && isOwner && (
+                  <Button 
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    startIcon={<CheckCircle2 />}
+                    sx={{ mt: 3, borderRadius: '12px', py: 1.5, fontWeight: 700 }}
+                    onClick={handleAction}
+                    disabled={actionLoading || activity.user_has_confirmed}
+                  >
+                    {activity.user_has_confirmed ? (t('work.alreadyConfirmed', 'Já Confirmado')) : (t('work.approveWork', 'Aprovar Trabalho'))}
+                  </Button>
+                )}
               </Box>
             </Grid>
           </Grid>
@@ -538,7 +555,7 @@ const TaskDetail: React.FC = () => {
               </Button>
             )}
 
-            {activity.status === 'pending_validation' && canConfirm && (
+            {activity.status === 'pending_approval' && canConfirm && (
               <Button 
                 fullWidth 
                 variant="contained" 
