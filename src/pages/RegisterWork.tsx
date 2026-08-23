@@ -229,21 +229,22 @@ const RegisterWork: React.FC = () => {
 
             {beneficiaryType === 'member' && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  select
-                  label={t('work.otherMember')}
-                  value={beneficiaryId}
-                  onChange={(e) => setBeneficiaryId(e.target.value)}
-                  required
+                <Autocomplete
+                  options={members}
+                  getOptionLabel={(option) => option.full_name || option.email || ''}
+                  value={members.find((m) => m.id === beneficiaryId) || null}
+                  onChange={(_, newValue) => setBeneficiaryId(newValue ? newValue.id : '')}
                   disabled={loadingMembers}
-                >
-                  {members.map((member) => (
-                    <MenuItem key={member.id} value={member.id}>
-                      {member.full_name || member.email}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={t('work.otherMember')}
+                      required
+                      variant="outlined"
+                      fullWidth
+                    />
+                  )}
+                />
               </Grid>
             )}
 
