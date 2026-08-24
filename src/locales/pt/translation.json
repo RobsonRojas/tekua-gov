@@ -144,6 +144,7 @@
     "newContent": "Novo conteúdo disponível, clique para atualizar."
   },
   "common": {
+    "save": "Salvar",
     "loading": "Carregando...",
     "error": "Erro",
     "success": "Sucesso",
@@ -233,6 +234,9 @@
     "surreais": "Surreais"
   },
   "work": {
+    "editTaskTitle": "Editar Tarefa",
+    "executorHelper": "Selecione quem executou (opcional)",
+    "minConfirmations": "Número de Confirmações",
     "title": "Registro de Trabalho",
     "mural": "Mural de Trabalho",
     "register": "Registrar Trabalho",

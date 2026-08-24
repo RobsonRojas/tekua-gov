@@ -636,7 +636,9 @@ serve(async (req) => {
           rewardAmount, 
           workerId,
           projectId,
-          attachments = []
+          minConfirmations,
+          attachments = [],
+          executorIds
         } = params
         
         if (!activityId) throw new Error('Missing activityId')
@@ -683,6 +685,14 @@ serve(async (req) => {
         }
         if (projectId !== undefined) {
           updates.project_id = projectId || null
+        }
+        if (executorIds !== undefined) {
+          updates.executor_ids = executorIds
+        }
+        if (minConfirmations !== undefined) {
+          const mConf = Number(minConfirmations)
+          if (isNaN(mConf) || mConf < 1) throw new Error('Min confirmations must be at least 1')
+          updates.min_confirmations = mConf
         }
         
         const { data: updatedData, error: updateError } = await supabaseAdmin

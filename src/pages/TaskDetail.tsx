@@ -61,6 +61,7 @@ const TaskDetail: React.FC = () => {
   const [editDescription, setEditDescription] = useState('');
   const [editAmount, setEditAmount] = useState<number | string>('');
   const [editExecutorIds, setEditExecutorIds] = useState<string[]>([]);
+  const [editMinConfirmations, setEditMinConfirmations] = useState<number>(1);
   const [editAttachments, setEditAttachments] = useState<Attachment[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -119,6 +120,7 @@ const TaskDetail: React.FC = () => {
     setEditDescription(activity.description?.[lang] || activity.description?.pt || '');
     setEditAmount(activity.reward_amount || '');
     setEditExecutorIds(activity.executor_ids || (activity.worker_id ? [activity.worker_id] : []));
+    setEditMinConfirmations(activity.min_confirmations || 1);
     const existingRefs = activity.attachments
       ? activity.attachments
           .filter((a: any) => !a.is_evidence)
@@ -144,6 +146,7 @@ const TaskDetail: React.FC = () => {
         description: editDescription,
         rewardAmount: Number(editAmount),
         executorIds: editExecutorIds,
+        minConfirmations: Number(editMinConfirmations),
         attachments: editAttachments
       });
 
@@ -622,6 +625,15 @@ const TaskDetail: React.FC = () => {
                   type="number"
                   value={editAmount}
                   onChange={(e) => setEditAmount(e.target.value)}
+                  required
+                  InputProps={{ inputProps: { min: 1 } }}
+                />
+                <TextField
+                  fullWidth
+                  label={t('work.minConfirmations') || 'Número de Confirmações'}
+                  type="number"
+                  value={editMinConfirmations}
+                  onChange={(e) => setEditMinConfirmations(Number(e.target.value))}
                   required
                   InputProps={{ inputProps: { min: 1 } }}
                 />

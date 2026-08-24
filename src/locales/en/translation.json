@@ -140,6 +140,7 @@
     "newContent": "New content available, click to refresh."
   },
   "common": {
+    "save": "Save",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -228,6 +229,9 @@
     "surreais": "Surreais"
   },
   "work": {
+    "editTaskTitle": "Edit Task",
+    "executorHelper": "Select who executed (optional)",
+    "minConfirmations": "Required Confirmations",
     "title": "Work Registration",
     "mural": "Work Wall",
     "register": "Register Work",
