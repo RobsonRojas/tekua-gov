@@ -70,10 +70,12 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
       onDrop={handleDrop}
       sx={{
         flex: { xs: '0 0 85vw', sm: '1 1 0px' },
-        minWidth: { xs: '260px', sm: 0 },
+        minWidth: { xs: '270px', sm: '220px', md: '240px' },
         maxWidth: { xs: '85vw', sm: '100%' },
         width: { xs: '85vw', sm: '100%' },
         flexShrink: { xs: 0, sm: 1 },
+        scrollSnapAlign: 'start',
+        scrollSnapStop: 'always',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',

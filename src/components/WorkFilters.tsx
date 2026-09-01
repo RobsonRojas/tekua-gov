@@ -94,7 +94,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', flexGrow: 1 }}>
           {/* Always Visible Project Filter */}
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 }, maxWidth: { sm: 260 } }}>
+          <FormControl size="small" sx={{ flex: { xs: '1 1 100%', sm: '1 1 200px' }, maxWidth: { sm: 260 }, minWidth: 160 }}>
             <InputLabel id="project-filter-label">{projectLabel}</InputLabel>
             <Select
               labelId="project-filter-label"
@@ -111,7 +111,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
           </FormControl>
 
           {/* Always Visible Executor Filter */}
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 }, maxWidth: { sm: 260 } }}>
+          <FormControl size="small" sx={{ flex: { xs: '1 1 100%', sm: '1 1 200px' }, maxWidth: { sm: 260 }, minWidth: 160 }}>
             <InputLabel id="executor-filter-label">{executorLabel}</InputLabel>
             <Select
               labelId="executor-filter-label"
@@ -133,7 +133,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
             startIcon={<FilterIcon />} 
             onClick={() => setExpanded(!expanded)}
             size="medium"
-            sx={{ borderRadius: '12px', py: 0.9 }}
+            sx={{ borderRadius: '12px', py: 0.9, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}
           >
             {expanded ? t('common.hideFilters') || 'Ocultar Filtros' : t('common.showFilters') || 'Mostrar Filtros'}
           </Button>

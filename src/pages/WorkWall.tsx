@@ -183,11 +183,11 @@ const WorkWall: React.FC = () => {
   return (
     <Container maxWidth={false} sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
       {/* Header Bar */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1.5, sm: 0 }, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <MuralIcon sx={{ fontSize: 32, mr: 2, color: 'primary.main' }} />
+          <MuralIcon sx={{ fontSize: { xs: 28, sm: 32 }, mr: 1.5, color: 'primary.main' }} />
           <Box>
-            <Typography variant="h4" component="h1" fontWeight={800} sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
+            <Typography variant="h4" component="h1" fontWeight={800} sx={{ fontSize: { xs: '1.35rem', sm: '2.125rem' } }}>
               {t('work.mural')}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -195,12 +195,12 @@ const WorkWall: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'flex-end', sm: 'flex-start' } }}>
           <Button 
             variant="outlined" 
             startIcon={<RefreshIcon />} 
             onClick={() => refetch()}
-            sx={{ borderRadius: '12px' }}
+            sx={{ borderRadius: '12px', px: { xs: 1.5, sm: 2 } }}
           >
             {t('admin.refresh')}
           </Button>
@@ -251,13 +251,22 @@ const WorkWall: React.FC = () => {
       <Box
         sx={{
           display: 'flex',
-          gap: { xs: 1.5, sm: 1, md: 1.5 },
+          gap: { xs: 2, sm: 1.5, md: 2 },
           overflowX: { xs: 'auto', sm: 'visible' },
+          scrollSnapType: { xs: 'x mandatory', sm: 'none' },
+          WebkitOverflowScrolling: 'touch',
           pb: 4,
           pt: 1,
           minHeight: 'calc(100vh - 280px)',
           width: '100%',
-          alignItems: 'stretch'
+          alignItems: 'stretch',
+          '&::-webkit-scrollbar': {
+            height: '6px'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            bgcolor: 'rgba(255,255,255,0.15)',
+            borderRadius: '4px'
+          }
         }}
       >
         {columnDefs.map((col) => {
