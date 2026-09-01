@@ -35,6 +35,7 @@ const CreateTask: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [rewardAmount, setRewardAmount] = useState<number | string>('');
+  const [minConfirmations, setMinConfirmations] = useState<number>(3);
   const [geoRequired, setGeoRequired] = useState(false);
   const [urgency, setUrgency] = useState(false);
   const [importance, setImportance] = useState(false);
@@ -79,6 +80,7 @@ const CreateTask: React.FC = () => {
         description,
         type: 'task',
         rewardAmount: Number(rewardAmount),
+        minConfirmations: Number(minConfirmations),
         geoRequired: geoRequired,
         urgency,
         importance
@@ -156,6 +158,19 @@ const CreateTask: React.FC = () => {
                 required
                 InputProps={{ inputProps: { min: 1 } }}
                 helperText="Valor em Surreais ($S)"
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                label={t('work.minConfirmations') || 'Confirmações Necessárias'}
+                type="number"
+                value={minConfirmations}
+                onChange={(e) => setMinConfirmations(Number(e.target.value))}
+                required
+                InputProps={{ inputProps: { min: 1 } }}
+                helperText="Quantidade de confirmações para concluir"
               />
             </Grid>
 

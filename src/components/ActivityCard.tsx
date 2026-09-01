@@ -23,14 +23,11 @@ import {
 import { 
   User, 
   Trophy, 
-  Clock, 
   CheckCircle2, 
   AlertCircle,
   PlayCircle,
   CheckCircle,
-  HelpCircle,
   Share2,
-  ShieldAlert,
   Flame,
   Star,
   Paperclip,
@@ -75,30 +72,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
   const confirmCount = activity.confirmations?.[0]?.count || 0;
   const threshold = activity.min_confirmations || 3;
   const progress = (confirmCount / threshold) * 100;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open': return 'primary';
-      case 'in_progress': return 'warning';
-      case 'pending_validation': return 'info';
-      case 'completed': return 'success';
-      case 'rejected': return 'error';
-      case 'pending_approval': return 'secondary';
-      default: return 'default';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'open': return <HelpCircle size={16} />;
-      case 'in_progress': return <Clock size={16} />;
-      case 'pending_validation': return <AlertCircle size={16} />;
-      case 'completed': return <CheckCircle size={16} />;
-      case 'rejected': return <AlertCircle size={16} />;
-      case 'pending_approval': return <ShieldAlert size={16} />;
-      default: return undefined;
-    }
-  };
 
   const handleAction = async () => {
     setLoading(true);
@@ -146,24 +119,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
     const url = `${window.location.origin}/tasks/${activity.id}`;
     navigator.clipboard.writeText(url);
     setSnackbarOpen(true);
-  };
-
-  const handleUpdateThreshold = async (newThreshold: number) => {
-    if (newThreshold < 1) return;
-    try {
-      const { error } = await apiClient.invoke('api-work', 'updateThreshold', {
-        activityId: activity.id,
-        threshold: newThreshold
-      });
-      if (error) {
-        setErrorMessage(typeof error === 'string' ? error : ((error as any).message || 'Erro ao atualizar.'));
-        return;
-      }
-      onRefresh();
-    } catch (err: any) {
-      console.error('Error updating threshold:', err);
-      setErrorMessage(err?.message || 'Erro ao atualizar.');
-    }
   };
 
   const handleDelete = async () => {
@@ -244,24 +199,15 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           />
         </Box>
       )}
-      <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ color: 'text.secondary', opacity: 0.6, cursor: 'grab', display: 'flex', alignItems: 'center' }}>
-              <GripVertical size={16} />
-            </Box>
-            <Chip 
-              label={t(`work.${localStatus}`)} 
-              size="small" 
-              color={getStatusColor(localStatus) as any}
-              icon={getStatusIcon(localStatus)}
-              sx={{ borderRadius: '8px', fontWeight: 600 }}
-            />
+      <CardContent sx={{ px: 2, py: 1.75, flexGrow: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: 1.75 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+          <Box sx={{ color: 'text.secondary', opacity: 0.6, cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+            <GripVertical size={16} />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, ml: 'auto' }}>
             <Stack direction="row" spacing={0.5} alignItems="center">
-              <Trophy size={16} color="#f59e0b" />
-              <Typography variant="subtitle2" fontWeight={700} color="primary.main">
+              <Trophy size={14} color="#f59e0b" />
+              <Typography variant="caption" fontWeight={800} color="primary.main" sx={{ whiteSpace: 'nowrap' }}>
                 {activity.reward_amount} $S
               </Typography>
             </Stack>
@@ -272,11 +218,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 title={t('common.share', 'Compartilhar')}
                 sx={{ 
                   color: 'text.secondary', 
-                  p: 0.5,
+                  p: 0.25,
                   '&:hover': { color: 'primary.main', bgcolor: 'primary.mainChannel' } 
                 }}
               >
-                <Share2 size={16} />
+                <Share2 size={14} />
               </IconButton>
             </Tooltip>
             {(profile?.roles?.includes('admin') || profile?.role === 'admin') && (
@@ -286,18 +232,18 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                   onClick={(e) => { e.stopPropagation(); setDeleteModalOpen(true); }}
                   sx={{ 
                     color: 'text.secondary', 
-                    p: 0.5,
+                    p: 0.25,
                     '&:hover': { color: 'error.main', bgcolor: 'error.mainChannel' } 
                   }}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={14} />
                 </IconButton>
               </Tooltip>
             )}
             {activity.attachments?.[0]?.count > 0 && (
               <Tooltip title={`${activity.attachments[0].count} ${t('work.attachments')}`}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-                  <Paperclip size={16} />
+                  <Paperclip size={14} />
                   <Typography variant="caption" fontWeight={700}>
                     {activity.attachments[0].count}
                   </Typography>
@@ -308,7 +254,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         </Box>
 
         {(activity.urgency || activity.importance) && (
-          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', gap: 0.75, mb: 1, flexWrap: 'wrap' }}>
             {activity.urgency && (
               <Chip 
                 icon={<Flame size={12} />} 
@@ -316,7 +262,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 size="small" 
                 color="error" 
                 variant="outlined"
-                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, borderRadius: '6px' }}
+                sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, borderRadius: '6px' }}
               />
             )}
             {activity.importance && (
@@ -326,68 +272,80 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 size="small" 
                 color="warning" 
                 variant="outlined"
-                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, borderRadius: '6px' }}
+                sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, borderRadius: '6px' }}
               />
             )}
           </Box>
         )}
 
-        <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 1 }}>
+        <Typography 
+          variant="subtitle1" 
+          fontWeight={700} 
+          sx={{ 
+            mb: 0.75, 
+            fontSize: '0.95rem', 
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}
+        >
           {title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, flexGrow: 1 }}>
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 2, 
+            flexGrow: 1, 
+            fontSize: '0.8rem',
+            lineHeight: 1.4,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}
+        >
           {description}
         </Typography>
 
         {evidenceUrl && evidenceUrl.startsWith('http') && (
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 1.5 }}>
              <Typography 
                variant="caption" 
                color="primary.main" 
                component="span" 
                onClick={(e) => { e.stopPropagation(); setViewerState({ open: true, url: evidenceUrl }); }}
-               sx={{ textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}
+               sx={{ textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', fontSize: '0.75rem' }}
              >
-               <PlayCircle size={14} /> {t('work.viewEvidence', 'Ver Evidência')}
+               <PlayCircle size={13} /> {t('work.viewEvidence', 'Ver Evidência')}
              </Typography>
           </Box>
         )}
 
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {t('work.confirmations')}: {confirmCount} / 
-              {(profile?.roles?.includes('admin') || profile?.role === 'admin') ? (
-                <TextField 
-                  size="small"
-                  type="number"
-                  value={threshold}
-                  onChange={(e) => handleUpdateThreshold(Number(e.target.value))}
-                  inputProps={{ min: 1, style: { padding: '2px 6px', fontSize: '0.75rem', textAlign: 'center', width: '30px' } }}
-                  onClick={(e) => e.stopPropagation()}
-                  sx={{ ml: 0.5 }}
-                />
-              ) : (
-                threshold
-              )}
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75, alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.72rem' }}>
+              {t('work.confirmations')}: {confirmCount} / {threshold}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.72rem' }}>
                {Math.min(100, progress).toFixed(0)}%
             </Typography>
           </Box>
           <LinearProgress 
             variant="determinate" 
             value={Math.min(100, progress)} 
-            sx={{ height: 6, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.05)' }}
+            sx={{ height: 5, borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.05)' }}
           />
         </Box>
 
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.main', fontSize: '0.75rem' }}>
-              <User size={14} />
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+            <Avatar sx={{ width: 22, height: 22, bgcolor: 'primary.main', fontSize: '0.7rem' }}>
+              <User size={12} />
             </Avatar>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.72rem', maxWidth: '130px' }}>
               {activity.type === 'task' ? t('work.requester') : t('work.beneficiary')}: {activity.requester?.full_name || 'Tekuá'}
             </Typography>
           </Box>
@@ -395,13 +353,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {activity.executors.slice(0, 3).map((executor: any, idx: number) => (
                 <Tooltip key={executor.id || idx} title={executor.full_name}>
-                  <Avatar src={executor.avatar_url} sx={{ width: 24, height: 24, bgcolor: 'secondary.main', fontSize: '0.75rem', ml: idx > 0 ? -1 : 0, border: '2px solid', borderColor: 'background.paper' }}>
-                    <User size={14} />
+                  <Avatar src={executor.avatar_url} sx={{ width: 22, height: 22, bgcolor: 'secondary.main', fontSize: '0.7rem', ml: idx > 0 ? -1 : 0, border: '2px solid', borderColor: 'background.paper' }}>
+                    <User size={12} />
                   </Avatar>
                 </Tooltip>
               ))}
               {activity.executors.length > 3 && (
-                <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5, fontWeight: 700 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>
                   +{activity.executors.length - 3}
                 </Typography>
               )}
@@ -413,11 +371,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           {localStatus === 'open' && activity.type === 'task' && (
             <Button 
               fullWidth 
+              size="small"
               variant="contained" 
-              startIcon={<PlayCircle size={18} />}
+              startIcon={<PlayCircle size={16} />}
               onClick={handleAction}
               disabled={loading || isOwner}
-              sx={{ borderRadius: '12px', py: 1.5 }}
+              sx={{ borderRadius: '10px', py: 1, fontSize: '0.8rem', fontWeight: 700, textTransform: 'none' }}
             >
               {t('work.accept', 'Assumir Tarefa')}
             </Button>
@@ -426,11 +385,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           {localStatus === 'in_progress' && isWorker && (
             <Button 
               fullWidth 
+              size="small"
               variant="contained" 
               color="warning"
-              startIcon={<CheckCircle2 size={18} />}
+              startIcon={<CheckCircle2 size={16} />}
               onClick={() => navigate(`/tasks/${activity.id}/submit`)}
-              sx={{ borderRadius: '12px', py: 1.5 }}
+              sx={{ borderRadius: '10px', py: 1, fontSize: '0.8rem', fontWeight: 700, textTransform: 'none' }}
             >
               {t('work.submit', 'Concluir e Enviar')}
             </Button>
@@ -441,11 +401,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               <Box>
                 <Button 
                   fullWidth 
+                  size="small"
                   variant="outlined"
-                  startIcon={<CheckCircle size={18} />}
+                  startIcon={<CheckCircle size={16} />}
                   onClick={handleAction}
                   disabled={loading || isWorker || activity.user_has_confirmed}
-                  sx={{ borderRadius: '12px', py: 1.5 }}
+                  sx={{ borderRadius: '10px', py: 1, fontSize: '0.8rem', fontWeight: 700, textTransform: 'none' }}
                 >
                   {activity.user_has_confirmed ? 'Já Confirmado' : t('work.confirm')}
                 </Button>
@@ -454,26 +415,28 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           )}
 
           {localStatus === 'pending_approval' && (profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council')) && (
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Stack direction="row" spacing={1}>
               <Button 
                 fullWidth 
+                size="small"
                 variant="contained"
                 color="secondary"
-                startIcon={<CheckCircle size={18} />}
+                startIcon={<CheckCircle size={15} />}
                 onClick={(e) => { e.stopPropagation(); handleModeration('approve'); }}
                 disabled={loading}
-                sx={{ borderRadius: '12px', py: 1.2, fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                sx={{ borderRadius: '10px', py: 0.8, fontSize: '0.75rem', fontWeight: 700, textTransform: 'none' }}
               >
                 {t('common.approve', 'Aprovar')}
               </Button>
               <Button 
                 fullWidth 
+                size="small"
                 variant="outlined"
                 color="error"
-                startIcon={<AlertCircle size={18} />}
+                startIcon={<AlertCircle size={15} />}
                 onClick={(e) => { e.stopPropagation(); handleModeration('reject'); }}
                 disabled={loading}
-                sx={{ borderRadius: '12px', py: 1.2, fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                sx={{ borderRadius: '10px', py: 0.8, fontSize: '0.75rem', fontWeight: 700, textTransform: 'none' }}
               >
                 {t('common.reject', 'Reprovar')}
               </Button>

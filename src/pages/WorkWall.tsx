@@ -85,6 +85,15 @@ const WorkWall: React.FC = () => {
 
   // Column definitions for Kanban Board
   const columnDefs: ColumnDef[] = [
+    ...(isCouncilOrAdmin ? [{
+      id: 'moderation',
+      statuses: ['pending_approval'],
+      title: t('work.moderation') || 'Moderação',
+      color: '#f97316',
+      bgColor: 'rgba(249, 115, 22, 0.04)',
+      borderColor: 'rgba(249, 115, 22, 0.15)',
+      adminOnly: true
+    }] : []),
     {
       id: 'open',
       statuses: ['open'],
@@ -116,16 +125,7 @@ const WorkWall: React.FC = () => {
       color: '#22c55e',
       bgColor: 'rgba(34, 197, 94, 0.04)',
       borderColor: 'rgba(34, 197, 94, 0.15)'
-    },
-    ...(isCouncilOrAdmin ? [{
-      id: 'moderation',
-      statuses: ['pending_approval'],
-      title: t('work.moderation') || 'Moderação',
-      color: '#f97316',
-      bgColor: 'rgba(249, 115, 22, 0.04)',
-      borderColor: 'rgba(249, 115, 22, 0.15)',
-      adminOnly: true
-    }] : [])
+    }
   ];
 
   // Group activities into columns
