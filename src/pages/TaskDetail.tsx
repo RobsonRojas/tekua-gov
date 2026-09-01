@@ -39,6 +39,7 @@ import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { motion } from 'framer-motion';
 import TaskInteractions from '../components/work/TaskInteractions';
+import DemandActionHistory from '../components/work/DemandActionHistory';
 import AttachmentList from '../components/common/AttachmentList';
 import { QRCodeSVG } from 'qrcode.react';
 import FileUploader from '../components/common/FileUploader';
@@ -174,11 +175,15 @@ const TaskDetail: React.FC = () => {
       if (activity.status === 'open' && activity.type === 'task') {
         const { error } = await apiClient.invoke('api-work', 'claimTask', { activityId: activity.id });
         if (error) throw new Error(error);
-      } else if (activity.status === 'pending_approval') {
+        setSnackbarMessage(t('work.claimSuccess') || 'Tarefa assumida com sucesso!');
+      } else if (activity.status === 'pending_approval' || activity.status === 'pending_validation') {
         const { error } = await apiClient.invoke('api-work', 'confirmActivity', { activityId: activity.id });
         if (error) throw new Error(error);
+        setSnackbarMessage(t('work.confirmSuccess') || 'Confirmação registrada com sucesso!');
       }
-      fetchDetail();
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      await fetchDetail();
     } catch (err: any) {
       console.error('Error performing action:', err);
       setSnackbarMessage(err.message || t('common.error', 'Erro ao executar ação.'));
@@ -378,7 +383,7 @@ const TaskDetail: React.FC = () => {
                   sx={{ height: 10, borderRadius: 5, bgcolor: 'rgba(255,255,255,0.05)' }}
                 />
                 
-                {activity.status === 'pending_approval' && isOwner && (
+                {(activity.status === 'pending_approval' || activity.status === 'pending_validation') && isOwner && (
                   <Button 
                     fullWidth
                     variant="contained"
@@ -448,29 +453,8 @@ const TaskDetail: React.FC = () => {
             </Box>
           )}
 
-          {/* Confirmations List */}
-          {activity.confirmations && activity.confirmations.length > 0 && (
-            <Box sx={{ mb: 5 }}>
-              <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-                {t('work.history') || 'Histórico de Validação'}
-              </Typography>
-              <Stack spacing={2}>
-                {activity.confirmations.map((conf: any) => (
-                  <Box key={conf.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar src={conf.profile?.avatar_url} sx={{ width: 32, height: 32 }} />
-                    <Box>
-                      <Typography variant="body2" fontWeight={600}>
-                        {conf.profile?.full_name} {t('work.confirmedThis') || 'confirmou esta atividade'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(conf.created_at).toLocaleString()}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
-          )}
+          {/* Action History Section */}
+          <DemandActionHistory activity={activity} />
 
           {/* Task Invitation */}
           {isOwner && activity.invite_token && activity.status === 'open' && (
@@ -558,7 +542,7 @@ const TaskDetail: React.FC = () => {
               </Button>
             )}
 
-            {activity.status === 'pending_approval' && canConfirm && (
+            {(activity.status === 'pending_approval' || activity.status === 'pending_validation') && canConfirm && (
               <Button 
                 fullWidth 
                 variant="contained" 

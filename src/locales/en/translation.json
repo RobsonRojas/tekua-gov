@@ -296,7 +296,21 @@
     "maxFilesReached": "File limit reached",
     "deleteTitle": "Delete Activity",
     "deleteConfirmMessage": "Are you sure you want to delete this activity? This action requires a justification and will be audited.",
-    "justification": "Justification"
+    "justification": "Justification",
+    "actionHistoryTitle": "Action History",
+    "noActionHistory": "No actions recorded so far.",
+    "historyEventCreated": "Demand Created",
+    "historyEventClaimed": "Task Claimed",
+    "historyClaimedDesc": "Executor assigned to demand",
+    "historyEventEvidence": "Evidence Submitted",
+    "historyEvidenceDesc": "Photos or documents uploaded as proof",
+    "historyEventConfirmed": "Confirmation Recorded",
+    "historyConfirmedDesc": "Completion validation approved",
+    "historyEventCompleted": "Demand Completed",
+    "historyEventRejected": "Demand Rejected",
+    "historyRejectedDesc": "The demand was rejected or cancelled.",
+    "payoutDistributed": "Payment of",
+    "distributedSuccessfully": "distributed to executors."
   },
   "governance": {
     "config": "Governance Configuration",

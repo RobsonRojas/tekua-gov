@@ -302,6 +302,9 @@ serve(async (req) => {
         })
 
         if (error) throw error
+        if (data && data.success === false) {
+          throw new Error(data.error || 'Failed to confirm activity')
+        }
         responseData = data
         break
       }

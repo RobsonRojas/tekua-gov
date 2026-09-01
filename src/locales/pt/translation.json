@@ -304,7 +304,21 @@
     "maxFilesReached": "Limite de arquivos atingido",
     "deleteTitle": "Remover Atividade",
     "deleteConfirmMessage": "Tem certeza que deseja remover esta atividade? Esta ação exige uma justificativa e será auditada.",
-    "justification": "Justificativa"
+    "justification": "Justificativa",
+    "actionHistoryTitle": "Histórico de Ações Realizadas",
+    "noActionHistory": "Nenhuma ação registrada até o momento.",
+    "historyEventCreated": "Demanda Criada",
+    "historyEventClaimed": "Tarefa Assumida",
+    "historyClaimedDesc": "Executor atribuído à demanda",
+    "historyEventEvidence": "Evidência Enviada",
+    "historyEvidenceDesc": "Fotos ou documentos enviados como comprovação",
+    "historyEventConfirmed": "Confirmação Registrada",
+    "historyConfirmedDesc": "Validação de conclusão aprovada",
+    "historyEventCompleted": "Demanda Concluída",
+    "historyEventRejected": "Demanda Rejeitada",
+    "historyRejectedDesc": "A demanda foi rejeitada ou cancelada.",
+    "payoutDistributed": "Pagamento de",
+    "distributedSuccessfully": "distribuído aos executores."
   },
   "governance": {
     "config": "Configuração de Governança",
