@@ -236,8 +236,8 @@ const WorkWall: React.FC = () => {
   return (
     <Container maxWidth={false} disableGutters sx={{ py: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 3 }, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
       {/* Header Bar */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1.5, sm: 2 }, mb: 3, width: '100%', boxSizing: 'border-box' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0, pr: { xs: 0, sm: 1 } }}>
+      <Box sx={{ mb: 2.5, width: '100%', boxSizing: 'border-box' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
           <MuralIcon sx={{ fontSize: { xs: 28, sm: 32 }, mr: 1.5, color: 'primary.main', flexShrink: 0 }} />
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="h4" component="h1" fontWeight={800} sx={{ fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2.125rem' } }}>
@@ -247,33 +247,6 @@ const WorkWall: React.FC = () => {
               <KanbanIcon fontSize="small" /> Quadro de Atividades (Kanban)
             </Typography>
           </Box>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' }, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', sm: 'flex-end' }, alignItems: 'center', maxWidth: '100%', boxSizing: 'border-box', pr: { xs: 0.5, sm: 1, md: 1.5 } }}>
-          <Button 
-            variant="outlined" 
-            startIcon={<RefreshIcon />} 
-            onClick={() => refetch()}
-            sx={{ borderRadius: '12px', px: { xs: 1.25, sm: 1.25, md: 1.75 }, fontSize: { sm: '0.8rem', md: '0.875rem' }, whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            {t('admin.refresh')}
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />} 
-            onClick={() => navigate('/create-demand')}
-            color="secondary"
-            sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '12px', px: { xs: 1.25, sm: 1.25, md: 1.75 }, fontSize: { sm: '0.8rem', md: '0.875rem' }, whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            {t('work.createDemand') || 'Criar Demanda'}
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />} 
-            onClick={() => navigate('/register-work')}
-            sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '12px', px: { xs: 1.25, sm: 1.25, md: 1.75 }, fontSize: { sm: '0.8rem', md: '0.875rem' }, whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            {t('work.register')}
-          </Button>
         </Box>
       </Box>
 
@@ -300,47 +273,70 @@ const WorkWall: React.FC = () => {
         </Alert>
       )}
 
-      {/* Mobile Action Buttons Right Above Task Board */}
-      <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1, mb: 2, width: '100%' }}>
+      {/* Action Buttons Toolbar (Positioned between Filters and Task Board) */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justify: 'space-between',
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: 1.5, 
+          my: 2.5, 
+          width: '100%', 
+          boxSizing: 'border-box' 
+        }}
+      >
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' } }}>
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            startIcon={<AddIcon />} 
+            onClick={() => navigate('/create-demand')}
+            sx={{ 
+              flex: { xs: 1, sm: 'none' },
+              borderRadius: '12px', 
+              px: { xs: 1.5, sm: 2.5 }, 
+              py: 1,
+              fontWeight: 700, 
+              fontSize: '0.875rem',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {t('work.createDemand') || 'Criar Demanda'}
+          </Button>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            startIcon={<AddIcon />} 
+            onClick={() => navigate('/register-work')}
+            sx={{ 
+              flex: { xs: 1, sm: 'none' },
+              borderRadius: '12px', 
+              px: { xs: 1.5, sm: 2.5 }, 
+              py: 1,
+              fontWeight: 700, 
+              fontSize: '0.875rem',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {t('work.register')}
+          </Button>
+        </Box>
+
         <Button 
-          variant="contained" 
-          color="secondary" 
-          startIcon={<AddIcon />} 
-          onClick={() => navigate('/create-demand')}
+          variant="outlined" 
+          startIcon={<RefreshIcon />} 
+          onClick={() => refetch()}
           sx={{ 
-            flex: 1, 
-            minWidth: 0,
             borderRadius: '12px', 
-            py: 1, 
-            px: 1,
-            fontWeight: 700, 
-            fontSize: '0.8rem',
+            px: 2, 
+            py: 1,
+            fontSize: '0.875rem', 
             whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
+            alignSelf: { xs: 'stretch', sm: 'center' }
           }}
         >
-          {t('work.createDemand') || 'Criar Demanda'}
-        </Button>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<AddIcon />} 
-          onClick={() => navigate('/register-work')}
-          sx={{ 
-            flex: 1, 
-            minWidth: 0,
-            borderRadius: '12px', 
-            py: 1, 
-            px: 1,
-            fontWeight: 700, 
-            fontSize: '0.8rem',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
-          {t('work.register')}
+          {t('admin.refresh')}
         </Button>
       </Box>
 
