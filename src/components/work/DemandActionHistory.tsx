@@ -43,49 +43,52 @@ export const DemandActionHistory: React.FC<DemandActionHistoryProps> = ({ activi
 
   const events: ActionHistoryEvent[] = [];
 
-  // 1. Demand Creation Event
+  // 1. Demand / Contribution Creation Event
   if (activity.created_at) {
-    const titleText = activity.title?.[lang] || activity.title?.pt || '';
+    const titleText = typeof activity.title === 'string' ? activity.title : (activity.title?.[lang] || activity.title?.pt || '');
+    const isContribution = activity.type === 'contribution';
     events.push({
       id: `creation-${activity.id}`,
       type: 'creation',
-      title: t('work.historyEventCreated') || 'Demanda Criada',
-      actorName: activity.requester?.full_name || t('work.requester') || 'Solicitante',
-      actorAvatar: activity.requester?.avatar_url,
+      title: isContribution ? (t('work.contributionRegistered') || 'Contribuição Registrada') : (t('work.historyEventCreated') || 'Demanda Criada'),
+      actorName: (isContribution ? activity.worker?.full_name : activity.requester?.full_name) || activity.requester?.full_name || activity.worker?.full_name || t('work.requester') || 'Solicitante',
+      actorAvatar: (isContribution ? activity.worker?.avatar_url : activity.requester?.avatar_url) || activity.requester?.avatar_url || activity.worker?.avatar_url,
       timestamp: activity.created_at,
-      description: `${t('work.reward') || 'Recompensa'}: ${activity.reward_amount} $S - "${titleText}"`,
+      description: `${t('work.reward') || 'Recompensa'}: ${activity.reward_amount} $S${titleText ? ` - "${titleText}"` : ''}`,
       icon: <PlusCircle size={18} color="#3b82f6" />,
       color: 'primary.main'
     });
   }
 
   // 2. Claimed / Executor Assignment Event
-  if (activity.executors && activity.executors.length > 0) {
-    activity.executors.forEach((executor: any, idx: number) => {
+  if (activity.type !== 'contribution') {
+    if (activity.executors && activity.executors.length > 0) {
+      activity.executors.forEach((executor: any, idx: number) => {
+        events.push({
+          id: `claimed-${executor.id || idx}`,
+          type: 'claimed',
+          title: t('work.historyEventClaimed') || 'Tarefa Assumida',
+          actorName: executor.full_name || t('work.executor') || 'Executor',
+          actorAvatar: executor.avatar_url,
+          timestamp: activity.updated_at || activity.created_at,
+          description: t('work.historyClaimedDesc') || 'Executor atribuído à demanda',
+          icon: <PlayCircle size={18} color="#eab308" />,
+          color: 'warning.main'
+        });
+      });
+    } else if (activity.worker) {
       events.push({
-        id: `claimed-${executor.id || idx}`,
+        id: `claimed-${activity.worker.id}`,
         type: 'claimed',
         title: t('work.historyEventClaimed') || 'Tarefa Assumida',
-        actorName: executor.full_name || t('work.executor') || 'Executor',
-        actorAvatar: executor.avatar_url,
+        actorName: activity.worker.full_name || t('work.executor') || 'Executor',
+        actorAvatar: activity.worker.avatar_url,
         timestamp: activity.updated_at || activity.created_at,
-        description: t('work.historyClaimedDesc') || 'Executor atribuído à demanda',
+        description: t('work.historyClaimedDesc') || 'Executor começou o trabalho',
         icon: <PlayCircle size={18} color="#eab308" />,
         color: 'warning.main'
       });
-    });
-  } else if (activity.worker) {
-    events.push({
-      id: `claimed-${activity.worker.id}`,
-      type: 'claimed',
-      title: t('work.historyEventClaimed') || 'Tarefa Assumida',
-      actorName: activity.worker.full_name || t('work.executor') || 'Executor',
-      actorAvatar: activity.worker.avatar_url,
-      timestamp: activity.updated_at || activity.created_at,
-      description: t('work.historyClaimedDesc') || 'Executor começou o trabalho',
-      icon: <PlayCircle size={18} color="#eab308" />,
-      color: 'warning.main'
-    });
+    }
   }
 
   // 3. Evidence Submissions
@@ -102,6 +105,18 @@ export const DemandActionHistory: React.FC<DemandActionHistoryProps> = ({ activi
         icon: <Upload size={18} color="#a855f7" />,
         color: 'secondary.main'
       });
+    });
+  } else if (activity.evidence_url) {
+    events.push({
+      id: `evidence-url-${activity.id}`,
+      type: 'evidence',
+      title: t('work.historyEventEvidence') || 'Evidência de Conclusão Enviada',
+      actorName: activity.worker?.full_name || activity.executors?.[0]?.full_name || activity.requester?.full_name || t('work.executor') || 'Executor',
+      actorAvatar: activity.worker?.avatar_url || activity.executors?.[0]?.avatar_url || activity.requester?.avatar_url,
+      timestamp: activity.updated_at || activity.created_at,
+      description: activity.evidence_url,
+      icon: <Upload size={18} color="#a855f7" />,
+      color: 'secondary.main'
     });
   }
 

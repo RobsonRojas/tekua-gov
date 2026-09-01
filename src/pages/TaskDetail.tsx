@@ -223,8 +223,8 @@ const TaskDetail: React.FC = () => {
     );
   }
 
-  const title = activity.title?.[lang] || activity.title?.pt || 'Untitled';
-  const description = activity.description?.[lang] || activity.description?.pt || 'No description';
+  const title = typeof activity.title === 'string' ? activity.title : (activity.title?.[lang] || activity.title?.pt || 'Untitled');
+  const description = typeof activity.description === 'string' ? activity.description : (activity.description?.[lang] || activity.description?.pt || 'No description');
   const isWorker = user?.id === activity.worker_id || (activity.executor_ids && activity.executor_ids.includes(user?.id));
   const confirmCount = activity.confirmations?.length || 0;
   const threshold = activity.min_confirmations || 3;

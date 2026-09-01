@@ -308,6 +308,7 @@
     "actionHistoryTitle": "Histórico de Ações Realizadas",
     "noActionHistory": "Nenhuma ação registrada até o momento.",
     "historyEventCreated": "Demanda Criada",
+    "contributionRegistered": "Contribuição Registrada",
     "historyEventClaimed": "Tarefa Assumida",
     "historyClaimedDesc": "Executor atribuído à demanda",
     "historyEventEvidence": "Evidência Enviada",

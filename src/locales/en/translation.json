@@ -300,6 +300,7 @@
     "actionHistoryTitle": "Action History",
     "noActionHistory": "No actions recorded so far.",
     "historyEventCreated": "Demand Created",
+    "contributionRegistered": "Contribution Registered",
     "historyEventClaimed": "Task Claimed",
     "historyClaimedDesc": "Executor assigned to demand",
     "historyEventEvidence": "Evidence Submitted",
