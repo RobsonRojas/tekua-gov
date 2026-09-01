@@ -319,7 +319,15 @@
     "historyEventRejected": "Demanda Rejeitada",
     "historyRejectedDesc": "A demanda foi rejeitada ou cancelada.",
     "payoutDistributed": "Pagamento de",
-    "distributedSuccessfully": "distribuído aos executores."
+    "distributedSuccessfully": "distribuído aos executores.",
+    "dropCardHere": "Solte a tarefa aqui",
+    "noItemsColumn": "Nenhuma tarefa nesta coluna",
+    "taskClaimedSuccess": "Tarefa assumida com sucesso!",
+    "confirmationSuccess": "Confirmação registrada com sucesso!",
+    "moderationSuccess": "Atividade aprovada com sucesso!",
+    "invalidTransition": "Transição entre colunas não permitida diretamente.",
+    "project": "Projeto",
+    "executor": "Executor"
   },
   "governance": {
     "config": "Configuração de Governança",

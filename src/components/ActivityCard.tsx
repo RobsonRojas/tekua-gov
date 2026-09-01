@@ -34,7 +34,8 @@ import {
   Flame,
   Star,
   Paperclip,
-  Trash2
+  Trash2,
+  GripVertical
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -189,24 +190,42 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
 
   const evidenceUrl = activity.evidence?.[0]?.evidence_url;
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('application/json', JSON.stringify({
+      activityId: activity.id,
+      sourceStatus: activity.status
+    }));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
-    <Card elevation={0} sx={{ 
-      height: '100%', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      borderRadius: '24px',
-      border: highlighted ? '2px solid' : '1px solid rgba(255, 255, 255, 0.05)',
-      borderColor: highlighted ? 'primary.main' : 'rgba(255, 255, 255, 0.05)',
-      bgcolor: 'background.paper',
-      transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
-      boxShadow: highlighted ? '0 0 15px rgba(var(--mui-palette-primary-mainChannel), 0.3)' : 'none',
-    overflow: 'hidden',
-    cursor: 'pointer',
-    '&:hover': {
-      transform: 'translateY(-4px)',
-      borderColor: 'primary.main'
-    }
-  }} onClick={() => navigate(`/tasks/${activity.id}`)}>
+    <Card 
+      draggable={true}
+      onDragStart={handleDragStart}
+      elevation={0} 
+      sx={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        borderRadius: '24px',
+        border: highlighted ? '2px solid' : '1px solid rgba(255, 255, 255, 0.05)',
+        borderColor: highlighted ? 'primary.main' : 'rgba(255, 255, 255, 0.05)',
+        bgcolor: 'background.paper',
+        transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
+        boxShadow: highlighted ? '0 0 15px rgba(var(--mui-palette-primary-mainChannel), 0.3)' : 'none',
+        overflow: 'hidden',
+        cursor: 'grab',
+        '&:active': {
+          cursor: 'grabbing',
+          opacity: 0.7
+        },
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          borderColor: 'primary.main'
+        }
+      }} 
+      onClick={() => navigate(`/tasks/${activity.id}`)}
+    >
       {evidenceUrl && (
         <Box sx={{ height: 180, position: 'relative', overflow: 'hidden' }}>
           <Box
@@ -227,13 +246,18 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
       )}
       <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Chip 
-            label={t(`work.${localStatus}`)} 
-            size="small" 
-            color={getStatusColor(localStatus) as any}
-            icon={getStatusIcon(localStatus)}
-            sx={{ borderRadius: '8px', fontWeight: 600 }}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ color: 'text.secondary', opacity: 0.6, cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+              <GripVertical size={16} />
+            </Box>
+            <Chip 
+              label={t(`work.${localStatus}`)} 
+              size="small" 
+              color={getStatusColor(localStatus) as any}
+              icon={getStatusIcon(localStatus)}
+              sx={{ borderRadius: '8px', fontWeight: 600 }}
+            />
+          </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Stack direction="row" spacing={0.5} alignItems="center">
               <Trophy size={16} color="#f59e0b" />

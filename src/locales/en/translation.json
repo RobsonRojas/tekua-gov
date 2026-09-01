@@ -311,7 +311,15 @@
     "historyEventRejected": "Demand Rejected",
     "historyRejectedDesc": "The demand was rejected or cancelled.",
     "payoutDistributed": "Payment of",
-    "distributedSuccessfully": "distributed to executors."
+    "distributedSuccessfully": "distributed to executors.",
+    "dropCardHere": "Drop task here",
+    "noItemsColumn": "No tasks in this column",
+    "taskClaimedSuccess": "Task claimed successfully!",
+    "confirmationSuccess": "Confirmation recorded successfully!",
+    "moderationSuccess": "Activity approved successfully!",
+    "invalidTransition": "Direct column transition not permitted.",
+    "project": "Project",
+    "executor": "Executor"
   },
   "governance": {
     "config": "Governance Configuration",
