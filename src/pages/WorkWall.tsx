@@ -340,8 +340,8 @@ const WorkWall: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Mobile Quick Column Navigation Pills with Scroll Arrows */}
-      <Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', gap: 0.5, mb: 2, width: '100%' }}>
+      {/* Quick Column Navigation Pills with Scroll Arrows */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, width: '100%' }}>
         <IconButton 
           size="small" 
           onClick={() => scrollBoard('left')}
@@ -423,11 +423,18 @@ const WorkWall: React.FC = () => {
           width: '100%',
           alignItems: 'stretch',
           '&::-webkit-scrollbar': {
-            height: '6px'
+            height: '8px'
+          },
+          '&::-webkit-scrollbar-track': {
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '4px'
           },
           '&::-webkit-scrollbar-thumb': {
-            bgcolor: 'rgba(255,255,255,0.2)',
-            borderRadius: '4px'
+            bgcolor: 'rgba(16, 185, 129, 0.4)',
+            borderRadius: '4px',
+            '&:hover': {
+              bgcolor: 'rgba(16, 185, 129, 0.7)'
+            }
           }
         }}
       >
