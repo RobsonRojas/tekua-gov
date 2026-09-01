@@ -163,11 +163,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         display: 'flex', 
         flexDirection: 'column', 
         borderRadius: '24px',
-        border: highlighted ? '2px solid' : '1px solid rgba(255, 255, 255, 0.05)',
-        borderColor: highlighted ? 'primary.main' : 'rgba(255, 255, 255, 0.05)',
-        bgcolor: 'background.paper',
+        border: highlighted ? '2px solid #10b981' : '1px solid rgba(255, 255, 255, 0.12)',
+        bgcolor: 'rgba(26, 36, 25, 0.95)',
         transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
-        boxShadow: highlighted ? '0 0 15px rgba(var(--mui-palette-primary-mainChannel), 0.3)' : 'none',
+        boxShadow: highlighted 
+          ? '0 0 15px rgba(16, 185, 129, 0.4)' 
+          : '0 4px 12px rgba(0, 0, 0, 0.3)',
         overflow: 'hidden',
         cursor: 'grab',
         '&:active': {
@@ -176,7 +177,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         },
         '&:hover': {
           transform: 'translateY(-4px)',
-          borderColor: 'primary.main'
+          borderColor: '#10b981',
+          boxShadow: '0 6px 18px rgba(16, 185, 129, 0.25)'
         }
       }} 
       onClick={() => navigate(`/tasks/${activity.id}`)}
@@ -201,13 +203,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
       )}
       <CardContent sx={{ px: 2, py: 1.75, flexGrow: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: 1.75 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-          <Box sx={{ color: 'text.secondary', opacity: 0.6, cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ color: 'rgba(255, 255, 255, 0.7)', cursor: 'grab', display: 'flex', alignItems: 'center' }}>
             <GripVertical size={16} />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, ml: 'auto' }}>
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Trophy size={14} color="#f59e0b" />
-              <Typography variant="caption" fontWeight={800} color="primary.main" sx={{ whiteSpace: 'nowrap' }}>
+            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ bgcolor: 'rgba(245, 158, 11, 0.15)', px: 1, py: 0.25, borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+              <Trophy size={14} color="#fbbf24" />
+              <Typography variant="caption" fontWeight={800} sx={{ color: '#fbbf24', whiteSpace: 'nowrap' }}>
                 {activity.reward_amount} $S
               </Typography>
             </Stack>
@@ -217,9 +219,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 onClick={handleShare}
                 title={t('common.share', 'Compartilhar')}
                 sx={{ 
-                  color: 'text.secondary', 
+                  color: 'rgba(255, 255, 255, 0.75)', 
                   p: 0.25,
-                  '&:hover': { color: 'primary.main', bgcolor: 'primary.mainChannel' } 
+                  '&:hover': { color: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.1)' } 
                 }}
               >
                 <Share2 size={14} />
@@ -231,9 +233,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                   size="small" 
                   onClick={(e) => { e.stopPropagation(); setDeleteModalOpen(true); }}
                   sx={{ 
-                    color: 'text.secondary', 
+                    color: 'rgba(239, 68, 68, 0.8)', 
                     p: 0.25,
-                    '&:hover': { color: 'error.main', bgcolor: 'error.mainChannel' } 
+                    '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.15)' } 
                   }}
                 >
                   <Trash2 size={14} />
@@ -242,7 +244,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             )}
             {activity.attachments?.[0]?.count > 0 && (
               <Tooltip title={`${activity.attachments[0].count} ${t('work.attachments')}`}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'rgba(255, 255, 255, 0.85)' }}>
                   <Paperclip size={14} />
                   <Typography variant="caption" fontWeight={700}>
                     {activity.attachments[0].count}
@@ -280,11 +282,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
 
         <Typography 
           variant="subtitle1" 
-          fontWeight={700} 
+          fontWeight={800} 
           sx={{ 
             mb: 0.75, 
             fontSize: '0.95rem', 
             lineHeight: 1.3,
+            color: '#ffffff',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
@@ -295,12 +298,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
         </Typography>
         <Typography 
           variant="body2" 
-          color="text.secondary" 
           sx={{ 
             mb: 2, 
             flexGrow: 1, 
-            fontSize: '0.8rem',
-            lineHeight: 1.4,
+            fontSize: '0.82rem',
+            lineHeight: 1.45,
+            color: 'rgba(255, 255, 255, 0.85)',
+            fontWeight: 400,
             display: '-webkit-box',
             WebkitLineClamp: 3,
             WebkitBoxOrient: 'vertical',
@@ -326,26 +330,34 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
 
         <Box sx={{ mb: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75, alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.72rem' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.85)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.75rem' }}>
               {t('work.confirmations')}: {confirmCount} / {threshold}
             </Typography>
-            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ fontSize: '0.72rem' }}>
+            <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 800, fontSize: '0.75rem' }}>
                {Math.min(100, progress).toFixed(0)}%
             </Typography>
           </Box>
           <LinearProgress 
             variant="determinate" 
             value={Math.min(100, progress)} 
-            sx={{ height: 5, borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.05)' }}
+            sx={{ 
+              height: 6, 
+              borderRadius: 3, 
+              bgcolor: 'rgba(255,255,255,0.1)',
+              '& .MuiLinearProgress-bar': {
+                bgcolor: '#10b981',
+                borderRadius: 3
+              }
+            }}
           />
         </Box>
 
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
-            <Avatar sx={{ width: 22, height: 22, bgcolor: 'primary.main', fontSize: '0.7rem' }}>
+            <Avatar sx={{ width: 22, height: 22, bgcolor: '#10b981', color: '#ffffff', fontSize: '0.7rem' }}>
               <User size={12} />
             </Avatar>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.72rem', maxWidth: '130px' }}>
+            <Typography variant="caption" noWrap sx={{ color: 'rgba(255, 255, 255, 0.85)', fontWeight: 600, fontSize: '0.75rem', maxWidth: '140px' }}>
               {activity.type === 'task' ? t('work.requester') : t('work.beneficiary')}: {activity.requester?.full_name || 'Tekuá'}
             </Typography>
           </Box>
@@ -353,13 +365,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {activity.executors.slice(0, 3).map((executor: any, idx: number) => (
                 <Tooltip key={executor.id || idx} title={executor.full_name}>
-                  <Avatar src={executor.avatar_url} sx={{ width: 22, height: 22, bgcolor: 'secondary.main', fontSize: '0.7rem', ml: idx > 0 ? -1 : 0, border: '2px solid', borderColor: 'background.paper' }}>
+                  <Avatar src={executor.avatar_url} sx={{ width: 22, height: 22, bgcolor: 'secondary.main', fontSize: '0.7rem', ml: idx > 0 ? -1 : 0, border: '2px solid', borderColor: 'rgba(26, 36, 25, 0.95)' }}>
                     <User size={12} />
                   </Avatar>
                 </Tooltip>
               ))}
               {activity.executors.length > 3 && (
-                <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.85)', ml: 0.5, fontWeight: 700, fontSize: '0.72rem' }}>
                   +{activity.executors.length - 3}
                 </Typography>
               )}
@@ -376,7 +388,18 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               startIcon={<PlayCircle size={16} />}
               onClick={handleAction}
               disabled={loading || isOwner}
-              sx={{ borderRadius: '10px', py: 1, fontSize: '0.8rem', fontWeight: 700, textTransform: 'none' }}
+              sx={{ 
+                bgcolor: '#10b981', 
+                color: '#ffffff', 
+                borderRadius: '12px', 
+                py: 1, 
+                fontSize: '0.82rem', 
+                fontWeight: 800, 
+                textTransform: 'none',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
+                '&:hover': { bgcolor: '#059669', boxShadow: '0 6px 16px rgba(16, 185, 129, 0.45)' },
+                '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }
+              }}
             >
               {t('work.accept', 'Assumir Tarefa')}
             </Button>
@@ -387,10 +410,19 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               fullWidth 
               size="small"
               variant="contained" 
-              color="warning"
               startIcon={<CheckCircle2 size={16} />}
               onClick={() => navigate(`/tasks/${activity.id}/submit`)}
-              sx={{ borderRadius: '10px', py: 1, fontSize: '0.8rem', fontWeight: 700, textTransform: 'none' }}
+              sx={{ 
+                bgcolor: '#f59e0b', 
+                color: '#ffffff', 
+                borderRadius: '12px', 
+                py: 1, 
+                fontSize: '0.82rem', 
+                fontWeight: 800, 
+                textTransform: 'none',
+                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)',
+                '&:hover': { bgcolor: '#d97706', boxShadow: '0 6px 16px rgba(245, 158, 11, 0.45)' }
+              }}
             >
               {t('work.submit', 'Concluir e Enviar')}
             </Button>
@@ -406,7 +438,18 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                   startIcon={<CheckCircle size={16} />}
                   onClick={handleAction}
                   disabled={loading || isWorker || activity.user_has_confirmed}
-                  sx={{ borderRadius: '10px', py: 1, fontSize: '0.8rem', fontWeight: 700, textTransform: 'none' }}
+                  sx={{ 
+                    borderColor: '#10b981',
+                    color: '#10b981',
+                    bgcolor: 'rgba(16, 185, 129, 0.08)',
+                    borderRadius: '12px', 
+                    py: 1, 
+                    fontSize: '0.82rem', 
+                    fontWeight: 800, 
+                    textTransform: 'none',
+                    '&:hover': { bgcolor: 'rgba(16, 185, 129, 0.18)', borderColor: '#10b981' },
+                    '&.Mui-disabled': { borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', bgcolor: 'transparent' }
+                  }}
                 >
                   {activity.user_has_confirmed ? 'Já Confirmado' : t('work.confirm')}
                 </Button>
@@ -420,11 +463,19 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 fullWidth 
                 size="small"
                 variant="contained"
-                color="secondary"
                 startIcon={<CheckCircle size={15} />}
                 onClick={(e) => { e.stopPropagation(); handleModeration('approve'); }}
                 disabled={loading}
-                sx={{ borderRadius: '10px', py: 0.8, fontSize: '0.75rem', fontWeight: 700, textTransform: 'none' }}
+                sx={{ 
+                  bgcolor: '#10b981', 
+                  color: '#ffffff', 
+                  borderRadius: '10px', 
+                  py: 0.8, 
+                  fontSize: '0.78rem', 
+                  fontWeight: 800, 
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: '#059669' }
+                }}
               >
                 {t('common.approve', 'Aprovar')}
               </Button>
@@ -436,7 +487,16 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 startIcon={<AlertCircle size={15} />}
                 onClick={(e) => { e.stopPropagation(); handleModeration('reject'); }}
                 disabled={loading}
-                sx={{ borderRadius: '10px', py: 0.8, fontSize: '0.75rem', fontWeight: 700, textTransform: 'none' }}
+                sx={{ 
+                  borderRadius: '10px', 
+                  py: 0.8, 
+                  fontSize: '0.78rem', 
+                  fontWeight: 800, 
+                  textTransform: 'none',
+                  borderColor: '#ef4444',
+                  color: '#ef4444',
+                  '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.12)' }
+                }}
               >
                 {t('common.reject', 'Reprovar')}
               </Button>

@@ -1,20 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Container, 
   Typography, 
   Box, 
   Button,
-  Fab,
-  Tooltip,
   Alert,
-  Snackbar
+  Snackbar,
+  Chip
 } from '@mui/material';
 import { 
   Add as AddIcon, 
   Refresh as RefreshIcon,
   Mms as MuralIcon,
-  ViewColumn as KanbanIcon
+  ViewColumn as KanbanIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../lib/api';
@@ -39,6 +41,37 @@ const WorkWall: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, profile, loading: authLoading } = useAuth();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button, a, input, select, textarea, [role="button"]')) {
+      return;
+    }
+    setIsMouseDown(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
   
   const taskId = searchParams.get('task');
 
@@ -82,6 +115,26 @@ const WorkWall: React.FC = () => {
       navigate(`/tasks/${taskId}`, { replace: true });
     }
   }, [taskId, navigate]);
+
+  const scrollToColumn = (colId: string) => {
+    const container = scrollContainerRef.current;
+    const el = document.getElementById(`kanban-col-${colId}`);
+    if (container && el) {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const scrollOffset = container.scrollLeft + (elRect.left - containerRect.left) - 12;
+      container.scrollTo({ left: Math.max(0, scrollOffset), behavior: 'smooth' });
+    }
+  };
+
+  const scrollBoard = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    const scrollAmount = scrollContainerRef.current.clientWidth * 0.75;
+    scrollContainerRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
 
   // Column definitions for Kanban Board
   const columnDefs: ColumnDef[] = [
@@ -181,13 +234,13 @@ const WorkWall: React.FC = () => {
   };
 
   return (
-    <Container maxWidth={false} sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
+    <Container maxWidth={false} disableGutters sx={{ py: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 3 }, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
       {/* Header Bar */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1.5, sm: 0 }, mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <MuralIcon sx={{ fontSize: { xs: 28, sm: 32 }, mr: 1.5, color: 'primary.main' }} />
-          <Box>
-            <Typography variant="h4" component="h1" fontWeight={800} sx={{ fontSize: { xs: '1.35rem', sm: '2.125rem' } }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1.5, sm: 2 }, mb: 3, width: '100%', boxSizing: 'border-box' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0, pr: { xs: 0, sm: 1 } }}>
+          <MuralIcon sx={{ fontSize: { xs: 28, sm: 32 }, mr: 1.5, color: 'primary.main', flexShrink: 0 }} />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h4" component="h1" fontWeight={800} sx={{ fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2.125rem' } }}>
               {t('work.mural')}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -195,12 +248,12 @@ const WorkWall: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'flex-end', sm: 'flex-start' } }}>
+        <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' }, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', sm: 'flex-end' }, alignItems: 'center', maxWidth: '100%', boxSizing: 'border-box', pr: { xs: 0.5, sm: 1, md: 1.5 } }}>
           <Button 
             variant="outlined" 
             startIcon={<RefreshIcon />} 
             onClick={() => refetch()}
-            sx={{ borderRadius: '12px', px: { xs: 1.5, sm: 2 } }}
+            sx={{ borderRadius: '12px', px: { xs: 1.25, sm: 1.25, md: 1.75 }, fontSize: { sm: '0.8rem', md: '0.875rem' }, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             {t('admin.refresh')}
           </Button>
@@ -209,7 +262,7 @@ const WorkWall: React.FC = () => {
             startIcon={<AddIcon />} 
             onClick={() => navigate('/create-demand')}
             color="secondary"
-            sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '12px' }}
+            sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '12px', px: { xs: 1.25, sm: 1.25, md: 1.75 }, fontSize: { sm: '0.8rem', md: '0.875rem' }, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             {t('work.createDemand') || 'Criar Demanda'}
           </Button>
@@ -217,7 +270,7 @@ const WorkWall: React.FC = () => {
             variant="contained" 
             startIcon={<AddIcon />} 
             onClick={() => navigate('/register-work')}
-            sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '12px' }}
+            sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '12px', px: { xs: 1.25, sm: 1.25, md: 1.75 }, fontSize: { sm: '0.8rem', md: '0.875rem' }, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             {t('work.register')}
           </Button>
@@ -247,24 +300,137 @@ const WorkWall: React.FC = () => {
         </Alert>
       )}
 
+      {/* Mobile Action Buttons Right Above Task Board */}
+      <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 1, mb: 2, width: '100%' }}>
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          startIcon={<AddIcon />} 
+          onClick={() => navigate('/create-demand')}
+          sx={{ 
+            flex: 1, 
+            minWidth: 0,
+            borderRadius: '12px', 
+            py: 1, 
+            px: 1,
+            fontWeight: 700, 
+            fontSize: '0.8rem',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+        >
+          {t('work.createDemand') || 'Criar Demanda'}
+        </Button>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          startIcon={<AddIcon />} 
+          onClick={() => navigate('/register-work')}
+          sx={{ 
+            flex: 1, 
+            minWidth: 0,
+            borderRadius: '12px', 
+            py: 1, 
+            px: 1,
+            fontWeight: 700, 
+            fontSize: '0.8rem',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+        >
+          {t('work.register')}
+        </Button>
+      </Box>
+
+      {/* Mobile Quick Column Navigation Pills with Scroll Arrows */}
+      <Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', gap: 0.5, mb: 2, width: '100%' }}>
+        <IconButton 
+          size="small" 
+          onClick={() => scrollBoard('left')}
+          sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.1)', p: 0.5 }}
+        >
+          <ChevronLeftIcon fontSize="small" />
+        </IconButton>
+        
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            gap: 1, 
+            overflowX: 'auto', 
+            py: 0.5, 
+            flexGrow: 1,
+            touchAction: 'pan-x',
+            WebkitOverflowScrolling: 'touch',
+            '&::-webkit-scrollbar': { display: 'none' }
+          }}
+        >
+          {columnDefs.map((col) => {
+            const count = getColumnActivities(col.statuses).length;
+            return (
+              <Chip
+                key={col.id}
+                label={`${col.title} (${count})`}
+                onClick={() => scrollToColumn(col.id)}
+                size="small"
+                sx={{
+                  bgcolor: col.bgColor,
+                  color: col.color,
+                  borderColor: col.borderColor,
+                  border: '1px solid',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  flexShrink: 0,
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  '&:active': {
+                    opacity: 0.8
+                  }
+                }}
+              />
+            );
+          })}
+        </Box>
+
+        <IconButton 
+          size="small" 
+          onClick={() => scrollBoard('right')}
+          sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.1)', p: 0.5 }}
+        >
+          <ChevronRightIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
       {/* Kanban Board Layout Container */}
       <Box
+        ref={scrollContainerRef}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
         sx={{
           display: 'flex',
-          gap: { xs: 2, sm: 1.5, md: 2 },
-          overflowX: { xs: 'auto', sm: 'visible' },
-          scrollSnapType: { xs: 'x mandatory', sm: 'none' },
+          gap: { xs: 1.5, sm: 2, md: 2.5 },
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          touchAction: 'pan-x pan-y',
           WebkitOverflowScrolling: 'touch',
-          pb: 4,
+          scrollSnapType: isMouseDown ? 'none' : { xs: 'x proximity', sm: 'none' },
+          cursor: isMouseDown ? 'grabbing' : 'grab',
+          userSelect: isMouseDown ? 'none' : 'auto',
+          pb: 2,
           pt: 1,
-          minHeight: 'calc(100vh - 280px)',
+          px: { xs: 1, sm: 1.5, md: 2 },
+          height: { xs: 'calc(100vh - 220px)', sm: 'calc(100vh - 240px)' },
+          maxHeight: { xs: 'calc(100vh - 220px)', sm: 'calc(100vh - 240px)' },
           width: '100%',
           alignItems: 'stretch',
           '&::-webkit-scrollbar': {
             height: '6px'
           },
           '&::-webkit-scrollbar-thumb': {
-            bgcolor: 'rgba(255,255,255,0.15)',
+            bgcolor: 'rgba(255,255,255,0.2)',
             borderRadius: '4px'
           }
         }}
@@ -288,32 +454,9 @@ const WorkWall: React.FC = () => {
             />
           );
         })}
+        {/* Trailing End Spacer so rightmost column is never clipped by viewport overflow */}
+        <Box sx={{ width: { xs: 12, sm: 24 }, flexShrink: 0 }} />
       </Box>
-
-      {/* Floating Action Buttons for Mobile */}
-      <Tooltip title={t('work.createDemand') || 'Criar Demanda'} placement="left">
-        <Fab 
-          color="secondary" 
-          aria-label="add-demand" 
-          size="medium"
-          sx={{ position: 'fixed', bottom: 150, right: 20, display: { sm: 'none' }, zIndex: 1100, boxShadow: 4 }}
-          onClick={() => navigate('/create-demand')}
-        >
-          <AddIcon />
-        </Fab>
-      </Tooltip>
-
-      <Tooltip title={t('work.register')} placement="left">
-        <Fab 
-          color="primary" 
-          aria-label="add" 
-          size="medium"
-          sx={{ position: 'fixed', bottom: 85, right: 20, display: { sm: 'none' }, zIndex: 1100, boxShadow: 4 }}
-          onClick={() => navigate('/register-work')}
-        >
-          <AddIcon />
-        </Fab>
-      </Tooltip>
 
       {/* Snackbar Feedback */}
       <Snackbar

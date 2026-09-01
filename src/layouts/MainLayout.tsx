@@ -136,11 +136,15 @@ const MainLayout: React.FC = () => {
         }}
       >
         <Container 
-          maxWidth="lg" 
+          maxWidth={false} 
+          disableGutters
           sx={{ 
-            py: isMobile ? 2 : 4,
-            px: isMobile ? 2 : 3,
-            flexGrow: 1
+            py: isMobile ? 1.5 : 4,
+            px: { xs: 0, sm: 2, md: 3 },
+            flexGrow: 1,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           <Outlet />

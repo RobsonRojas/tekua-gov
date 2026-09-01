@@ -64,19 +64,21 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
 
   return (
     <Paper
+      id={`kanban-col-${id}`}
       elevation={0}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       sx={{
-        flex: { xs: '0 0 85vw', sm: '1 1 0px' },
-        minWidth: { xs: '270px', sm: '220px', md: '240px' },
-        maxWidth: { xs: '85vw', sm: '100%' },
-        width: { xs: '85vw', sm: '100%' },
-        flexShrink: { xs: 0, sm: 1 },
+        flex: { xs: '0 0 85vw', sm: '0 0 250px', md: '1 1 250px', lg: '1 1 270px' },
+        minWidth: { xs: '270px', sm: '240px', md: '250px', lg: '270px' },
+        maxWidth: { xs: '85vw', sm: '340px', md: 'none' },
+        width: { xs: '85vw', sm: '250px', md: 'auto' },
+        flexShrink: 0,
         scrollSnapAlign: 'start',
-        scrollSnapStop: 'always',
+        scrollSnapStop: 'normal',
         height: '100%',
+        maxHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
         borderRadius: '20px',
@@ -91,9 +93,10 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
       <Box
         sx={{
           p: 2.5,
+          flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
-          justify: 'space-between',
+          justifyContent: 'space-between',
           borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
           bgcolor: 'rgba(0, 0, 0, 0.15)'
         }}
@@ -131,6 +134,8 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
           p: 2,
           flexGrow: 1,
           overflowY: 'auto',
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch',
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
@@ -139,7 +144,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             width: '6px'
           },
           '&::-webkit-scrollbar-thumb': {
-            bgcolor: 'rgba(255,255,255,0.1)',
+            bgcolor: 'rgba(255,255,255,0.18)',
             borderRadius: '4px'
           }
         }}
