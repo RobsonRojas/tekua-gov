@@ -14,7 +14,8 @@ import {
   Mms as MuralIcon,
   ViewColumn as KanbanIcon,
   ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  AccessTime as ClockIcon
 } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -234,7 +235,7 @@ const WorkWall: React.FC = () => {
   };
 
   return (
-    <Container maxWidth={false} disableGutters sx={{ py: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 3 }, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
+    <Container maxWidth={false} disableGutters sx={{ py: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 3 }, width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Header Bar */}
       <Box sx={{ mb: 2.5, width: '100%', boxSizing: 'border-box' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
@@ -278,7 +279,7 @@ const WorkWall: React.FC = () => {
         sx={{ 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          justify: 'space-between',
+          justifyContent: 'space-between',
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: 1.5, 
           my: 2.5, 
@@ -286,14 +287,14 @@ const WorkWall: React.FC = () => {
           boxSizing: 'border-box' 
         }}
       >
-        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' } }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, width: { xs: '100%', sm: 'auto' } }}>
           <Button 
             variant="contained" 
             color="secondary" 
             startIcon={<AddIcon />} 
             onClick={() => navigate('/create-demand')}
             sx={{ 
-              flex: { xs: 1, sm: 'none' },
+              width: { xs: '100%', sm: 'auto' },
               borderRadius: '12px', 
               px: { xs: 1.5, sm: 2.5 }, 
               py: 1,
@@ -307,10 +308,10 @@ const WorkWall: React.FC = () => {
           <Button 
             variant="contained" 
             color="primary" 
-            startIcon={<AddIcon />} 
+            startIcon={<ClockIcon />} 
             onClick={() => navigate('/register-work')}
             sx={{ 
-              flex: { xs: 1, sm: 'none' },
+              width: { xs: '100%', sm: 'auto' },
               borderRadius: '12px', 
               px: { xs: 1.5, sm: 2.5 }, 
               py: 1,
@@ -357,6 +358,7 @@ const WorkWall: React.FC = () => {
             overflowX: 'auto', 
             py: 0.5, 
             flexGrow: 1,
+            minWidth: 0,
             touchAction: 'pan-x',
             WebkitOverflowScrolling: 'touch',
             '&::-webkit-scrollbar': { display: 'none' }
@@ -412,7 +414,7 @@ const WorkWall: React.FC = () => {
           overflowY: 'hidden',
           touchAction: 'pan-x pan-y',
           WebkitOverflowScrolling: 'touch',
-          scrollSnapType: isMouseDown ? 'none' : { xs: 'x proximity', sm: 'none' },
+          scrollSnapType: isMouseDown ? 'none' : { xs: 'x mandatory', sm: 'none' },
           cursor: isMouseDown ? 'grabbing' : 'grab',
           userSelect: isMouseDown ? 'none' : 'auto',
           pb: 2,

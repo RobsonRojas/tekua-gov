@@ -124,11 +124,13 @@ const MainLayout: React.FC = () => {
         component="main" 
         sx={{ 
           flexGrow: 1, 
+          minWidth: 0,
           display: 'flex', 
           flexDirection: 'column',
           minHeight: '100vh',
           pt: !profile ? '80px' : (isMobile ? `${MOBILE_HEADER_HEIGHT}px` : 0),
           pb: profile && isMobile ? '70px' : 0, // Padding for BottomNav
+          overflowX: 'hidden',
           transition: (theme) => theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
