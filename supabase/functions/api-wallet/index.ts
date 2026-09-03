@@ -225,6 +225,32 @@ serve(async (req) => {
         break
       }
 
+      case 'adjustBalance': {
+        // 1. Verify admin
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
+        
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
+
+        const { recipientId, amount, description } = params
+        if (!recipientId || amount === undefined || amount === 0) throw new Error('Missing adjustment details')
+
+        // 2. Call the adjustment RPC using admin client
+        const { data, error } = await supabaseAdmin.rpc('admin_adjust_wallet_balance', {
+          p_user_id: recipientId,
+          p_amount: Number(amount),
+          p_justification: description
+        })
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`)
     }

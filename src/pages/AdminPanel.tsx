@@ -77,6 +77,9 @@ const AdminPanel: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [isNewMemberModalOpen, setIsNewMemberModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAdjustBalanceModalOpen, setIsAdjustBalanceModalOpen] = useState(false);
+  const [adjustAmount, setAdjustAmount] = useState('');
+  const [adjustJustification, setAdjustJustification] = useState('');
   const { user: authUser } = useAuth();
   const { fetchMembersWithBalances } = useMembers();
   const theme = useTheme();
@@ -265,6 +268,35 @@ const AdminPanel: React.FC = () => {
       setActionLoading(false);
       // Only clear selectedUser when we are sure no more UI needs it
       if (!isDeleteDialogOpen) {
+        setSelectedUser(null);
+      }
+    }
+  };
+
+  const handleAdjustBalance = async () => {
+    if (!selectedUser || !adjustAmount || !adjustJustification) return;
+    
+    setActionLoading(true);
+    try {
+      const { error } = await apiClient.invoke('api-wallet', 'adjustBalance', {
+        recipientId: selectedUser.id,
+        amount: Number(adjustAmount),
+        description: adjustJustification
+      });
+
+      if (error) throw new Error(error);
+      
+      setMessage({ type: 'success', text: 'Saldo ajustado com sucesso!' });
+      setIsAdjustBalanceModalOpen(false);
+      setAdjustAmount('');
+      setAdjustJustification('');
+      fetchUsers();
+    } catch (err: any) {
+      console.error('Error adjusting balance:', err);
+      setMessage({ type: 'error', text: err.message || 'Erro ao ajustar saldo' });
+    } finally {
+      setActionLoading(false);
+      if (!isAdjustBalanceModalOpen) {
         setSelectedUser(null);
       }
     }
@@ -808,6 +840,13 @@ const AdminPanel: React.FC = () => {
             t('admin.makeCouncil') || 'Tornar Conselho'
           } />
         </MenuItem>
+        <MenuItem onClick={() => {
+          handleMenuClose();
+          setIsAdjustBalanceModalOpen(true);
+        }}>
+          <ListItemIcon><DollarSign size={18} /></ListItemIcon>
+          <ListItemText primary="Ajustar Saldo" />
+        </MenuItem>
         <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
         <MenuItem 
           onClick={() => {
@@ -868,6 +907,80 @@ const AdminPanel: React.FC = () => {
             startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : null}
           >
             {t('admin.removeAccess')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={isAdjustBalanceModalOpen}
+        onClose={() => {
+          if (!actionLoading) {
+            setIsAdjustBalanceModalOpen(false);
+            setSelectedUser(null);
+            setAdjustAmount('');
+            setAdjustJustification('');
+          }
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            bgcolor: 'background.paper',
+            minWidth: { xs: '300px', sm: '400px' }
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Ajustar Saldo
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Ajustando saldo de: <strong>{selectedUser?.full_name || selectedUser?.email}</strong>
+            <br />
+            Saldo atual: {selectedUser?.surreal_balance?.toFixed(2)} SR$
+          </DialogContentText>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <TextField
+              label="Valor (use negativo para reduzir)"
+              type="number"
+              fullWidth
+              value={adjustAmount}
+              onChange={(e) => setAdjustAmount(e.target.value)}
+              disabled={actionLoading}
+            />
+            <TextField
+              label="Justificativa"
+              fullWidth
+              multiline
+              rows={2}
+              value={adjustJustification}
+              onChange={(e) => setAdjustJustification(e.target.value)}
+              disabled={actionLoading}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button 
+            onClick={() => {
+              setIsAdjustBalanceModalOpen(false);
+              setSelectedUser(null);
+              setAdjustAmount('');
+              setAdjustJustification('');
+            }}
+            variant="outlined"
+            sx={{ borderRadius: '8px' }}
+            disabled={actionLoading}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button 
+            onClick={handleAdjustBalance}
+            variant="contained"
+            color="primary"
+            sx={{ borderRadius: '8px' }}
+            disabled={actionLoading || !adjustAmount || !adjustJustification}
+            startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : null}
+          >
+            Ajustar
           </Button>
         </DialogActions>
       </Dialog>
