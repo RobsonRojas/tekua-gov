@@ -50,3 +50,25 @@ O sistema SHALL tentar entregar notificações via push e email simultaneamente 
 - **WHEN** um evento de alta prioridade (como tarefa finalizada) é processado.
 - **THEN** o sistema SHALL disparar tanto a notificação Web Push quanto o email transacional.
 
+### Requirement: Suporte a tipo de notifica��o "surreal_receipt"
+O sistema SHALL estender o schema de tipos de notifica��o para incluir `surreal_receipt`, permitindo notifica��es estruturadas de recebimento de surreais.
+
+#### Scenario: Criar notifica��o de tipo surreal_receipt
+- **WHEN** o sistema cria uma notifica��o com `type: 'surreal_receipt'`
+- **THEN** a notifica��o SHALL armazenar payload estruturado com campos: `transactionId`, `amount`, `senderName`, `recipientName`, `description`
+
+#### Scenario: Email para tipo surreal_receipt
+- **WHEN** uma notifica��o de tipo `surreal_receipt` � processada para envio de email
+- **THEN** o sistema SHALL usar template de email espec�fico com assunto como "Surreais ganhos na comunidade!" e corpo destacando o valor, remetente e convite ao work-wall
+
+### Requirement: Link na notifica��o aponta para p�gina compartilhada
+O sistema SHALL gerar links para a p�gina de recibo p�blico (`/share/surreal/:transactionId`) tanto em notifica��es app quanto em emails.
+
+#### Scenario: Notifica��o app com link
+- **WHEN** uma notifica��o `surreal_receipt` � exibida no app
+- **THEN** o link da notifica��o SHALL navegar para `/share/surreal/:transactionId`
+
+#### Scenario: Email com link para recibo
+- **WHEN** um email de tipo `surreal_receipt` � enviado
+- **THEN** o CTA "Ver recibo" no email SHALL apontar para `${baseUrl}/share/surreal/:transactionId`
+
