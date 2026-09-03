@@ -63,6 +63,7 @@ const TaskDetail: React.FC = () => {
   const [editAmount, setEditAmount] = useState<number | string>('');
   const [editExecutorIds, setEditExecutorIds] = useState<string[]>([]);
   const [editMinConfirmations, setEditMinConfirmations] = useState<number>(1);
+  const [editBeneficiaryId, setEditBeneficiaryId] = useState<string>('');
   const [editAttachments, setEditAttachments] = useState<Attachment[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -110,10 +111,10 @@ const TaskDetail: React.FC = () => {
   }, [fetchDetail]);
 
   useEffect(() => {
-    if (editDialogOpen && isAdmin) {
+    if (editDialogOpen && canEdit) {
       fetchMembers();
     }
-  }, [editDialogOpen, isAdmin, fetchMembers]);
+  }, [editDialogOpen, canEdit, fetchMembers]);
 
   const handleOpenEdit = () => {
     if (!activity) return;
@@ -122,6 +123,7 @@ const TaskDetail: React.FC = () => {
     setEditAmount(activity.reward_amount || '');
     setEditExecutorIds(activity.executor_ids || (activity.worker_id ? [activity.worker_id] : []));
     setEditMinConfirmations(activity.min_confirmations || 1);
+    setEditBeneficiaryId(activity.beneficiary_id || 'village');
     const existingRefs = activity.attachments
       ? activity.attachments
           .filter((a: any) => !a.is_evidence)
@@ -148,7 +150,8 @@ const TaskDetail: React.FC = () => {
         rewardAmount: Number(editAmount),
         executorIds: editExecutorIds,
         minConfirmations: Number(editMinConfirmations),
-        attachments: editAttachments
+        attachments: editAttachments,
+        beneficiaryId: editBeneficiaryId === 'village' ? null : (editBeneficiaryId || null)
       });
 
       if (error) throw new Error(error);
@@ -244,6 +247,11 @@ const TaskDetail: React.FC = () => {
       default: return 'default';
     }
   };
+
+  const beneficiaryOptions = [
+    { id: 'village', full_name: 'Vila Tekuá (Comunidade)' },
+    ...members
+  ];
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -620,6 +628,21 @@ const TaskDetail: React.FC = () => {
                   onChange={(e) => setEditMinConfirmations(Number(e.target.value))}
                   required
                   InputProps={{ inputProps: { min: 1 } }}
+                />
+                <Autocomplete
+                  options={beneficiaryOptions}
+                  getOptionLabel={(option) => option.full_name || option.email || ''}
+                  value={beneficiaryOptions.find(m => m.id === editBeneficiaryId) || null}
+                  onChange={(_, newValue) => setEditBeneficiaryId(newValue?.id || '')}
+                  disabled={loadingMembers}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label={t('work.beneficiary', 'Beneficiário (Opcional)')}
+                      helperText={t('work.beneficiaryHelper', 'Buscar beneficiário...')}
+                    />
+                  )}
                 />
                 {isAdmin && (
                   <Autocomplete

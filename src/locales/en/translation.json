@@ -140,6 +140,7 @@
     "newContent": "New content available, click to refresh."
   },
   "common": {
+    "none": "None",
     "save": "Save",
     "loading": "Loading...",
     "error": "Error",
@@ -229,6 +230,7 @@
     "surreais": "Surreais"
   },
   "work": {
+    "newProject": "New Project",
     "editTaskTitle": "Edit Task",
     "executorHelper": "Select who executed (optional)",
     "minConfirmations": "Required Confirmations",

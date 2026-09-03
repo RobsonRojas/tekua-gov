@@ -49,6 +49,7 @@ const CreateDemand: React.FC = () => {
   const [members, setMembers] = useState<any[]>([]);
   const [projectId, setProjectId] = useState<string>('');
   const [projects, setProjects] = useState<any[]>([]);
+  const [beneficiaryId, setBeneficiaryId] = useState<string>('village');
   
   const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
@@ -63,10 +64,8 @@ const CreateDemand: React.FC = () => {
 
   useEffect(() => {
     fetchProjects();
-    if (canAssignTask) {
-      fetchMembers();
-    }
-  }, [canAssignTask]);
+    fetchMembers();
+  }, []);
 
   const fetchProjects = async () => {
     try {
@@ -105,7 +104,8 @@ const CreateDemand: React.FC = () => {
         type: 'task',
         attachments,
         executorIds: executorIds.length > 0 ? executorIds : [],
-        projectId: projectId || null
+        projectId: projectId || null,
+        beneficiaryId: beneficiaryId === 'village' ? null : (beneficiaryId || null)
       });
 
       if (error) throw new Error(error);
@@ -147,6 +147,11 @@ const CreateDemand: React.FC = () => {
       setCreatingProject(false);
     }
   };
+
+  const beneficiaryOptions = [
+    { id: 'village', full_name: 'Vila Tekuá (Comunidade)' },
+    ...members
+  ];
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -251,6 +256,24 @@ const CreateDemand: React.FC = () => {
                   {t('work.newProject') || 'Novo Projeto'}
                 </Button>
               </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Autocomplete
+                options={beneficiaryOptions}
+                getOptionLabel={(option) => option.full_name || option.email || ''}
+                value={beneficiaryOptions.find(m => m.id === beneficiaryId) || null}
+                onChange={(_, newValue) => setBeneficiaryId(newValue?.id || '')}
+                disabled={loadingMembers}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label={t('work.beneficiary', 'Beneficiário (Opcional)')}
+                    placeholder={t('work.beneficiaryHelper', 'Buscar beneficiário...')}
+                  />
+                )}
+              />
             </Grid>
 
             {canAssignTask && (
