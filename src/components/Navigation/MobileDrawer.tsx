@@ -9,14 +9,17 @@ import {
   Box, 
   Divider,
   Avatar,
-  Typography
+  Typography,
+  IconButton,
+  Tooltip
 } from '@mui/material';
-import { LogOut, Download } from 'lucide-react';
+import { LogOut, Download, Moon, Sun } from 'lucide-react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '../../hooks/useNavigation';
 import { useAuth } from '../../context/useAuth';
 import { usePWA } from '../../context/PWAContext';
+import { useThemeContext } from '../../context/ThemeContext';
 import { InstallPrompt } from '../pwa/InstallPrompt';
 import LanguageSelector from '../LanguageSelector';
 
@@ -32,6 +35,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
   const { navItems } = useNavigation();
   const { profile, signOut } = useAuth();
   const { isInstallable, platform, isInstalled } = usePWA();
+  const { mode, toggleTheme } = useThemeContext();
   const [showInstallDialog, setShowInstallDialog] = React.useState(false);
 
   const handleLogout = async () => {
@@ -110,8 +114,13 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose }) => {
       <Divider />
       
       <List>
-        <ListItem sx={{ py: 1, px: 2, justifyContent: 'center' }}>
+        <ListItem sx={{ py: 1, px: 2, justifyContent: 'center', gap: 1 }}>
           <LanguageSelector />
+          <Tooltip title={mode === 'dark' ? t('layout.light_mode', 'Light Mode') : t('layout.dark_mode', 'Dark Mode')} placement="top">
+            <IconButton onClick={toggleTheme} sx={{ color: 'text.secondary' }}>
+              {mode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </IconButton>
+          </Tooltip>
         </ListItem>
         
         {(!isInstalled && (isInstallable || platform === 'ios')) && (
