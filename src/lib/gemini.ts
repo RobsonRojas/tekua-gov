@@ -5,18 +5,53 @@ export interface Message {
   content: string;
 }
 
+export class AuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
+
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const payloadBase64 = token.split('.')[1];
+    const decodedJson = atob(payloadBase64);
+    const decoded = JSON.parse(decodedJson);
+    const exp = decoded.exp;
+    // 30 seconds buffer
+    return (Date.now() / 1000) > (exp - 30);
+  } catch (e) {
+    return true;
+  }
+};
+
+const getValidToken = async (forceRefresh?: boolean): Promise<string> => {
+  if (!forceRefresh) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token && !isTokenExpired(session.access_token)) {
+      return session.access_token;
+    }
+  }
+  
+  const { data: { session }, error } = await supabase.auth.refreshSession();
+  if (error || !session?.access_token || isTokenExpired(session.access_token)) {
+    throw new AuthError('auth.sessionExpired'); // Used as a key for i18n
+  }
+  return session.access_token;
+};
+
 export const chatWithGemini = async (
   messages: Message[], 
   systemInstruction?: string
 ) => {
-  const token = (await supabase.auth.getSession()).data.session?.access_token;
+  let token = await getValidToken();
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   if (!baseUrl) {
     throw new Error('VITE_SUPABASE_URL is not defined');
   }
 
-  const response = await fetch(`${baseUrl}/functions/v1/ai-handler`, {
+  let response = await fetch(`${baseUrl}/functions/v1/ai-handler`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -26,6 +61,20 @@ export const chatWithGemini = async (
     },
     body: JSON.stringify({ messages, systemInstruction }),
   });
+
+  if (response.status === 401) {
+    token = await getValidToken(true);
+    response = await fetch(`${baseUrl}/functions/v1/ai-handler`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Accept': 'text/event-stream',
+      },
+      body: JSON.stringify({ messages, systemInstruction }),
+    });
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -85,14 +134,14 @@ export const chatWithGemini = async (
 export const chatWithJRAgent = async (
   messages: Message[]
 ) => {
-  const token = (await supabase.auth.getSession()).data.session?.access_token;
+  let token = await getValidToken();
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   if (!baseUrl) {
     throw new Error('VITE_SUPABASE_URL is not defined');
   }
 
-  const response = await fetch(`${baseUrl}/functions/v1/ai-justica-restaurativa`, {
+  let response = await fetch(`${baseUrl}/functions/v1/ai-justica-restaurativa`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -102,6 +151,20 @@ export const chatWithJRAgent = async (
     },
     body: JSON.stringify({ messages }),
   });
+
+  if (response.status === 401) {
+    token = await getValidToken(true);
+    response = await fetch(`${baseUrl}/functions/v1/ai-justica-restaurativa`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Accept': 'text/event-stream',
+      },
+      body: JSON.stringify({ messages }),
+    });
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

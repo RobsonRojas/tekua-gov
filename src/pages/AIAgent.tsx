@@ -133,13 +133,20 @@ const AIAgent: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Gemini Error:', err);
-      const errorMessage = err.message || t('ai.error') || 'Sorry, I encountered an error processing your request.';
+      
+      let finalContent = '';
+      if (err.message === 'auth.sessionExpired') {
+        finalContent = `❌ **Sessão expirada / Session expired**\n\nPor favor, [faça login novamente](/login) para continuar usando o Oráculo.\n\nPlease [log in again](/login) to continue using the Oracle.`;
+      } else {
+        const errorMessage = err.message || t('ai.error') || 'Sorry, I encountered an error processing your request.';
+        finalContent = `❌ **Erro:** ${errorMessage}`;
+      }
       
       setMessages(prev => [
         ...prev.slice(0, -1),
         { 
           role: 'model', 
-          content: `❌ **Erro:** ${errorMessage}`,
+          content: finalContent,
           tools: []
         }
       ]);
