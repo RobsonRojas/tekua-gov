@@ -37,7 +37,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    const jwt = authHeader.replace(/^Bearer\s+/i, '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt)
     if (authError || !user) {
       console.error('ai-handler: Auth error', authError);
       return new Response(JSON.stringify({ error: 'Sessão expirada ou inválida.' }), {
