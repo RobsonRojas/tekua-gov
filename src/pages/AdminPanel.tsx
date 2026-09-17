@@ -107,6 +107,7 @@ const AdminPanel: React.FC = () => {
 
   const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [threshold, setThreshold] = useState<number>(3);
+  const [defaultAiModel, setDefaultAiModel] = useState<string>('gemini-1.5-flash');
   const [frequencies, setFrequencies] = useState<any>({
     urgent_important: '1 hour',
     urgent_not_important: '1 day',
@@ -164,6 +165,9 @@ const AdminPanel: React.FC = () => {
       if (!error && data) {
         // Handle singleton config structure
         setThreshold(data.min_contribution_confirmations || 3);
+        if (data.default_ai_model) {
+          setDefaultAiModel(data.default_ai_model);
+        }
         if (data.task_reminder_frequencies) {
           setFrequencies(data.task_reminder_frequencies);
         }
@@ -192,6 +196,7 @@ const AdminPanel: React.FC = () => {
       const { error } = await apiClient.invoke('api-governance', 'saveConfig', {
         config: { 
           min_contribution_confirmations: threshold,
+          default_ai_model: defaultAiModel,
           task_reminder_frequencies: frequencies
         }
       });
@@ -730,6 +735,22 @@ const AdminPanel: React.FC = () => {
               InputProps={{ inputProps: { min: 1, max: 20 } }}
               fullWidth
             />
+
+            <Divider sx={{ my: 2 }}>
+              <Chip label="Configuração de IA" size="small" />
+            </Divider>
+
+            <TextField
+              select
+              label="Modelo Padrão da IA"
+              value={defaultAiModel}
+              onChange={(e) => setDefaultAiModel(e.target.value)}
+              fullWidth
+            >
+              <MenuItem value="gemini-1.5-flash">Gemini 1.5 Flash (Rápido)</MenuItem>
+              <MenuItem value="gemini-1.5-pro">Gemini 1.5 Pro (Avançado)</MenuItem>
+              <MenuItem value="gemini-1.0-pro">Gemini 1.0 Pro (Legado)</MenuItem>
+            </TextField>
 
             <Divider sx={{ my: 2 }}>
               <Chip label="Frequências de Lembrete (Eisenhower)" size="small" />

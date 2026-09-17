@@ -49,6 +49,7 @@ serve(async (req) => {
           min_reward_amount: 1.00,
           max_reward_amount: 1000.00,
           auto_approve_small_tasks: false,
+          default_ai_model: 'gemini-1.5-flash',
           task_reminder_frequencies: {
             urgent_important: '1 hour',
             urgent_not_important: '1 day',

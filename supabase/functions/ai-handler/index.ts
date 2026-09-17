@@ -118,6 +118,28 @@ serve(async (req) => {
     // Wrap user message in delimiters
     const wrappedLastMessage = `<user_input>${lastMessage}</user_input>`;
 
+    let defaultModel = 'gemini-1.5-flash';
+    const { data: settingsData } = await supabaseClient
+      .from('governance_settings')
+      .select('default_ai_model')
+      .eq('id', 'current')
+      .single();
+    if (settingsData && settingsData.default_ai_model) {
+      defaultModel = settingsData.default_ai_model;
+    }
+
+    const fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
+    const modelsToTry = [defaultModel, ...fallbackModels.filter(m => m !== defaultModel)];
+
+    let formattedHistory = messages.slice(0, -1).map((m: any) => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
+    }));
+    
+    if (formattedHistory.length > 0 && formattedHistory[0].role === 'model') {
+      formattedHistory.shift();
+    }
+
     const genAI = new GoogleGenerativeAI(API_KEY)
     
     // 1. Define Tools (Task 1.1)
@@ -149,14 +171,7 @@ serve(async (req) => {
       },
     ];
 
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
-      systemInstruction: BASE_SYSTEM_PROMPT,
-      tools: tools,
-    })
-
     // 3. Dispatch Loop Logic
-
     const functions: Record<string, Function> = {
       get_user_balance: async () => {
         const { data, error } = await supabaseClient
@@ -180,13 +195,6 @@ serve(async (req) => {
       }
     };
 
-    const chat = model.startChat({
-      history: messages.slice(0, -1).map((m: any) => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
-      }))
-    })
-
     // Handle Tool Calls Loop with Streaming
     const stream = new ReadableStream({
       async start(controller) {
@@ -195,56 +203,80 @@ serve(async (req) => {
           controller.enqueue(encoder.encode(JSON.stringify(data) + "\n"))
         }
 
-        try {
-          let result = await chat.sendMessage(wrappedLastMessage)
-          let response = result.response
-          let lastPart = response.candidates?.[0]?.content?.parts?.[0]
+        let success = false;
+        let lastError: any = null;
 
-          while (lastPart?.functionCall) {
-            const call = lastPart.functionCall;
-            const fnName = call.name;
-            const args = call.args;
+        for (const modelName of modelsToTry) {
+          try {
+            console.log(`ai-handler: Trying model ${modelName}...`);
+            const model = genAI.getGenerativeModel({ 
+              model: modelName,
+              systemInstruction: BASE_SYSTEM_PROMPT,
+              tools: tools,
+            });
 
-            // Notify frontend about tool execution
-            sendEvent({ type: 'tool', name: fnName })
-            console.log(`AI invoking tool: ${fnName}`, args);
+            const chat = model.startChat({
+              history: formattedHistory
+            });
 
-            let fnResult;
-            try {
-              if (functions[fnName]) {
-                fnResult = await functions[fnName](args);
-              } else {
-                fnResult = { error: `Desculpe, a ferramenta '${fnName}' não está disponível no momento.` };
+            let result = await chat.sendMessage(wrappedLastMessage)
+            let response = result.response
+            let lastPart = response.candidates?.[0]?.content?.parts?.[0]
+
+            while (lastPart?.functionCall) {
+              const call = lastPart.functionCall;
+              const fnName = call.name;
+              const args = call.args;
+
+              // Notify frontend about tool execution
+              sendEvent({ type: 'tool', name: fnName })
+              console.log(`AI invoking tool: ${fnName}`, args);
+
+              let fnResult;
+              try {
+                if (functions[fnName]) {
+                  fnResult = await functions[fnName](args);
+                } else {
+                  fnResult = { error: `Desculpe, a ferramenta '${fnName}' não está disponível no momento.` };
+                }
+              } catch (err: any) {
+                console.error(`ai-handler: Tool execution error [${fnName}]`, err);
+                fnResult = { error: `Erro ao executar ferramenta ${fnName}: ${err.message}` };
               }
-            } catch (err: any) {
-              console.error(`ai-handler: Tool execution error [${fnName}]`, err);
-              fnResult = { error: `Erro ao executar ferramenta ${fnName}: ${err.message}` };
+
+              // Send result back to model
+              result = await chat.sendMessage([
+                {
+                  functionResponse: {
+                    name: fnName,
+                    response: { content: fnResult },
+                  },
+                },
+              ]);
+              
+              response = result.response;
+              lastPart = response.candidates?.[0]?.content?.parts?.[0];
             }
 
-            // Send result back to model
-            result = await chat.sendMessage([
-              {
-                functionResponse: {
-                  name: fnName,
-                  response: { content: fnResult },
-                },
-              },
-            ]);
-            
-            response = result.response;
-            lastPart = response.candidates?.[0]?.content?.parts?.[0];
+            // Final text response
+            const finalText = response.text();
+            sendEvent({ type: 'text', content: finalText })
+            success = true;
+            break; // Model succeeded, exit fallback loop
+
+          } catch (e: any) {
+            console.error(`ai-handler: Stream processing error with model ${modelName}:`, e)
+            lastError = e;
+            // Let the loop continue to the next model
           }
-
-          // Final text response
-          const finalText = response.text();
-          sendEvent({ type: 'text', content: finalText })
-
-        } catch (e: any) {
-          console.error('ai-handler: Stream processing error:', e)
-          sendEvent({ type: 'error', message: e.message || 'Erro interno no processamento da IA.' })
-        } finally {
-          controller.close()
         }
+
+        if (!success) {
+          console.error('ai-handler: All models failed.');
+          sendEvent({ type: 'error', message: 'Nossos sistemas de IA estão temporariamente indisponíveis. Por favor, tente novamente mais tarde.' })
+        }
+
+        controller.close()
       },
     })
 
