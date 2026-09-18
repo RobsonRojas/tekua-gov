@@ -128,7 +128,7 @@ serve(async (req) => {
       defaultModel = settingsData.default_ai_model;
     }
 
-    const fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
+    const fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro'];
     const modelsToTry = [defaultModel, ...fallbackModels.filter(m => m !== defaultModel)];
 
     let formattedHistory = messages.slice(0, -1).map((m: any) => ({

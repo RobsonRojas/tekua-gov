@@ -749,7 +749,6 @@ const AdminPanel: React.FC = () => {
             >
               <MenuItem value="gemini-1.5-flash">Gemini 1.5 Flash (Rápido)</MenuItem>
               <MenuItem value="gemini-1.5-pro">Gemini 1.5 Pro (Avançado)</MenuItem>
-              <MenuItem value="gemini-1.0-pro">Gemini 1.0 Pro (Legado)</MenuItem>
             </TextField>
 
             <Divider sx={{ my: 2 }}>
