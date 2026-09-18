@@ -74,7 +74,12 @@ const RegisterWork: React.FC = () => {
     setUploadingFile(true);
     try {
       const { uploadFile, getFileUrl } = await import('../utils/storage');
-      const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+      const sanitizedName = file.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9.-]/g, '_')
+        .replace(/_+/g, '_');
+      const fileName = `${Date.now()}_${sanitizedName}`;
       const path = await uploadFile(file, {
         bucket: 'task-evidence',
         path: fileName

@@ -73,7 +73,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           f.file === uploadingFile.file ? { ...f, status: 'uploading', progress: 10 } : f
         ));
 
-        const fileName = `${Date.now()}_${uploadingFile.file.name.replace(/\s+/g, '_')}`;
+        const sanitizedName = uploadingFile.file.name
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9.-]/g, '_')
+          .replace(/_+/g, '_');
+        const fileName = `${Date.now()}_${sanitizedName}`;
         const path = await uploadFile(uploadingFile.file, {
           bucket,
           path: fileName
