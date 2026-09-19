@@ -1,7 +1,7 @@
 ## 1. Discovery and routing
 
-- [ ] 1.1 Confirm the public route for shareable content and add a new `/share/surreal/:shareId` route if needed.
-- [ ] 1.2 Add a reusable landing page component or route for the shared Surreais receipt.
+- [x] 1.1 Confirm the public route for shareable content and add a new `/share/surreal/:shareId` route if needed.
+- [x] 1.2 Add a reusable landing page component or route for the shared Surreais receipt.
  - [x] 1.1 Confirm the public route for shareable content and add a new `/share/surreal/:shareId` route if needed.
  - [x] 1.2 Add a reusable landing page component or route for the shared Surreais receipt.
 
