@@ -5,6 +5,38 @@ import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
 
 const corsHeaders = getResponseHeaders();
 
+let cachedFallbackModels: string[] | null = null;
+
+async function getFallbackModels(apiKey: string): Promise<string[]> {
+  if (cachedFallbackModels) return cachedFallbackModels;
+  
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    const models = data.models || [];
+    
+    // Filter for models that support generateContent
+    cachedFallbackModels = models
+      .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+      .map((m: any) => m.name.replace('models/', ''));
+      
+    // Sort so flash models are prioritized
+    cachedFallbackModels.sort((a, b) => {
+      if (a.includes('flash') && !b.includes('flash')) return -1;
+      if (!a.includes('flash') && b.includes('flash')) return 1;
+      return b.localeCompare(a); // Sort descending to put newer versions first
+    });
+    
+    return cachedFallbackModels;
+  } catch (error) {
+    console.error('ai-handler: Error fetching models, using hardcoded fallback', error);
+    return ['gemini-3.6-flash', 'gemini-1.5-flash']; // Last resort hardcoded
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -128,7 +160,7 @@ serve(async (req) => {
       defaultModel = settingsData.default_ai_model;
     }
 
-    const fallbackModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+    const fallbackModels = await getFallbackModels(API_KEY);
     const modelsToTry = [defaultModel, ...fallbackModels.filter(m => m !== defaultModel)];
 
     let formattedHistory = messages.slice(0, -1).map((m: any) => ({
