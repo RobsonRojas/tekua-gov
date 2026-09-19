@@ -4,10 +4,10 @@
 TBD - created by archiving change tema-claro-escuro. Update Purpose after archive.
 ## Requirements
 ### Requirement: Troca de Tema (theme-management)
-O sistema **DEVE (SHALL)** permitir que o usuário alterne entre os temas claro e escuro, refletindo a mudança visual instantaneamente em todos os componentes da interface.
+O sistema **DEVE (SHALL)** permitir que o usuário alterne entre os temas claro e escuro, refletindo a mudança visual instantaneamente em todos os componentes da interface. O controle de alternância de tema SHALL estar acessível em todas as superfícies de navegação, incluindo o drawer de navegação mobile e a sidebar desktop.
 
 #### Scenario: Seleção Manual de Tema
-- **WHEN** o usuário clica no ícone de alternância de tema no cabeçalho.
+- **WHEN** o usuário clica no ícone de alternância de tema na navegação (sidebar desktop ou drawer mobile).
 - **THEN** o tema atual deve mudar (de claro para escuro ou vice-versa).
 - **THEN** todas as cores de fundo, texto e bordas devem ser atualizadas para a paleta correspondente.
 - **THEN** a nova preferência deve ser salva no `localStorage`.
@@ -19,6 +19,10 @@ O sistema **DEVE (SHALL)** permitir que o usuário alterne entre os temas claro 
 #### Scenario: Sincronização com Perfil
 - **WHEN** um usuário autenticado altera o tema.
 - **THEN** o sistema deve tentar atualizar o campo `preferred_theme` na tabela `profiles` do Supabase.
+
+#### Scenario: Alternância de Tema no Mobile
+- **WHEN** o usuário abre o drawer de navegação mobile no PWA.
+- **THEN** o ícone de alternância de tema (Sol/Lua) SHALL ser visível e funcional na área inferior do drawer, ao lado do seletor de idioma.
 
 ### Requirement: Cobertura de Testes Automatizados
 O sistema SHALL possuir testes automatizados para garantir a estabilidade das funcionalidades.

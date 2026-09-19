@@ -32,3 +32,10 @@ Administrative features SHALL include security verification to prevent unauthori
 - **GIVEN** A manual request is sent to the role update function with a user's JWT.
 - **THEN** The function validates that the requesting user's profile is indeed an 'admin'.
 
+### Requirement: AI Settings Management
+Administrators SHALL be able to configure the default AI model to be used by the system.
+
+#### Scenario: Update Default AI Model
+- **WHEN** an administrator accesses the AI settings in the admin panel and selects a new default model
+- **THEN** the system updates the configuration in the database and subsequent AI requests use the newly selected model by default.
+
