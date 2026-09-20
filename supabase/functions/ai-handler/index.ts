@@ -304,8 +304,8 @@ serve(async (req) => {
         }
 
         if (!success) {
-          console.error('ai-handler: All models failed.');
-          sendEvent({ type: 'error', message: 'Nossos sistemas de IA estão temporariamente indisponíveis. Por favor, tente novamente mais tarde.' })
+          console.error('ai-handler: All models failed. Last error:', lastError);
+          sendEvent({ type: 'error', message: `Nossos sistemas de IA estão temporariamente indisponíveis. Erro: ${lastError?.message || 'Desconhecido'}` })
         }
 
         controller.close()
