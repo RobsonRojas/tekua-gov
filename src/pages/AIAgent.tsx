@@ -21,11 +21,15 @@ import {
   Info,
   ChevronRight,
   Home as HomeIcon,
-  Sparkles
+  Sparkles,
+  StopCircle,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../lib/api';
+import { supabase } from '../lib/supabase';
 import { chatWithGemini } from '../lib/gemini';
 import ReactMarkdown from 'react-markdown';
 
@@ -44,6 +48,14 @@ const AIAgent: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [systemInstruction, setSystemInstruction] = useState('');
   const [docsLoaded, setDocsLoaded] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [feedbacks, setFeedbacks] = useState<Record<number, number>>({});
+  
+  const suggestedPrompts = [
+    t('ai.suggest.whatIsTekua') || 'O que é a Associação Tekuá?',
+    t('ai.suggest.howToEarn') || 'Como posso ganhar Surreais ($S)?',
+    t('ai.suggest.votingRules') || 'Quais as regras para votações?',
+  ];
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -99,20 +111,23 @@ const AIAgent: React.FC = () => {
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+  const handleSend = async (customInput?: string) => {
+    const userMessage = customInput ?? input.trim();
+    if (!userMessage || loading) return;
 
-    const userMessage = input.trim();
     setInput('');
     const newMessages: Message[] = [...messages, { role: 'user', content: userMessage }];
     setMessages(newMessages);
     setLoading(true);
 
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    let assistantResponse = '';
+    const toolsUsed: string[] = [];
+
     try {
-      const stream = await chatWithGemini(newMessages, systemInstruction);
-      
-      let assistantResponse = '';
-      const toolsUsed: string[] = [];
+      const stream = await chatWithGemini(newMessages, systemInstruction, controller.signal);
       
       setMessages([...newMessages, { role: 'model', content: '', tools: [] }]);
 
@@ -132,6 +147,19 @@ const AIAgent: React.FC = () => {
         }
       }
     } catch (err: any) {
+      if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+        setMessages(prev => [
+          ...prev.slice(0, -1),
+          { 
+            role: 'model', 
+            content: assistantResponse + '\n\n*(Geração interrompida pelo usuário)*',
+            tools: [...toolsUsed]
+          }
+        ]);
+        setLoading(false);
+        setAbortController(null);
+        return;
+      }
       console.error('Gemini Error:', err);
       
       let finalContent = '';
@@ -152,6 +180,29 @@ const AIAgent: React.FC = () => {
       ]);
     } finally {
       setLoading(false);
+      setAbortController(null);
+    }
+  };
+
+  const stopGeneration = () => {
+    if (abortController) {
+      abortController.abort();
+    }
+  };
+
+  const handleFeedback = async (msgIndex: number, rating: number, prompt: string, response: string) => {
+    setFeedbacks(prev => ({ ...prev, [msgIndex]: rating }));
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from('ai_chat_feedback').insert({
+        user_id: user.id,
+        rating,
+        prompt,
+        response
+      });
+    } catch (err) {
+      console.error('Failed to save feedback:', err);
     }
   };
 
@@ -254,10 +305,63 @@ const AIAgent: React.FC = () => {
                       ))}
                     </Box>
                   )}
+                  {msg.role === 'model' && msg.content !== '' && !loading && (
+                    <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => {
+                           const promptMsg = messages[index-1]?.content || '';
+                           handleFeedback(index, 1, promptMsg, msg.content);
+                        }}
+                        color={feedbacks[index] === 1 ? 'primary' : 'default'}
+                      >
+                        <ThumbsUp size={14} />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => {
+                           const promptMsg = messages[index-1]?.content || '';
+                           handleFeedback(index, -1, promptMsg, msg.content);
+                        }}
+                        color={feedbacks[index] === -1 ? 'error' : 'default'}
+                      >
+                        <ThumbsDown size={14} />
+                      </IconButton>
+                    </Box>
+                  )}
                 </Paper>
               </Box>
             </Fade>
           ))}
+          
+          {messages.length === 1 && !loading && (
+            <Fade in>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
+                {suggestedPrompts.map((prompt, idx) => (
+                  <Paper
+                    key={idx}
+                    onClick={() => handleSend(prompt)}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: '100px',
+                      cursor: 'pointer',
+                      bgcolor: 'rgba(99, 102, 241, 0.05)',
+                      border: '1px solid rgba(99, 102, 241, 0.2)',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor: 'rgba(99, 102, 241, 0.1)',
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    <Typography variant="body2" color="primary.main">{prompt}</Typography>
+                  </Paper>
+                ))}
+              </Box>
+            </Fade>
+          )}
+
           {loading && messages[messages.length-1]?.role !== 'model' && (
             <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 1.5, alignItems: 'center' }}>
               <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
@@ -279,6 +383,26 @@ const AIAgent: React.FC = () => {
             {t('ai.disclaimer')}
           </Alert>
           
+          {loading && abortController && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+              <IconButton 
+                onClick={stopGeneration}
+                sx={{ 
+                  bgcolor: 'rgba(239, 68, 68, 0.1)', 
+                  color: 'error.main', 
+                  borderRadius: '100px',
+                  px: 2,
+                  py: 1,
+                  gap: 1,
+                  '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.2)' }
+                }}
+              >
+                <StopCircle size={18} />
+                <Typography variant="body2">Parar Geração</Typography>
+              </IconButton>
+            </Box>
+          )}
+
           <Box sx={{ display: 'flex', gap: 1 }}>
             <TextField
               fullWidth
@@ -299,7 +423,7 @@ const AIAgent: React.FC = () => {
             />
             <IconButton 
               color="primary" 
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!input.trim() || !docsLoaded || loading}
               sx={{ 
                 bgcolor: 'primary.main', 

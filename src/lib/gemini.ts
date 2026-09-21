@@ -42,7 +42,8 @@ const getValidToken = async (forceRefresh?: boolean): Promise<string> => {
 
 export const chatWithGemini = async (
   messages: Message[], 
-  systemInstruction?: string
+  systemInstruction?: string,
+  signal?: AbortSignal
 ) => {
   let token = await getValidToken();
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -60,6 +61,7 @@ export const chatWithGemini = async (
       'Accept': 'text/event-stream',
     },
     body: JSON.stringify({ messages, systemInstruction }),
+    signal,
   });
 
   if (response.status === 401) {
@@ -73,6 +75,7 @@ export const chatWithGemini = async (
         'Accept': 'text/event-stream',
       },
       body: JSON.stringify({ messages, systemInstruction }),
+      signal,
     });
   }
 
