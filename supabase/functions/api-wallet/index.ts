@@ -247,6 +247,7 @@ serve(async (req) => {
         })
 
         if (error) throw error
+        if (data && !data.success) throw new Error(data.error || 'Wallet adjustment failed')
         responseData = data
         break
       }
