@@ -420,7 +420,12 @@
     "disclaimer": "As respostas são geradas por IA. Consulte os documentos oficiais para validação legal.",
     "thinking": "Pensando...",
     "error": "Desculpe, ocorreu um erro ao processar sua pergunta.",
-    "nav": "Oráculo"
+    "nav": "Oráculo",
+    "suggest": {
+      "whatIsTekua": "O que é a Associação Tekuá?",
+      "howToEarn": "Como posso ganhar Surreais ($S)?",
+      "votingRules": "Quais as regras para votações?"
+    }
   },
   "offline": {
     "banner": "Você está em modo offline. Algumas ações serão sincronizadas quando houver conexão.",
