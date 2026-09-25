@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Box, 
   Container, 
@@ -12,6 +12,7 @@ import {
   Fade,
   Divider,
   Breadcrumbs,
+  Button,
   Link as MuiLink
 } from '@mui/material';
 import { 
@@ -24,7 +25,8 @@ import {
   Sparkles,
   StopCircle,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  ChevronUp
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -50,6 +52,13 @@ const AIAgent: React.FC = () => {
   const [docsLoaded, setDocsLoaded] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [feedbacks, setFeedbacks] = useState<Record<number, number>>({});
+  const [allDbMessages, setAllDbMessages] = useState<Message[]>([]);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [displayOffset, setDisplayOffset] = useState(0);
+
+  const PAGE_SIZE = 20;
+  const AI_CONTEXT_WINDOW = 10; // messages sent to the AI model
   
   const suggestedPrompts = [
     t('ai.suggest.whatIsTekua') || 'O que é a Associação Tekuá?',
@@ -100,14 +109,90 @@ const AIAgent: React.FC = () => {
       setSystemInstruction(instruction);
       setDocsLoaded(true);
       
-      // Welcome message
-      setMessages([{ 
-        role: 'model', 
-        content: t('ai.welcome') || 'Olá! Eu sou o Oráculo. Como posso ajudar você hoje?' 
-      }]);
+      // Load chat history from Supabase
+      await loadChatHistory();
     } catch (err) {
       console.error('Error fetching AI context:', err);
-      setDocsLoaded(true); // Still allow chat but maybe limited
+      setDocsLoaded(true);
+      await loadChatHistory();
+    }
+  };
+
+  const loadChatHistory = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessages([{ role: 'model', content: t('ai.welcome') || 'Olá! Eu sou o Oráculo. Como posso ajudar você hoje?' }]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('ai_chat_sessions')
+        .select('messages')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error || !data?.messages || !Array.isArray(data.messages) || data.messages.length === 0) {
+        // No history — show welcome
+        setMessages([{ role: 'model', content: t('ai.welcome') || 'Olá! Eu sou o Oráculo. Como posso ajudar você hoje?' }]);
+        return;
+      }
+
+      // Validate message structure
+      const validMessages: Message[] = data.messages
+        .filter((m: any) => m && (m.role === 'user' || m.role === 'model') && typeof m.content === 'string')
+        .map((m: any) => ({ role: m.role, content: m.content }));
+
+      if (validMessages.length === 0) {
+        setMessages([{ role: 'model', content: t('ai.welcome') || 'Olá! Eu sou o Oráculo. Como posso ajudar você hoje?' }]);
+        return;
+      }
+
+      setAllDbMessages(validMessages);
+
+      // Show last PAGE_SIZE messages
+      const startIdx = Math.max(0, validMessages.length - PAGE_SIZE);
+      setDisplayOffset(startIdx);
+      setHasMoreHistory(startIdx > 0);
+      setMessages(validMessages.slice(startIdx));
+    } catch (err) {
+      console.error('Error loading chat history:', err);
+      setMessages([{ role: 'model', content: t('ai.welcome') || 'Olá! Eu sou o Oráculo. Como posso ajudar você hoje?' }]);
+    }
+  };
+
+  const loadMoreMessages = useCallback(() => {
+    if (loadingHistory || !hasMoreHistory) return;
+    setLoadingHistory(true);
+
+    const newStart = Math.max(0, displayOffset - PAGE_SIZE);
+    const olderMessages = allDbMessages.slice(newStart, displayOffset);
+
+    setMessages(prev => [...olderMessages, ...prev]);
+    setDisplayOffset(newStart);
+    setHasMoreHistory(newStart > 0);
+    setLoadingHistory(false);
+
+    // Scroll stays roughly in place — the new messages are prepended at top
+  }, [loadingHistory, hasMoreHistory, displayOffset, allDbMessages]);
+
+  const persistMessages = async (msgs: Message[]) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Strip 'tools' field before persisting
+      const cleanMsgs = msgs.map(m => ({ role: m.role, content: m.content }));
+
+      await supabase
+        .from('ai_chat_sessions')
+        .upsert({
+          user_id: user.id,
+          messages: cleanMsgs,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+    } catch (err) {
+      console.error('Error persisting chat history:', err);
     }
   };
 
@@ -126,8 +211,15 @@ const AIAgent: React.FC = () => {
     let assistantResponse = '';
     const toolsUsed: string[] = [];
 
+    // Truncate: send only last AI_CONTEXT_WINDOW messages to the API
+    const truncatedMessages = newMessages.slice(-AI_CONTEXT_WINDOW);
+    // Ensure first message is from user (Gemini requirement)
+    const apiMessages = truncatedMessages[0]?.role === 'model'
+      ? truncatedMessages.slice(1)
+      : truncatedMessages;
+
     try {
-      const stream = await chatWithGemini(newMessages, systemInstruction, controller.signal);
+      const stream = await chatWithGemini(apiMessages, systemInstruction, controller.signal);
       
       setMessages([...newMessages, { role: 'model', content: '', tools: [] }]);
 
@@ -146,6 +238,12 @@ const AIAgent: React.FC = () => {
           ]);
         }
       }
+
+      // Persist full history (displayed msgs + this exchange)
+      const fullHistory = [...allDbMessages.slice(0, displayOffset), ...newMessages, { role: 'model' as const, content: assistantResponse }];
+      setAllDbMessages(fullHistory);
+      setDisplayOffset(Math.max(0, fullHistory.length - messages.length - 1));
+      await persistMessages(fullHistory);
     } catch (err: any) {
       if (err.name === 'AbortError' || err.message?.includes('aborted')) {
         setMessages(prev => [
@@ -256,6 +354,27 @@ const AIAgent: React.FC = () => {
             backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 100%)'
           }}
         >
+          {hasMoreHistory && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+              <Button
+                size="small"
+                startIcon={loadingHistory ? <CircularProgress size={14} /> : <ChevronUp size={14} />}
+                onClick={loadMoreMessages}
+                disabled={loadingHistory}
+                sx={{
+                  borderRadius: '100px',
+                  textTransform: 'none',
+                  color: 'primary.main',
+                  bgcolor: 'rgba(99, 102, 241, 0.05)',
+                  border: '1px solid rgba(99, 102, 241, 0.15)',
+                  '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)' }
+                }}
+              >
+                {loadingHistory ? 'Carregando...' : 'Carregar mensagens anteriores'}
+              </Button>
+            </Box>
+          )}
+
           {messages.map((msg, index) => (
             <Fade in key={index}>
               <Box 
