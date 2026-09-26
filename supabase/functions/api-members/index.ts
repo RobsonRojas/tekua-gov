@@ -369,9 +369,13 @@ serve(async (req) => {
         
         if (!profile?.roles?.includes('admin')) throw new Error('Forbidden')
 
-        // 2. Invite user via Supabase Auth Admin API
-        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-          data: { 
+        // 2. Create user via Supabase Auth Admin API
+        const generatedPassword = crypto.randomUUID() + crypto.randomUUID()
+        const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+          email: email,
+          password: generatedPassword,
+          email_confirm: true,
+          user_metadata: { 
             full_name: full_name || '',
             email: email, // ensure email is passed in meta data
             roles: roles || ['member'],
@@ -384,30 +388,27 @@ serve(async (req) => {
           }
         })
 
-        if (inviteError) {
-          console.error("Invite User Error:", inviteError.message, inviteError)
-          if (inviteError.message?.includes('Error sending invite email') || inviteError.message?.includes('SMTP')) {
-            await supabaseAdmin.from('email_queue').insert({ 
-              email, 
-              status: 'pending', 
-              error_message: inviteError.message 
-            })
-          } else {
-            throw inviteError
-          }
-        }
-        // 3. Update profile email to ensure it's saved in the profiles table
-        if (inviteData?.user?.id) {
+        if (createError) throw createError
+
+        // 3. Queue the invite email
+        await supabaseAdmin.from('email_queue').insert({ 
+          email, 
+          status: 'pending',
+          error_message: null
+        })
+
+        // 4. Update profile email to ensure it's saved in the profiles table
+        if (userData?.user?.id) {
           await supabaseAdmin
             .from('profiles')
             .update({ 
               email: email,
               avatar_url: avatar_url || null
             })
-            .eq('id', inviteData.user.id);
+            .eq('id', userData.user.id);
         }
 
-        responseData = inviteData || { user: { email, queued: true } }
+        responseData = userData || { user: { email, queued: true } }
         break
       }
 
