@@ -4,7 +4,7 @@
 TBD - created by archiving change tekua-ia-agent. Update Purpose after archive.
 ## Requirements
 ### Requirement: Suporte Inteligente ao Membro
-O sistema SHALL oferecer um assistente de IA capaz de sanar dúvidas sobre o ecossistema Tekuá de forma automatizada e precisa. O sistema SHALL garantir que o formato de mensagens seja compatível com a API do Gemini e SHALL implementar fallback iterativo entre múltiplos modelos candidatos (ex: gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash) em caso de falha (como 404 Model Not Found ou timeout), exibindo mensagem de erro amigável caso todos falhem.
+O sistema SHALL oferecer um assistente de IA capaz de sanar dúvidas sobre o ecossistema Tekuá de forma automatizada e precisa, mantendo o contexto histórico das interações passadas do usuário para continuidade. O sistema SHALL garantir que o formato de mensagens seja compatível com a API do Gemini e SHALL implementar fallback iterativo entre múltiplos modelos candidatos (ex: gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash) em caso de falha (como 404 Model Not Found ou timeout), exibindo mensagem de erro amigável caso todos falhem.
 
 #### Scenario: Consulta de Regras Institucionais
 - **WHEN** o usuário pergunta ao Agente Tekuá IA: "O que diz o estatuto sobre votações?".
@@ -13,6 +13,10 @@ O sistema SHALL oferecer um assistente de IA capaz de sanar dúvidas sobre o eco
 #### Scenario: Orientação de Uso da Plataforma
 - **WHEN** o usuário tem dúvida sobre "O que é um Surreal?".
 - **THEN** o agente explica o conceito de economia de dádiva e as regras para ganhar e gastar a moeda virtual na plataforma.
+
+#### Scenario: Continuidade de Conversa
+- **WHEN** o usuário retorna ao Oráculo em uma nova sessão e faz referência a uma conversa anterior
+- **THEN** o agente responde mantendo o contexto histórico recuperado da base de dados, sem tratar a interação como efêmera.
 
 #### Scenario: Formatação do Histórico de Conversa
 - **WHEN** uma mensagem é enviada ao modelo de IA
@@ -70,4 +74,11 @@ The AI agent client SHALL validate and ensure a fresh authentication token befor
 #### Scenario: Missing token prevents request entirely
 - **WHEN** no session token exists and refresh also yields no token.
 - **THEN** the system SHALL NOT send the request and SHALL immediately display the re-login error message.
+
+### Requirement: Sanitização de Erros da IA
+O sistema SHALL interceptar e sanitizar todos os erros técnicos (ex: HTTP 404, falhas do SDK, timeouts) gerados durante o processo de inferência ou fallback da IA, garantindo que detalhes da infraestrutura não sejam repassados ao cliente (usuário final).
+
+#### Scenario: Falha sistêmica da IA
+- **WHEN** todos os modelos de IA falham ou ocorre um erro irrecuperável durante a geração no `ai-handler`
+- **THEN** o sistema SHALL retornar uma resposta padronizada, genérica e amigável (ex: "Nossos sistemas de IA estão temporariamente indisponíveis, por favor tente novamente mais tarde"), e logar os detalhes técnicos (stack traces, erros do SDK) apenas internamente no console.
 
