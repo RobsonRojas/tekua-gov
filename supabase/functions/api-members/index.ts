@@ -384,8 +384,18 @@ serve(async (req) => {
           }
         })
 
-        if (inviteError) throw inviteError
-
+        if (inviteError) {
+          console.error("Invite User Error:", inviteError.message, inviteError)
+          if (inviteError.message?.includes('Error sending invite email') || inviteError.message?.includes('SMTP')) {
+            await supabaseAdmin.from('email_queue').insert({ 
+              email, 
+              status: 'pending', 
+              error_message: inviteError.message 
+            })
+          } else {
+            throw inviteError
+          }
+        }
         // 3. Update profile email to ensure it's saved in the profiles table
         if (inviteData?.user?.id) {
           await supabaseAdmin
@@ -397,7 +407,7 @@ serve(async (req) => {
             .eq('id', inviteData.user.id);
         }
 
-        responseData = inviteData
+        responseData = inviteData || { user: { email, queued: true } }
         break
       }
 

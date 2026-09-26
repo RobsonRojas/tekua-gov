@@ -9,3 +9,14 @@ entrypoint = "./functions/api-public/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/api-public/*.html" ]
+
+[functions.cron_retry_emails]
+enabled = true
+verify_jwt = false
+import_map = "./functions/cron_retry_emails/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/cron_retry_emails/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/cron_retry_emails/*.html" ]
