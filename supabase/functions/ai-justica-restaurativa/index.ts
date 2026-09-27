@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.11.4"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
 
 const corsHeaders = getResponseHeaders();
@@ -27,13 +27,15 @@ serve(async (req) => {
       })
     }
 
+    const token = authHeader.replace('Bearer ', '')
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
     )
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Sessão expirada ou inválida.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
