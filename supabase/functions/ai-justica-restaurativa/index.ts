@@ -5,6 +5,38 @@ import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
 
 const corsHeaders = getResponseHeaders();
 
+let cachedFallbackModels: string[] | null = null;
+
+async function getFallbackModels(apiKey: string): Promise<string[]> {
+  if (cachedFallbackModels) return cachedFallbackModels;
+  
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    const models = data.models || [];
+    
+    // Filter for models that support generateContent
+    cachedFallbackModels = models
+      .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+      .map((m: any) => m.name.replace('models/', ''));
+      
+    // Sort so flash models are prioritized
+    cachedFallbackModels.sort((a, b) => {
+      if (a.includes('flash') && !b.includes('flash')) return -1;
+      if (!a.includes('flash') && b.includes('flash')) return 1;
+      return b.localeCompare(a); // Sort descending to put newer versions first
+    });
+    
+    return cachedFallbackModels;
+  } catch (error) {
+    console.error('ai-justica-restaurativa: Error fetching models, using hardcoded fallback', error);
+    return ['gemini-3.6-flash', 'gemini-1.5-flash']; // Last resort hardcoded
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -100,37 +132,56 @@ serve(async (req) => {
     }
 
     const genAI = new GoogleGenerativeAI(API_KEY)
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
-      systemInstruction: BASE_SYSTEM_PROMPT
-    })
-
-    const chat = model.startChat({
-      history: formattedHistory
-    })
+    
+    const defaultModel = 'gemini-1.5-flash';
+    const fallbackModels = await getFallbackModels(API_KEY);
+    const modelsToTry = [defaultModel, ...fallbackModels.filter(m => m !== defaultModel)];
 
     const stream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder()
         const sendEvent = (data: any) => {
-          controller.enqueue(encoder.encode(JSON.stringify(data) + "\\n"))
+          controller.enqueue(encoder.encode(JSON.stringify(data) + "\n"))
         }
 
-        try {
-          const result = await chat.sendMessageStream(lastMessage)
-          let fullText = '';
-          for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            fullText += chunkText;
-            sendEvent({ type: 'text_chunk', content: chunkText })
+        let success = false;
+        let lastError: any = null;
+
+        for (const modelName of modelsToTry) {
+          try {
+            console.log(`ai-justica-restaurativa: Trying model ${modelName}...`);
+            const model = genAI.getGenerativeModel({ 
+              model: modelName,
+              systemInstruction: BASE_SYSTEM_PROMPT
+            })
+
+            const chat = model.startChat({
+              history: formattedHistory
+            })
+
+            const result = await chat.sendMessageStream(lastMessage)
+            let fullText = '';
+            for await (const chunk of result.stream) {
+              const chunkText = chunk.text();
+              fullText += chunkText;
+              sendEvent({ type: 'text_chunk', content: chunkText })
+            }
+            sendEvent({ type: 'text_complete', content: fullText })
+            success = true;
+            break; // Model succeeded, exit fallback loop
+          } catch (e: any) {
+            console.error(`ai-justica-restaurativa: Stream processing error with model ${modelName}:`, e)
+            lastError = e;
+            // Let the loop continue to the next model
           }
-          sendEvent({ type: 'text_complete', content: fullText })
-        } catch (e: any) {
-          console.error('ai-justica-restaurativa: Stream processing error:', e)
-          sendEvent({ type: 'error', message: 'Erro ao gerar resposta.' })
-        } finally {
-          controller.close()
         }
+
+        if (!success) {
+          console.error('ai-justica-restaurativa: All models failed. Last error:', lastError);
+          sendEvent({ type: 'error', message: `Erro ao gerar resposta: ${lastError?.message || 'Desconhecido'}` })
+        }
+        
+        controller.close()
       },
     })
 
