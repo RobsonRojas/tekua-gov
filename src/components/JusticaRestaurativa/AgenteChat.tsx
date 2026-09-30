@@ -49,12 +49,20 @@ const AgenteChat: React.FC = () => {
       setMessages([...newMessages, { role: 'model', content: '' }]);
 
       for await (const event of stream) {
-        if (event.type === 'text_chunk' || event.type === 'text_complete') {
+        if (event.type === 'text_chunk') {
           assistantResponse += event.content || '';
           setMessages(prev => [
             ...prev.slice(0, -1),
             { role: 'model', content: assistantResponse }
           ]);
+        } else if (event.type === 'text_complete') {
+          if (event.content) {
+            assistantResponse = event.content;
+            setMessages(prev => [
+              ...prev.slice(0, -1),
+              { role: 'model', content: assistantResponse }
+            ]);
+          }
         }
       }
     } catch (err: any) {
