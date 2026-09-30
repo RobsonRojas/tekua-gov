@@ -90,6 +90,15 @@ serve(async (req) => {
       Mantenha as respostas curtas, em tom acolhedor. NUNCA peça nomes de outras pessoas (mantenha confidencialidade).
     `;
 
+    let formattedHistory = messages.slice(0, -1).map((m: any) => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
+    }));
+    
+    if (formattedHistory.length > 0 && formattedHistory[0].role === 'model') {
+      formattedHistory.shift();
+    }
+
     const genAI = new GoogleGenerativeAI(API_KEY)
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-1.5-flash',
@@ -97,10 +106,7 @@ serve(async (req) => {
     })
 
     const chat = model.startChat({
-      history: messages.slice(0, -1).map((m: any) => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
-      }))
+      history: formattedHistory
     })
 
     const stream = new ReadableStream({
@@ -133,6 +139,7 @@ serve(async (req) => {
     })
 
   } catch (error: any) {
+    console.error('ai-justica-restaurativa: Critical handler error:', error)
     return new Response(JSON.stringify({ error: 'Erro inesperado.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
