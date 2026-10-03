@@ -13,19 +13,56 @@ import {
 import { Send, Bot, User, Scale } from 'lucide-react';
 import { chatWithJRAgent, type Message } from '../../lib/gemini';
 import ReactMarkdown from 'react-markdown';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/useAuth';
 
 const AgenteChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
-    setMessages([{ 
-      role: 'model', 
-      content: 'Olá! Sou o facilitador da Justiça Restaurativa. Estou aqui para ajudar você com qualquer incômodo ou conflito. Como você está se sentindo?' 
-    }]);
-  }, []);
+    const fetchMessages = async () => {
+      if (!authUser) {
+        setMessages([{ 
+          role: 'model', 
+          content: 'Olá! Sou o facilitador da Justiça Restaurativa. Estou aqui para ajudar você com qualquer incômodo ou conflito. Como você está se sentindo?' 
+        }]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('jr_chat_messages')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching JR messages:', error);
+        }
+
+        if (data && data.length > 0) {
+          const loadedMessages: Message[] = data.map((row: any) => ({
+            role: row.role as 'user' | 'model',
+            content: row.content
+          }));
+          setMessages(loadedMessages);
+        } else {
+          setMessages([{ 
+            role: 'model', 
+            content: 'Olá! Sou o facilitador da Justiça Restaurativa. Estou aqui para ajudar você com qualquer incômodo ou conflito. Como você está se sentindo?' 
+          }]);
+        }
+      } catch (err) {
+        console.error('Error in fetchMessages:', err);
+      }
+    };
+
+    fetchMessages();
+  }, [authUser]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -42,8 +79,17 @@ const AgenteChat: React.FC = () => {
     setMessages(newMessages);
     setLoading(true);
 
+    if (authUser) {
+      await supabase.from('jr_chat_messages').insert({
+        user_id: authUser.id,
+        role: 'user',
+        content: userMessage
+      });
+    }
+
     try {
-      const stream = await chatWithJRAgent(newMessages);
+      const recentMessages = newMessages.slice(-20);
+      const stream = await chatWithJRAgent(recentMessages);
       
       let assistantResponse = '';
       setMessages([...newMessages, { role: 'model', content: '' }]);
@@ -62,6 +108,14 @@ const AgenteChat: React.FC = () => {
               ...prev.slice(0, -1),
               { role: 'model', content: assistantResponse }
             ]);
+            
+            if (authUser) {
+              await supabase.from('jr_chat_messages').insert({
+                user_id: authUser.id,
+                role: 'model',
+                content: assistantResponse
+              });
+            }
           }
         }
       }
