@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
+import GiftDetailsModal from '../components/GiftDetailsModal';
 
 const GiftsArea: React.FC = () => {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ const GiftsArea: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   
   const [recordingUsageId, setRecordingUsageId] = useState<string | null>(null);
+  const [selectedGift, setSelectedGift] = useState<any | null>(null);
 
   const fetchGifts = async () => {
     setLoading(true);
@@ -147,7 +149,10 @@ const GiftsArea: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2 }}>
+                    <Card 
+                      sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2, cursor: 'pointer', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 } }}
+                      onClick={() => setSelectedGift(gift)}
+                    >
                       <CardContent sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Avatar src={gift.provider?.avatar_url} sx={{ width: 32, height: 32, mr: 1 }} />
@@ -170,7 +175,10 @@ const GiftsArea: React.FC = () => {
                               color="secondary"
                               startIcon={recordingUsageId === gift.id ? <CircularProgress size={16} /> : <CheckCircleIcon />}
                               fullWidth
-                              onClick={() => handleRecordUsage(gift.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRecordUsage(gift.id);
+                              }}
                               disabled={isOwnGift || recordingUsageId === gift.id}
                             >
                               {t('gifts.recordUsage')}
@@ -229,6 +237,16 @@ const GiftsArea: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <GiftDetailsModal
+        open={!!selectedGift}
+        onClose={() => setSelectedGift(null)}
+        gift={selectedGift}
+        onRecordUsage={(giftId) => {
+          handleRecordUsage(giftId);
+          setSelectedGift(null);
+        }}
+        recordingUsageId={recordingUsageId}
+      />
     </Container>
   );
 };
