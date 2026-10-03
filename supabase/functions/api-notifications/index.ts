@@ -35,10 +35,10 @@ serve(async (req) => {
           .upsert({ 
             user_id: user.id, 
             endpoint, 
-            auth_key: authKey, 
-            p256dh_key: p256dhKey,
+            auth: authKey, 
+            p256dh: p256dhKey,
             updated_at: new Date().toISOString()
-          }, { onConflict: 'user_id, endpoint' })
+          }, { onConflict: 'endpoint' })
           .select()
 
         if (error) throw error

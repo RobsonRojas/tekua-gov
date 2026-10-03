@@ -155,7 +155,7 @@ serve(async (req) => {
           try {
             await webpush.sendNotification({
               endpoint: sub.endpoint,
-              keys: { auth: sub.auth_key, p256dh: sub.p256dh_key }
+              keys: { auth: sub.auth, p256dh: sub.p256dh }
             }, JSON.stringify({
               title: template.pushTitle,
               body: template.pushBody,
