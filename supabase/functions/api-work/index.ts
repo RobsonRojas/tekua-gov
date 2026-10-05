@@ -82,7 +82,6 @@ serve(async (req) => {
         if (projectId) query = query.eq('project_id', projectId)
 
         if (!canSeeAll) {
-          query = query.or(`status.neq.pending_approval,requester_id.eq.${user.id}`)
           query = query.or(`status.neq.rejected,requester_id.eq.${user.id}`)
         }
 

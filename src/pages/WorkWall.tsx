@@ -139,7 +139,7 @@ const WorkWall: React.FC = () => {
 
   // Column definitions for Kanban Board
   const columnDefs: ColumnDef[] = [
-    ...(isCouncilOrAdmin ? [{
+    {
       id: 'moderation',
       statuses: ['pending_approval'],
       title: t('work.moderation') || 'Moderação',
@@ -147,7 +147,7 @@ const WorkWall: React.FC = () => {
       bgColor: 'rgba(249, 115, 22, 0.04)',
       borderColor: 'rgba(249, 115, 22, 0.15)',
       adminOnly: true
-    }] : []),
+    },
     {
       id: 'open',
       statuses: ['open'],
