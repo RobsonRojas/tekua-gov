@@ -7,7 +7,8 @@ import {
   MenuItem, 
   Grid,
   Button,
-  Collapse
+  Collapse,
+  Chip
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { 
@@ -28,17 +29,33 @@ interface WorkFiltersProps {
   onFilterChange: (filters: WorkFilterValues) => void;
 }
 
+const FILTERS_STORAGE_KEY = 'tekua:workwall:filters';
+
+const DEFAULT_FILTERS: WorkFilterValues = { requesterId: '', workerId: '', type: 'all', projectId: '' };
+
+export const loadStoredFilters = (): WorkFilterValues => {
+  try {
+    const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
+    if (!raw) return DEFAULT_FILTERS;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return DEFAULT_FILTERS;
+    return {
+      requesterId: typeof parsed.requesterId === 'string' ? parsed.requesterId : '',
+      workerId: typeof parsed.workerId === 'string' ? parsed.workerId : '',
+      type: typeof parsed.type === 'string' ? parsed.type : 'all',
+      projectId: typeof parsed.projectId === 'string' ? parsed.projectId : ''
+    };
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+};
+
 const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
-  const [filters, setFilters] = useState<WorkFilterValues>({
-    requesterId: '',
-    workerId: '',
-    type: 'all',
-    projectId: ''
-  });
+  const [filters, setFilters] = useState<WorkFilterValues>(() => loadStoredFilters());
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -61,12 +78,14 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
     const newFilters = { ...filters, [field]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
+    try { localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(newFilters)); } catch { /* ignore */ }
   };
 
   const clearFilters = () => {
     const reset = { requesterId: '', workerId: '', type: 'all', projectId: '' };
     setFilters(reset);
     onFilterChange(reset);
+    try { localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(reset)); } catch { /* ignore */ }
   };
 
   const projectLabel = t('work.project', 'Projeto');
@@ -136,6 +155,14 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
             sx={{ borderRadius: '12px', py: 0.9, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}
           >
             {expanded ? t('common.hideFilters') || 'Ocultar Filtros' : t('common.showFilters') || 'Mostrar Filtros'}
+            {hasActiveFilters && (
+              <Chip
+                size="small"
+                color="primary"
+                label={[filters.requesterId, filters.workerId, filters.type && filters.type !== 'all' ? filters.type : '', filters.projectId].filter(Boolean).length}
+                sx={{ ml: 1, height: 18, fontSize: '0.7rem', fontWeight: 800 }}
+              />
+            )}
           </Button>
         </Box>
 

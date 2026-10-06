@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
-import WorkFilters from '../components/WorkFilters';
+import WorkFilters, { loadStoredFilters } from '../components/WorkFilters';
 import type { WorkFilterValues } from '../components/WorkFilters';
 import { useQueryWithCache } from '../hooks/useQueryWithCache';
 import KanbanColumn from '../components/work/KanbanColumn';
@@ -76,11 +76,7 @@ const WorkWall: React.FC = () => {
   
   const taskId = searchParams.get('task');
 
-  const [filters, setFilters] = useState<WorkFilterValues>({
-    requesterId: '',
-    workerId: '',
-    type: 'all'
-  });
+  const [filters, setFilters] = useState<WorkFilterValues>(() => loadStoredFilters());
 
   const [snackbarState, setSnackbarState] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
     open: false,
