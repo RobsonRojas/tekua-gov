@@ -8,14 +8,17 @@ import {
   Button,
   Paper,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  TextField,
+  InputAdornment
 } from '@mui/material';
 import { 
   Plus as AddIcon, 
   RefreshCw as RefreshIcon,
   ClipboardList as BoardIcon,
   ChevronRight,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Search as SearchIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
@@ -23,11 +26,12 @@ import { apiClient } from '../lib/api';
 import ActivityCard from '../components/ActivityCard';
 
 const TasksBoard: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   const fetchActivities = useCallback(async () => {
     setLoading(true);
@@ -57,6 +61,15 @@ const TasksBoard: React.FC = () => {
   useEffect(() => {
     fetchActivities();
   }, [fetchActivities]);
+
+  const lang = i18n.language === 'pt' ? 'pt' : 'en';
+  const filteredActivities = activities.filter((activity: any) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    const title = (activity.title?.[lang] || activity.title?.pt || '').toLowerCase();
+    const description = (activity.description?.[lang] || activity.description?.pt || '').toLowerCase();
+    return title.includes(q) || description.includes(q);
+  });
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
@@ -125,9 +138,26 @@ const TasksBoard: React.FC = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <Grid container spacing={3}>
-          {activities.length > 0 ? (
-            activities.map((activity) => (
+        <>
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              fullWidth
+              placeholder={t('work.searchPlaceholder') || 'Pesquisar tarefas...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon size={18} />
+                  </InputAdornment>
+                )
+              }}
+            />
+          </Box>
+          <Grid container spacing={3}>
+          {filteredActivities.length > 0 ? (
+            filteredActivities.map((activity) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={activity.id}>
                 <ActivityCard 
                   activity={activity} 
@@ -142,7 +172,8 @@ const TasksBoard: React.FC = () => {
               </Paper>
             </Grid>
           )}
-        </Grid>
+          </Grid>
+        </>
       )}
     </Container>
   );
