@@ -215,6 +215,9 @@ const CreateDemand: React.FC = () => {
                 required
                 InputProps={{ inputProps: { min: 1 } }}
               />
+              <Alert severity="info" sx={{ mt: 1 }}>
+                O valor definido será depositado na carteira de cada um dos executores
+              </Alert>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

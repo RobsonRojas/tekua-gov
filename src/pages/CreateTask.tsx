@@ -159,6 +159,9 @@ const CreateTask: React.FC = () => {
                 InputProps={{ inputProps: { min: 1 } }}
                 helperText="Valor em Surreais ($S)"
               />
+              <Alert severity="info" sx={{ mt: 1 }}>
+                O valor definido será depositado na carteira de cada um dos executores
+              </Alert>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

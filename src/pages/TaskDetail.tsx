@@ -620,6 +620,9 @@ const TaskDetail: React.FC = () => {
                   required
                   InputProps={{ inputProps: { min: 1 } }}
                 />
+                <Alert severity="info">
+                  O valor definido será depositado na carteira de cada um dos executores
+                </Alert>
                 <TextField
                   fullWidth
                   label={t('work.minConfirmations') || 'Número de Confirmações'}
