@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Chip, Stack } from '@mui/material';
+import { Box, Typography, Paper, Chip, Stack, TextField, InputAdornment } from '@mui/material';
+import { Search as SearchIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ActivityCard from '../ActivityCard';
 import ActivityCardSkeleton from '../Skeletons/ActivityCardSkeleton';
@@ -32,8 +33,17 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   onDropCard,
   loading = false
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isDragOver, setIsDragOver] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const lang = i18n.language === 'pt' ? 'pt' : 'en';
+  const visibleActivities = activities.filter((activity: any) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    const title = (activity.title?.[lang] || activity.title?.pt || '').toLowerCase();
+    return title.includes(q);
+  });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -128,6 +138,24 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
         />
       </Box>
 
+      {/* Column Search */}
+      <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder={t('work.searchColumnPlaceholder') || 'Pesquisar...'}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon size={16} />
+              </InputAdornment>
+            )
+          }}
+        />
+      </Box>
+
       {/* Cards List Container */}
       <Box
         sx={{
@@ -154,9 +182,9 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             <ActivityCardSkeleton />
             <ActivityCardSkeleton />
           </Stack>
-        ) : activities.length > 0 ? (
+        ) : visibleActivities.length > 0 ? (
           <AnimatePresence>
-            {activities.map((activity, index) => (
+            {visibleActivities.map((activity, index) => (
               <motion.div
                 key={activity.id}
                 layout
