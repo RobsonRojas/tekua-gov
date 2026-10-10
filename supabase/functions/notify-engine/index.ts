@@ -261,7 +261,7 @@ serve(async (req) => {
                 'Authorization': `Bearer ${resendApiKey}`
               },
               body: JSON.stringify({
-                from: 'Tekuá Governança <alertas@tekua.org>',
+                from: 'Tekuá Governança <gov@tekua.com.br>',
                 to: profile.email,
                 subject: template.subject,
                 html: emailHtml
