@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Send, Bot, User, Scale } from 'lucide-react';
 import { chatWithJRAgent, type Message } from '../../lib/gemini';
-import ReactMarkdown from 'react-markdown';
+import SafeMarkdown from '../common/SafeMarkdown';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/useAuth';
 
@@ -196,7 +196,7 @@ const AgenteChat: React.FC = () => {
                   '& p': { m: 0 }
                 }}
               >
-                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                <SafeMarkdown content={msg.content} />
               </Paper>
             </Box>
           </Fade>

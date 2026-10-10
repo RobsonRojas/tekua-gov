@@ -33,7 +33,7 @@ import { Link } from 'react-router-dom';
 import { apiClient } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { chatWithGemini } from '../lib/gemini';
-import ReactMarkdown from 'react-markdown';
+import SafeMarkdown from '../components/common/SafeMarkdown';
 
 interface Message {
   role: 'user' | 'model';
@@ -414,7 +414,7 @@ const AIAgent: React.FC = () => {
                       </Typography>
                     </Box>
                   )}
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <SafeMarkdown content={msg.content} />
                   {msg.tools && msg.tools.length > 0 && msg.content !== '' && (
                     <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {msg.tools.map((tool, i) => (
