@@ -83,6 +83,8 @@ const EmailQueuePanel: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>E-mail</TableCell>
+              <TableCell>Tipo</TableCell>
+              <TableCell>Assunto</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Mensagem de Erro</TableCell>
               <TableCell>Data</TableCell>
@@ -92,13 +94,13 @@ const EmailQueuePanel: React.FC = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                   <CircularProgress size={24} />
                 </TableCell>
               </TableRow>
             ) : queue.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                   Nenhum e-mail na fila.
                 </TableCell>
               </TableRow>
@@ -106,6 +108,16 @@ const EmailQueuePanel: React.FC = () => {
               queue.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.email}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={!item.type || item.type === 'invite' ? 'convite' : item.type}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell sx={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {item.subject || '—'}
+                  </TableCell>
                   <TableCell>
                     <Chip 
                       label={item.status} 
