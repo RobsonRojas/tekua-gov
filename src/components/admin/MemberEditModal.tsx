@@ -6,7 +6,6 @@ import {
   DialogActions, 
   Button, 
   TextField, 
-  MenuItem, 
   Box,
   Typography, 
   Alert, 
@@ -39,6 +38,8 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
   const [roles, setRoles] = useState<string[]>(member?.roles || []);
   const [functions, setFunctions] = useState<string[]>(member?.functions || []);
   const [isBoardMember, setIsBoardMember] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isMember, setIsMember] = useState(false);
   const [isTransversalCouncil, setIsTransversalCouncil] = useState(false);
   const [isBeneficiary, setIsBeneficiary] = useState(false);
   const [villageId, setVillageId] = useState<string>(member?.village_id || '');
@@ -60,6 +61,10 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
       setFunctions(initialFunctions);
       
       setIsBoardMember(initialFunctions.length > 0 || !!member.is_board_member);
+      setIsAdmin(initialRoles.includes('admin'));
+      // A user without an explicit 'admin' role keeps the 'member' base profile,
+      // so toggles accurately reflect the roles that will be persisted.
+      setIsMember(initialRoles.includes('member') || !initialRoles.includes('admin'));
       setIsTransversalCouncil(initialRoles.includes('transversal_council'));
       setIsBeneficiary(initialRoles.includes('beneficiary'));
       setVillageId(member.village_id || '');
@@ -95,7 +100,7 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
 
   const handleSave = async () => {
     // Basic validation: ensure at least one admin remains
-    if (member.roles?.includes('admin') && !roles.includes('admin')) {
+    if (member.roles?.includes('admin') && !isAdmin) {
       const adminCount = members.filter(m => m.roles?.includes('admin')).length;
       if (adminCount <= 1) {
         setError('Não é possível remover o único administrador do sistema.');
@@ -103,7 +108,24 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
       }
     }
 
-    if (roles.length === 0) {
+    // Build the final roles array from the independent base-profile toggles.
+    // The toggles are intentionally additive/subtractive: toggling one role
+    // never removes another, so combinations like member + transversal_council
+    // (or member + admin) are preserved when saving.
+    const toggleManagedRoles = ['member', 'admin', 'transversal_council', 'beneficiary'];
+    const finalRoles: string[] = [];
+    if (isMember) finalRoles.push('member');
+    if (isAdmin) finalRoles.push('admin');
+    if (isTransversalCouncil) finalRoles.push('transversal_council');
+    if (isBeneficiary) finalRoles.push('beneficiary');
+    // Keep any roles not managed by the toggles above (future-proofing)
+    roles.forEach(r => {
+      if (!toggleManagedRoles.includes(r) && !finalRoles.includes(r)) {
+        finalRoles.push(r);
+      }
+    });
+
+    if (finalRoles.length === 0) {
       setError('O usuário deve ter pelo menos um papel.');
       return;
     }
@@ -122,20 +144,6 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
           path
         });
         finalAvatarUrl = await getFileUrl('member-photos', path, true);
-      }
-
-      // Sync roles array with toggles
-      let finalRoles = roles.filter(r => r !== 'transversal_council' && r !== 'beneficiary');
-      if (isTransversalCouncil) {
-        finalRoles.push('transversal_council');
-      }
-      if (isBeneficiary) {
-        finalRoles.push('beneficiary');
-      }
-
-      // Ensure primary role exists (admin or member)
-      if (!finalRoles.includes('admin') && !finalRoles.includes('member')) {
-        finalRoles.push('member');
       }
 
       const finalFunctions = isBoardMember ? functions : [];
@@ -255,22 +263,42 @@ const MemberEditModal: React.FC<MemberEditModalProps> = ({ open, onClose, member
             onChange={(e) => setFullName(e.target.value)}
           />
 
-          <TextField
-            select
-            fullWidth
-            label={t('profile.role')}
-            value={roles.includes('admin') ? 'admin' : 'member'}
-            onChange={(e) => {
-              const val = e.target.value;
-              setRoles(prev => {
-                const filtered = prev.filter(r => r !== 'admin' && r !== 'member');
-                return [...filtered, val];
-              });
-            }}
-          >
-            <MenuItem value="member">Membro</MenuItem>
-            <MenuItem value="admin">Administrador</MenuItem>
-          </TextField>
+          <Stack spacing={1}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: 0.5 }}>
+              Perfis de base
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch 
+                  checked={isMember} 
+                  onChange={(e) => setIsMember(e.target.checked)} 
+                  color="primary"
+                />
+              }
+              label={
+                <Typography variant="body1" fontWeight={500}>
+                  {t('profile.member') || 'Membro'}
+                </Typography>
+              }
+            />
+            <FormControlLabel
+              control={
+                <Switch 
+                  checked={isAdmin} 
+                  onChange={(e) => setIsAdmin(e.target.checked)} 
+                  color="primary"
+                />
+              }
+              label={
+                <Typography variant="body1" fontWeight={500}>
+                  {t('profile.administrator') || 'Administrador'}
+                </Typography>
+              }
+            />
+            <Typography variant="caption" color="text.secondary">
+              Os perfis são cumulativos — um usuário pode ser Membro e Conselho Transversal (ou Administrador e Membro) simultaneamente.
+            </Typography>
+          </Stack>
 
           <Divider />
 

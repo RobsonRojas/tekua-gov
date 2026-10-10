@@ -224,33 +224,72 @@ const AdminPanel: React.FC = () => {
     // It will be cleared when a Dialog is closed or an action completes
   };
 
-  const handleToggleRole = async () => {
+  const handleToggleRole = async (role: 'member' | 'transversal_council' | 'admin') => {
     if (!selectedUser) return;
     
     setActionLoading(true);
     handleMenuClose();
     
     try {
-      const roles = ['member', 'transversal_council', 'admin'];
-      const currentIndex = roles.indexOf(selectedUser.role || 'member');
-      const newRole = roles[(currentIndex + 1) % roles.length];
-      
+      const currentRoles = (Array.isArray(selectedUser.roles) && selectedUser.roles.length > 0)
+        ? [...selectedUser.roles]
+        : (selectedUser.role ? [selectedUser.role] : ['member']);
+
+      const hasRole = currentRoles.includes(role);
+      const newRoles = hasRole
+        ? currentRoles.filter(r => r !== role)
+        : [...currentRoles, role];
+
+      // Never allow removing the only system administrator
+      if (role === 'admin' && hasRole) {
+        const adminCount = users.filter(u => u.roles?.includes('admin') || u.role === 'admin').length;
+        if (adminCount <= 1) {
+          throw new Error(t('admin.cannotRemoveLastAdmin') || 'Não é possível remover o único administrador do sistema.');
+        }
+      }
+
+      // A user must keep at least one profile (any combination is allowed,
+      // so removing 'member' does not force the role back onto the account)
+      if (newRoles.length === 0) {
+        throw new Error(t('admin.atLeastOneRole') || 'O usuário deve ter pelo menos um papel.');
+      }
+
       const { error } = await apiClient.invoke('api-members', 'manageAdmin', {
         targetUserId: selectedUser.id,
-        role: newRole
+        roles: newRoles
       });
 
       if (error) throw new Error(error);
       
-      setMessage({ type: 'success', text: t('admin.updateRoleSuccess', { name: selectedUser.full_name, role: newRole }) });
+      setMessage({ type: 'success', text: t('admin.updateRolesSuccess', { name: selectedUser.full_name, roles: newRoles.join(', ') }) });
       fetchUsers();
     } catch (err: any) {
-      console.error('Error updating role:', err);
+      console.error('Error updating roles:', err);
       setMessage({ type: 'error', text: err.message || t('admin.updateRoleError') });
     } finally {
       setActionLoading(false);
     }
   };
+
+  // Role display helpers: the profile holds a `roles` array (any combination of
+  // base profiles), with the legacy single-string `role` column as fallback.
+  const getRoleLabel = (role: string) =>
+    role === 'admin' ? 'Admin' :
+    role === 'transversal_council' ? (t('profile.transversal_council') || 'Conselho') :
+    role === 'beneficiary' ? 'Beneficiário' :
+    (t('profile.member') || 'Membro');
+
+  const getRoleColor = (role: string) =>
+    role === 'admin' ? 'primary.light' :
+    role === 'transversal_council' ? 'secondary.light' :
+    'text.secondary';
+
+  const getRoleBorderColor = (role: string) =>
+    role === 'admin' ? 'rgba(99, 102, 241, 0.3)' :
+    role === 'transversal_council' ? 'rgba(236, 72, 153, 0.3)' :
+    'rgba(255, 255, 255, 0.1)';
+
+  const isAdminUser = (user: any) => user?.roles?.includes('admin') || user?.role === 'admin';
 
   const handleRemoveMember = async () => {
     if (!selectedUser) return;
@@ -540,7 +579,7 @@ const AdminPanel: React.FC = () => {
                               sx={{ 
                                 width: 40, 
                                 height: 40, 
-                                bgcolor: user.role === 'admin' ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+                                bgcolor: isAdminUser(user) ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
                                 fontWeight: 600,
                                 fontSize: '0.875rem'
                               }}
@@ -555,20 +594,21 @@ const AdminPanel: React.FC = () => {
                         <TableCell>{user.email || t('profile.na')}</TableCell>
                         <TableCell>
                           <Stack spacing={0.5} alignItems="flex-start">
-                            <Chip 
-                              label={
-                                user.role === 'admin' ? 'Admin' : 
-                                user.role === 'transversal_council' ? t('profile.transversal_council') || 'Conselho' : 
-                                t('profile.member')
-                              } 
-                              size="small" 
-                              variant="outlined" 
-                              sx={{ 
-                                textTransform: 'capitalize', 
-                                color: user.role === 'admin' ? 'primary.light' : user.role === 'transversal_council' ? 'secondary.light' : 'text.secondary',
-                                borderColor: user.role === 'admin' ? 'rgba(99, 102, 241, 0.3)' : user.role === 'transversal_council' ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)'
-                              }} 
-                            />
+                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                              {(Array.isArray(user.roles) && user.roles.length > 0 ? user.roles : [user.role || 'member']).map((role: string) => (
+                                <Chip 
+                                  key={role}
+                                  label={getRoleLabel(role)} 
+                                  size="small" 
+                                  variant="outlined" 
+                                  sx={{ 
+                                    textTransform: 'capitalize', 
+                                    color: getRoleColor(role),
+                                    borderColor: getRoleBorderColor(role)
+                                  }} 
+                                />
+                              ))}
+                            </Box>
                             {user.is_board_member && (
                               <Chip 
                                 label={user.board_role || 'Diretoria'} 
@@ -638,7 +678,7 @@ const AdminPanel: React.FC = () => {
                         sx={{ 
                           width: 48, 
                           height: 48, 
-                          bgcolor: user.role === 'admin' ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+                          bgcolor: isAdminUser(user) ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
                           fontWeight: 600,
                           fontSize: '1rem'
                         }}
@@ -666,21 +706,22 @@ const AdminPanel: React.FC = () => {
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <Stack spacing={1}>
-                        <Chip 
-                          label={
-                            user.role === 'admin' ? 'Admin' : 
-                            user.role === 'transversal_council' ? t('profile.transversal_council') || 'Conselho' : 
-                            t('profile.member')
-                          } 
-                          size="small" 
-                          variant="outlined"
-                          sx={{ 
-                            textTransform: 'capitalize',
-                            color: user.role === 'admin' ? 'primary.light' : user.role === 'transversal_council' ? 'secondary.light' : 'text.secondary',
-                            borderColor: user.role === 'admin' ? 'rgba(99, 102, 241, 0.3)' : user.role === 'transversal_council' ? 'rgba(236, 72, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)',
-                            fontSize: '0.75rem'
-                          }}
-                        />
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          {(Array.isArray(user.roles) && user.roles.length > 0 ? user.roles : [user.role || 'member']).map((role: string) => (
+                            <Chip 
+                              key={role}
+                              label={getRoleLabel(role)} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ 
+                                textTransform: 'capitalize',
+                                color: getRoleColor(role),
+                                borderColor: getRoleBorderColor(role),
+                                fontSize: '0.75rem'
+                              }}
+                            />
+                          ))}
+                        </Box>
                         {user.is_board_member && (
                           <Chip 
                             label={user.board_role || 'Diretoria'} 
@@ -851,19 +892,28 @@ const AdminPanel: React.FC = () => {
           <ListItemIcon><UserIcon size={18} /></ListItemIcon>
           <ListItemText primary={t('admin.viewProfile')} />
         </MenuItem>
-        <MenuItem onClick={async () => {
-          await handleToggleRole();
-          setSelectedUser(null); // Clear after action
-        }} disabled={actionLoading}>
-          <ListItemIcon>
-            {actionLoading ? <CircularProgress size={18} /> : <ShieldAlert size={18} />}
-          </ListItemIcon>
-          <ListItemText primary={
-            selectedUser?.role === 'admin' ? t('admin.makeMember') || 'Tornar Membro' : 
-            selectedUser?.role === 'transversal_council' ? t('admin.makeAdmin') || 'Tornar Admin' : 
-            t('admin.makeCouncil') || 'Tornar Conselho'
-          } />
-        </MenuItem>
+        {(
+          [
+            { role: 'member' as const, icon: <UserIcon size={18} />, addLabel: t('admin.makeMember') || 'Tornar Membro', removeLabel: t('admin.removeMemberRole') || 'Remover Membro' },
+            { role: 'transversal_council' as const, icon: <ShieldAlert size={18} />, addLabel: t('admin.makeCouncil') || 'Tornar Conselho', removeLabel: t('admin.removeCouncilRole') || 'Remover Conselho' },
+            { role: 'admin' as const, icon: <ShieldCheck size={18} />, addLabel: t('admin.makeAdmin') || 'Tornar Administrador', removeLabel: t('admin.removeAdmin') || 'Remover Administrador' }
+          ]
+        ).map(({ role, icon, addLabel, removeLabel }) => {
+          const hasRole = Array.isArray(selectedUser?.roles)
+            ? selectedUser.roles.includes(role)
+            : selectedUser?.role === role;
+          return (
+            <MenuItem key={role} onClick={async () => {
+              await handleToggleRole(role);
+              setSelectedUser(null); // Clear after action
+            }} disabled={actionLoading}>
+              <ListItemIcon>
+                {actionLoading ? <CircularProgress size={18} /> : icon}
+              </ListItemIcon>
+              <ListItemText primary={hasRole ? removeLabel : addLabel} />
+            </MenuItem>
+          );
+        })}
         <MenuItem onClick={() => {
           handleMenuClose();
           setIsAdjustBalanceModalOpen(true);

@@ -278,12 +278,34 @@ serve(async (req) => {
         
         if (!requesterProfile?.roles?.includes('admin')) throw new Error('Forbidden')
 
-        const { targetUserId, role } = params
-        if (!targetUserId || !role) throw new Error('Missing targetUserId or role')
+        const { targetUserId, roles, role } = params
+        if (!targetUserId || (!Array.isArray(roles) && !role)) throw new Error('Missing targetUserId or roles')
+
+        // Roles are stored as an array so users can hold any combination of
+        // base profiles (e.g. 'member' + 'transversal_council') simultaneously.
+        // New callers pass an explicit `roles` array; the legacy single `role`
+        // string is still accepted (kept in sync) for backward compatibility.
+        let newRoles: string[]
+        if (Array.isArray(roles)) {
+          newRoles = [...new Set(roles.map((r: string) => r?.trim()).filter(Boolean))]
+        } else {
+          newRoles = [role]
+        }
+
+        if (newRoles.length === 0) throw new Error('At least one role is required')
+
+        // Keep the legacy single-string `role` mirror consistent with the array
+        const legacyRole = newRoles.includes('admin')
+          ? 'admin'
+          : newRoles.includes('transversal_council')
+          ? 'transversal_council'
+          : newRoles.includes('member')
+          ? 'member'
+          : newRoles[0]
 
         const { data, error } = await supabaseAdmin
           .from('profiles')
-          .update({ role, updated_at: new Date().toISOString() })
+          .update({ roles: newRoles, role: legacyRole || 'member', updated_at: new Date().toISOString() })
           .eq('id', targetUserId)
           .select()
 
