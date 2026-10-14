@@ -631,7 +631,7 @@ const TaskDetail: React.FC = () => {
                   InputProps={{ inputProps: { min: 1 } }}
                 />
                 <Alert severity="info">
-                  O valor definido será depositado na carteira de cada um dos executores
+                  O valor definido será depositado na carteira de cada um dos executores. Este valor não é dividido entre os executores; cada um recebe o valor integral.
                 </Alert>
                 <TextField
                   fullWidth

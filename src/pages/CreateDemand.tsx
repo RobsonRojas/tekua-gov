@@ -231,7 +231,7 @@ const CreateDemand: React.FC = () => {
                 InputProps={{ inputProps: { min: 1 } }}
               />
               <Alert severity="info" sx={{ mt: 1 }}>
-                O valor definido será depositado na carteira de cada um dos executores
+                O valor definido será depositado na carteira de cada um dos executores. Este valor não é dividido entre os executores; cada um recebe o valor integral.
               </Alert>
             </Grid>
 
