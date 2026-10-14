@@ -93,7 +93,8 @@ const WorkWall: React.FC = () => {
       requesterId: filters.requesterId || undefined,
       workerId: filters.workerId || undefined,
       type: filters.type !== 'all' ? filters.type : undefined,
-      projectId: filters.projectId || undefined
+      projectId: filters.projectId || undefined,
+      categoryId: filters.categoryId || undefined
     });
 
     if (error) return { data: null, error };

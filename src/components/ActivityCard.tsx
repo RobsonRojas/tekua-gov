@@ -255,8 +255,17 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           </Box>
         </Box>
 
-        {(activity.urgency || activity.importance) && (
+        {(activity.urgency || activity.importance || activity.category) && (
           <Box sx={{ display: 'flex', gap: 0.75, mb: 1, flexWrap: 'wrap' }}>
+            {activity.category && (
+              <Chip 
+                label={activity.category.name?.[lang] || activity.category.name?.pt || ''} 
+                size="small" 
+                color="info" 
+                variant="outlined"
+                sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, borderRadius: '6px' }}
+              />
+            )}
             {activity.urgency && (
               <Chip 
                 icon={<Flame size={12} />} 

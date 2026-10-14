@@ -43,7 +43,8 @@ serve(async (req) => {
           endDate,
           requesterId,
           workerId,
-          projectId
+          projectId,
+          categoryId
         } = params
         
         // Fetch user profile to check roles
@@ -67,7 +68,8 @@ serve(async (req) => {
             worker:profiles!worker_id (id, full_name),
             confirmations:activity_confirmations (count),
             evidence:activity_evidence (evidence_url),
-            attachments:activity_attachments (count)
+            attachments:activity_attachments (count),
+            category:work_categories (id, name)
           `)
         
         if (type && type !== 'all') query = query.eq('type', type)
@@ -80,6 +82,7 @@ serve(async (req) => {
         if (requesterId) query = query.eq('requester_id', requesterId)
         if (workerId) query = query.or(`worker_id.eq.${workerId},executor_ids.cs.{${workerId}}`)
         if (projectId) query = query.eq('project_id', projectId)
+        if (categoryId) query = query.eq('category_id', categoryId)
 
         if (!canSeeAll) {
           query = query.or(`status.neq.rejected,requester_id.eq.${user.id}`)
@@ -139,7 +142,8 @@ serve(async (req) => {
             worker:profiles!worker_id (id, full_name, avatar_url),
             confirmations:activity_confirmations (*, profile:profiles(full_name, avatar_url)),
             evidence:activity_evidence (*),
-            attachments:activity_attachments (*)
+            attachments:activity_attachments (*),
+            category:work_categories (id, name)
           `)
           .eq('id', id)
           .single()
@@ -184,7 +188,8 @@ serve(async (req) => {
           importance = false,
           attachments = [],
           executorIds = [],
-          projectId = null
+          projectId = null,
+          categoryId = null
         } = params
         if (!title || !description) throw new Error('Missing activity title or description')
         
@@ -215,7 +220,8 @@ serve(async (req) => {
             urgency,
             importance,
             executor_ids: executorIds,
-            project_id: projectId
+            project_id: projectId,
+            category_id: categoryId || null
           })
           .select()
           .single()
@@ -342,7 +348,7 @@ serve(async (req) => {
       }
 
       case 'submitActivity': {
-        const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false, attachments = [], executorIds = [] } = params
+        const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false, attachments = [], executorIds = [], categoryId = null } = params
         
         const validationMethod = (requesterId && requesterId.trim() !== '') ? 'requester_approval' : 'community_consensus';
 
@@ -356,7 +362,8 @@ serve(async (req) => {
           p_validation_method: validationMethod,
           p_urgency: urgency,
           p_importance: importance,
-          p_executor_ids: executorIds
+          p_executor_ids: executorIds,
+          p_category_id: categoryId || null
         })
 
         if (error) throw error
@@ -788,6 +795,17 @@ serve(async (req) => {
           .from('projects')
           .select('*')
           .order('name', { ascending: true })
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'fetchWorkCategories': {
+        const { data, error } = await supabaseClient
+          .from('work_categories')
+          .select('id, slug, name, sort_order')
+          .order('sort_order', { ascending: true })
 
         if (error) throw error
         responseData = data

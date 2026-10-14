@@ -335,7 +335,10 @@
     "moderationSuccess": "Atividade aprovada com sucesso!",
     "invalidTransition": "Transição entre colunas não permitida diretamente.",
     "project": "Projeto",
-    "executor": "Executor"
+    "executor": "Executor",
+    "category": "Área de Atuação",
+    "allCategories": "Todas as áreas",
+    "categoryHelper": "Selecione a área de atuação (opcional)"
   },
   "governance": {
     "config": "Configuração de Governança",

@@ -299,11 +299,21 @@ const TaskDetail: React.FC = () => {
         >
           {/* Status and Reward Header */}
           <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', mb: 4, gap: 2 }}>
-            <Chip 
-              label={t(`work.${activity.status}`)} 
-              color={getStatusColor(activity.status) as any}
-              sx={{ borderRadius: '12px', fontWeight: 700, px: 1 }}
-            />
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              <Chip 
+                label={t(`work.${activity.status}`)} 
+                color={getStatusColor(activity.status) as any}
+                sx={{ borderRadius: '12px', fontWeight: 700, px: 1 }}
+              />
+              {activity.category && (
+                <Chip 
+                  label={activity.category.name?.[lang] || activity.category.name?.pt || ''} 
+                  color="info"
+                  variant="outlined"
+                  sx={{ borderRadius: '12px', fontWeight: 700, px: 1 }}
+                />
+              )}
+            </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <Trophy size={24} color="#f59e0b" />
               <Typography variant="h4" fontWeight={800} color="primary.main">

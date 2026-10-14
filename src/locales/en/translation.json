@@ -327,7 +327,10 @@
     "moderationSuccess": "Activity approved successfully!",
     "invalidTransition": "Direct column transition not permitted.",
     "project": "Project",
-    "executor": "Executor"
+    "executor": "Executor",
+    "category": "Area of Practice",
+    "allCategories": "All areas",
+    "categoryHelper": "Select the area of practice (optional)"
   },
   "governance": {
     "config": "Governance Configuration",

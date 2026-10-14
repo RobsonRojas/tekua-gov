@@ -33,7 +33,7 @@ import { useAuth } from '../context/useAuth';
 import { logActivity } from '../utils/activityLogger';
 
 const RegisterWork: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -45,6 +45,8 @@ const RegisterWork: React.FC = () => {
   const [executorIds, setExecutorIds] = useState<string[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [categories, setCategories] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -52,9 +54,22 @@ const RegisterWork: React.FC = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+  const lang = i18n.language === 'pt' ? 'pt' : 'en';
+
   useEffect(() => {
     fetchMembers();
+    fetchWorkCategories();
   }, []);
+
+  const fetchWorkCategories = async () => {
+    try {
+      const { data, error } = await apiClient.invoke('api-work', 'fetchWorkCategories');
+      if (error) throw new Error(error);
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Error fetching work categories:', err);
+    }
+  };
 
   const fetchMembers = async () => {
     setLoadingMembers(true);
@@ -109,6 +124,7 @@ const RegisterWork: React.FC = () => {
         p_evidence_url: evidenceUrl,
         p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null,
         p_executor_ids: executorIds.length > 0 ? executorIds : [user.id],
+        p_category_id: categoryId || null,
         attachments
       };
 
@@ -128,6 +144,7 @@ const RegisterWork: React.FC = () => {
         evidenceUrl: submissionData.p_evidence_url,
         requesterId: submissionData.p_requester_id,
         executorIds: submissionData.p_executor_ids,
+        categoryId: submissionData.p_category_id,
         attachments: submissionData.attachments
       });
 
@@ -217,6 +234,25 @@ const RegisterWork: React.FC = () => {
                 required
                 InputProps={{ inputProps: { min: 1 } }}
               />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                select
+                label={t('work.category', 'Área de Atuação (Opcional)')}
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+              >
+                <MenuItem value="">
+                  <em>{t('common.none') || 'Nenhuma'}</em>
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name?.[lang] || category.name?.pt || category.slug}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

@@ -36,7 +36,7 @@ import type { Attachment } from '../components/common/FileUploader';
 import { Divider } from '@mui/material';
 
 const CreateDemand: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
 
@@ -49,6 +49,8 @@ const CreateDemand: React.FC = () => {
   const [members, setMembers] = useState<any[]>([]);
   const [projectId, setProjectId] = useState<string>('');
   const [projects, setProjects] = useState<any[]>([]);
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [categories, setCategories] = useState<any[]>([]);
   const [beneficiaryId, setBeneficiaryId] = useState<string>('village');
   
   const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = useState(false);
@@ -61,10 +63,12 @@ const CreateDemand: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const canAssignTask = profile?.role === 'admin' || profile?.roles?.includes('admin') || profile?.role === 'transversal_council' || profile?.roles?.includes('transversal_council');
+  const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   useEffect(() => {
     fetchProjects();
     fetchMembers();
+    fetchWorkCategories();
   }, []);
 
   const fetchProjects = async () => {
@@ -74,6 +78,16 @@ const CreateDemand: React.FC = () => {
       setProjects(data || []);
     } catch (err) {
       console.error('Error fetching projects:', err);
+    }
+  };
+
+  const fetchWorkCategories = async () => {
+    try {
+      const { data, error } = await apiClient.invoke('api-work', 'fetchWorkCategories');
+      if (error) throw new Error(error);
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Error fetching work categories:', err);
     }
   };
 
@@ -105,6 +119,7 @@ const CreateDemand: React.FC = () => {
         attachments,
         executorIds: executorIds.length > 0 ? executorIds : [],
         projectId: projectId || null,
+        categoryId: categoryId || null,
         beneficiaryId: beneficiaryId === 'village' ? null : (beneficiaryId || null)
       });
 
@@ -259,6 +274,26 @@ const CreateDemand: React.FC = () => {
                   {t('work.newProject') || 'Novo Projeto'}
                 </Button>
               </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                select
+                label={t('work.category', 'Área de Atuação (Opcional)')}
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                helperText={t('work.categoryHelper', 'Selecione a área de atuação')}
+              >
+                <MenuItem value="">
+                  <em>{t('common.none') || 'Nenhuma'}</em>
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name?.[lang] || category.name?.pt || category.slug}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

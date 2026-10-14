@@ -23,6 +23,7 @@ export interface WorkFilterValues {
   workerId?: string;
   type?: string;
   projectId?: string;
+  categoryId?: string;
 }
 
 interface WorkFiltersProps {
@@ -31,7 +32,7 @@ interface WorkFiltersProps {
 
 const FILTERS_STORAGE_KEY = 'tekua:workwall:filters';
 
-const DEFAULT_FILTERS: WorkFilterValues = { requesterId: '', workerId: '', type: 'all', projectId: '' };
+const DEFAULT_FILTERS: WorkFilterValues = { requesterId: '', workerId: '', type: 'all', projectId: '', categoryId: '' };
 
 export const loadStoredFilters = (): WorkFilterValues => {
   try {
@@ -43,7 +44,8 @@ export const loadStoredFilters = (): WorkFilterValues => {
       requesterId: typeof parsed.requesterId === 'string' ? parsed.requesterId : '',
       workerId: typeof parsed.workerId === 'string' ? parsed.workerId : '',
       type: typeof parsed.type === 'string' ? parsed.type : 'all',
-      projectId: typeof parsed.projectId === 'string' ? parsed.projectId : ''
+      projectId: typeof parsed.projectId === 'string' ? parsed.projectId : '',
+      categoryId: typeof parsed.categoryId === 'string' ? parsed.categoryId : ''
     };
   } catch {
     return DEFAULT_FILTERS;
@@ -51,10 +53,11 @@ export const loadStoredFilters = (): WorkFilterValues => {
 };
 
 const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [filters, setFilters] = useState<WorkFilterValues>(() => loadStoredFilters());
 
   useEffect(() => {
@@ -70,8 +73,15 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
         setProjects(data);
       }
     };
+    const fetchCategories = async () => {
+      const { data, error } = await supabase.from('work_categories').select('id, slug, name, sort_order').order('sort_order');
+      if (!error && data) {
+        setCategories(data);
+      }
+    };
     fetchMembers();
     fetchProjects();
+    fetchCategories();
   }, []);
 
   const handleChange = (field: keyof WorkFilterValues, value: string) => {
@@ -82,7 +92,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
   };
 
   const clearFilters = () => {
-    const reset = { requesterId: '', workerId: '', type: 'all', projectId: '' };
+    const reset = { requesterId: '', workerId: '', type: 'all', projectId: '', categoryId: '' };
     setFilters(reset);
     onFilterChange(reset);
     try { localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(reset)); } catch { /* ignore */ }
@@ -90,12 +100,15 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
 
   const projectLabel = t('work.project', 'Projeto');
   const executorLabel = t('work.executor', 'Executor');
+  const categoryLabel = t('work.category', 'Área de Atuação');
+  const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   const hasActiveFilters = Boolean(
     filters.requesterId || 
     filters.workerId || 
     (filters.type && filters.type !== 'all') || 
-    filters.projectId
+    filters.projectId ||
+    filters.categoryId
   );
 
   return (
@@ -146,6 +159,23 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
             </Select>
           </FormControl>
 
+          {/* Always Visible Category (Area of Practice) Filter */}
+          <FormControl size="small" sx={{ flex: { xs: '1 1 100%', sm: '1 1 200px' }, maxWidth: { sm: 260 }, minWidth: 160 }}>
+            <InputLabel id="category-filter-label">{categoryLabel}</InputLabel>
+            <Select
+              labelId="category-filter-label"
+              value={filters.categoryId || ''}
+              label={categoryLabel}
+              onChange={(e: SelectChangeEvent) => handleChange('categoryId', e.target.value)}
+              sx={{ borderRadius: '12px', bgcolor: 'background.paper' }}
+            >
+              <MenuItem value="">{t('work.allCategories') || 'Todas as áreas'}</MenuItem>
+              {categories.map(c => (
+                <MenuItem key={c.id} value={c.id}>{c.name?.[lang] || c.name?.pt || c.slug}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           {/* Toggle Secondary Filters Button */}
           <Button 
             variant={expanded ? 'contained' : 'outlined'}
@@ -159,7 +189,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
               <Chip
                 size="small"
                 color="primary"
-                label={[filters.requesterId, filters.workerId, filters.type && filters.type !== 'all' ? filters.type : '', filters.projectId].filter(Boolean).length}
+                label={[filters.requesterId, filters.workerId, filters.type && filters.type !== 'all' ? filters.type : '', filters.projectId, filters.categoryId].filter(Boolean).length}
                 sx={{ ml: 1, height: 18, fontSize: '0.7rem', fontWeight: 800 }}
               />
             )}

@@ -40,7 +40,9 @@ const executeAction = async (action: PendingAction) => {
         description: action.data.p_description?.pt || action.data.p_description,
         rewardAmount: action.data.p_reward_amount,
         evidenceUrl: action.data.p_evidence_url,
-        requesterId: action.data.p_requester_id
+        requesterId: action.data.p_requester_id,
+        executorIds: action.data.p_executor_ids,
+        categoryId: action.data.p_category_id
       });
       if (error) throw new Error(error);
       break;

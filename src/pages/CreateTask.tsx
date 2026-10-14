@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Container, 
@@ -13,7 +13,8 @@ import {
   Breadcrumbs,
   Link as MuiLink,
   FormControlLabel,
-  Switch
+  Switch,
+  MenuItem
 } from '@mui/material';
 import { 
   ChevronRight,
@@ -28,7 +29,7 @@ import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 
 const CreateTask: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -40,10 +41,27 @@ const CreateTask: React.FC = () => {
   const [urgency, setUrgency] = useState(false);
   const [importance, setImportance] = useState(false);
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [categories, setCategories] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [capturingGeo, setCapturingGeo] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const lang = i18n.language === 'pt' ? 'pt' : 'en';
+
+  useEffect(() => {
+    const fetchWorkCategories = async () => {
+      try {
+        const { data, error } = await apiClient.invoke('api-work', 'fetchWorkCategories');
+        if (error) throw new Error(error);
+        setCategories(data || []);
+      } catch (err) {
+        console.error('Error fetching work categories:', err);
+      }
+    };
+    fetchWorkCategories();
+  }, []);
 
   const handleCaptureLocation = () => {
     setCapturingGeo(true);
@@ -83,7 +101,8 @@ const CreateTask: React.FC = () => {
         minConfirmations: Number(minConfirmations),
         geoRequired: geoRequired,
         urgency,
-        importance
+        importance,
+        categoryId: categoryId || null
       });
 
       if (error) throw new Error(error);
@@ -175,6 +194,25 @@ const CreateTask: React.FC = () => {
                 InputProps={{ inputProps: { min: 1 } }}
                 helperText="Quantidade de confirmações para concluir"
               />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                select
+                label={t('work.category', 'Área de Atuação (Opcional)')}
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+              >
+                <MenuItem value="">
+                  <em>{t('common.none') || 'Nenhuma'}</em>
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name?.[lang] || category.name?.pt || category.slug}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
