@@ -116,7 +116,10 @@ const SubmitTaskProof: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>{t('work.evidence') || 'Evidências do Trabalho'}</Typography>
+              <Typography variant="h6" sx={{ mb: 1 }}>{t('work.evidence') || 'Evidências do Trabalho'} (opcional)</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Você pode concluir a tarefa sem anexar evidências.
+              </Typography>
               <FileUploader 
                 onUploadComplete={setAttachments} 
                 maxFiles={5}
@@ -157,7 +160,7 @@ const SubmitTaskProof: React.FC = () => {
                     fullWidth
                     size="large"
                     type="submit"
-                    disabled={uploading || attachments.length === 0}
+                    disabled={uploading}
                     startIcon={uploading ? <CircularProgress size={20} /> : <Send size={18} />}
                     sx={{ borderRadius: '12px', py: 1.5 }}
                   >
