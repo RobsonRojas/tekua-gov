@@ -123,6 +123,10 @@ vi.mock('lucide-react', () => {
     HelpCircle: IconMock('HelpCircle'),
     AlertCircle: IconMock('AlertCircle'),
     CheckCircle: IconMock('CheckCircle'),
+    Paperclip: IconMock('Paperclip'),
+    GripVertical: IconMock('GripVertical'),
+    AlertTriangle: IconMock('AlertTriangle'),
+    ExternalLink: IconMock('ExternalLink'),
     LogIn: IconMock('LogIn'),
     Lock: IconMock('Lock')
   };

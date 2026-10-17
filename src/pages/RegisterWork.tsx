@@ -155,7 +155,7 @@ const RegisterWork: React.FC = () => {
         en: `Work registered: ${description.substring(0, 30)}...`
       });
 
-      setMessage({ type: 'success', text: t('work.pendingApprovalMessage') || 'Seu trabalho foi registrado e aguarda aprovação do Conselho Transversal.' });
+      setMessage({ type: 'success', text: t('work.activityCreatedMessage') || 'Seu trabalho foi registrado e enviado para validação.' });
       setTimeout(() => navigate('/work-wall'), 2000);
     } catch (err: any) {
       console.error('Error submitting work:', err);

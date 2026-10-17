@@ -34,14 +34,13 @@ interface ColumnDef {
   color: string;
   bgColor: string;
   borderColor: string;
-  adminOnly?: boolean;
 }
 
 const WorkWall: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -83,8 +82,6 @@ const WorkWall: React.FC = () => {
     message: '',
     severity: 'info'
   });
-
-  const isCouncilOrAdmin = profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council') || profile?.role === 'admin';
 
   const fetcher = useCallback(async () => {
     if (!user || authLoading) return { data: [], error: null };
@@ -136,15 +133,6 @@ const WorkWall: React.FC = () => {
 
   // Column definitions for Kanban Board
   const columnDefs: ColumnDef[] = [
-    {
-      id: 'moderation',
-      statuses: ['pending_approval'],
-      title: t('work.moderation') || 'Moderação',
-      color: '#f97316',
-      bgColor: 'rgba(249, 115, 22, 0.04)',
-      borderColor: 'rgba(249, 115, 22, 0.15)',
-      adminOnly: true
-    },
     {
       id: 'open',
       statuses: ['open'],
@@ -204,15 +192,6 @@ const WorkWall: React.FC = () => {
         const { error: apiErr } = await apiClient.invoke('api-work', 'confirmActivity', { activityId });
         if (apiErr) throw new Error(typeof apiErr === 'string' ? apiErr : (apiErr as any).message || 'Erro ao confirmar tarefa.');
         setSnackbarState({ open: true, message: t('work.confirmationSuccess') || 'Confirmação registrada com sucesso!', severity: 'success' });
-        refetch();
-      } else if (sourceStatus === 'pending_approval' && (targetColumnId === 'open' || targetColumnId === 'completed')) {
-        // Moderate task (approve)
-        if (!isCouncilOrAdmin) {
-          throw new Error('Ação permitida apenas para moderadores ou administradores.');
-        }
-        const { error: apiErr } = await apiClient.invoke('api-work', 'moderateActivity', { activityId, action: 'approve' });
-        if (apiErr) throw new Error(typeof apiErr === 'string' ? apiErr : (apiErr as any).message || 'Erro na moderação.');
-        setSnackbarState({ open: true, message: t('work.moderationSuccess') || 'Atividade aprovada com sucesso!', severity: 'success' });
         refetch();
       } else {
         setSnackbarState({

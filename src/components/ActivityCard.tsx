@@ -24,7 +24,6 @@ import {
   User, 
   Trophy, 
   CheckCircle2, 
-  AlertCircle,
   PlayCircle,
   CheckCircle,
   Share2,
@@ -89,26 +88,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
       onRefresh();
     } catch (err) {
       console.error('Error performing activity action:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleModeration = async (action: 'approve' | 'reject') => {
-    setLoading(true);
-    try {
-      const { error } = await apiClient.invoke('api-work', 'moderateActivity', { 
-        activityId: activity.id, 
-        action 
-      });
-      if (error) {
-        setErrorMessage(typeof error === 'string' ? error : ((error as any).message || 'Erro ao processar ação.'));
-        return;
-      }
-      onRefresh();
-    } catch (err: any) {
-      console.error('Error moderating activity:', err);
-      setErrorMessage(err?.message || 'Erro ao processar ação.');
     } finally {
       setLoading(false);
     }
@@ -466,51 +445,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
             </Tooltip>
           )}
 
-          {localStatus === 'pending_approval' && (profile?.roles?.includes('admin') || profile?.roles?.includes('transversal_council')) && (
-            <Stack direction="row" spacing={1}>
-              <Button 
-                fullWidth 
-                size="small"
-                variant="contained"
-                startIcon={<CheckCircle size={15} />}
-                onClick={(e) => { e.stopPropagation(); handleModeration('approve'); }}
-                disabled={loading}
-                sx={{ 
-                  bgcolor: '#10b981', 
-                  color: '#ffffff', 
-                  borderRadius: '10px', 
-                  py: 0.8, 
-                  fontSize: '0.78rem', 
-                  fontWeight: 800, 
-                  textTransform: 'none',
-                  '&:hover': { bgcolor: '#059669' }
-                }}
-              >
-                {t('common.approve', 'Aprovar')}
-              </Button>
-              <Button 
-                fullWidth 
-                size="small"
-                variant="outlined"
-                color="error"
-                startIcon={<AlertCircle size={15} />}
-                onClick={(e) => { e.stopPropagation(); handleModeration('reject'); }}
-                disabled={loading}
-                sx={{ 
-                  borderRadius: '10px', 
-                  py: 0.8, 
-                  fontSize: '0.78rem', 
-                  fontWeight: 800, 
-                  textTransform: 'none',
-                  borderColor: '#ef4444',
-                  color: '#ef4444',
-                  '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.12)' }
-                }}
-              >
-                {t('common.reject', 'Reprovar')}
-              </Button>
-            </Stack>
-          )}
         </Box>
       </CardContent>
 

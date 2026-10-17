@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Transversal Council Approval Flow', () => {
+test.describe('Transversal Council - Moderation Removed', () => {
   test.beforeEach(async ({ page }) => {
     // Mock user profile as Council Member
     await page.route('**/rest/v1/profiles*', async route => {
@@ -31,30 +31,27 @@ test.describe('Transversal Council Approval Flow', () => {
       }
     });
 
-    // Mock Edge Function (fetchActivities)
+    // Mock Edge Function (api-work): new tasks are already open, no moderateActivity action exists.
     await page.route('**/functions/v1/api-work', async route => {
       const body = JSON.parse(route.request().postData() || '{}');
-      
       if (body.action === 'fetchActivities') {
-        const json = {
-          data: [
-            {
-              id: 'pending-task-1',
-              title: { pt: 'Tarefa por Aprovar', en: 'Task to Approve' },
-              description: { pt: 'Descrição pendente', en: 'Pending description' },
-              type: 'task',
-              status: 'pending_approval',
-              reward_amount: 100,
-              requester_id: 'user-2',
-              requester: { full_name: 'Regular Member' },
-              confirmations: [{ count: 0 }]
-            }
-          ],
-          error: null
-        };
-        await route.fulfill({ json: { data: json.data } });
-      } else if (body.action === 'moderateActivity') {
-        await route.fulfill({ json: { data: { success: true } } });
+        await route.fulfill({
+          json: {
+            data: [
+              {
+                id: 'open-task-1',
+                title: { pt: 'Tarefa Aberta', en: 'Open Task' },
+                description: { pt: 'Descrição da tarefa', en: 'Task description' },
+                type: 'task',
+                status: 'open',
+                reward_amount: 100,
+                requester_id: 'user-2',
+                requester: { full_name: 'Regular Member' },
+                confirmations: [{ count: 0 }]
+              }
+            ]
+          }
+        });
       } else {
         await route.fulfill({ json: { data: [] } });
       }
@@ -67,25 +64,14 @@ test.describe('Transversal Council Approval Flow', () => {
     await expect(page).toHaveURL('/');
   });
 
-  test('should show moderation tab and allow approving a task', async ({ page }) => {
+  test('should not show a Moderation column and should list open tasks', async ({ page }) => {
     await page.goto('/work-wall');
-    
-    // Check if Moderation tab exists
-    const moderationTab = page.getByRole('tab', { name: /Moderação/i });
-    await expect(moderationTab).toBeVisible();
-    
-    // Click on Moderation tab
-    await moderationTab.click();
-    
-    // Verify pending task is visible
-    await expect(page.locator('text=/Tarefa por Aprovar/i')).toBeVisible();
-    
-    // Click Approve
-    const approveButton = page.getByRole('button', { name: /Aprovar/i });
-    await expect(approveButton).toBeVisible();
-    await approveButton.click();
-    
-    // In a real scenario, onRefresh would be called. 
-    // Since we mocked moderateActivity to return success, we've verified the flow.
+
+    // The moderation stage no longer exists, even for council members.
+    await expect(page.locator('text=/Moderação/i')).toHaveCount(0);
+
+    // Newly created tasks are visible in the Open column without any approval step.
+    await expect(page.locator('text=/Tarefa por Aprovar/i')).toHaveCount(0);
+    await expect(page.locator('text=/Tarefa Aberta/i').first()).toBeVisible();
   });
 });

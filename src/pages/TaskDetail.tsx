@@ -179,7 +179,7 @@ const TaskDetail: React.FC = () => {
         const { error } = await apiClient.invoke('api-work', 'claimTask', { activityId: activity.id });
         if (error) throw new Error(error);
         setSnackbarMessage(t('work.claimSuccess') || 'Tarefa assumida com sucesso!');
-      } else if (activity.status === 'pending_approval' || activity.status === 'pending_validation') {
+      } else if (activity.status === 'pending_validation') {
         const { error } = await apiClient.invoke('api-work', 'confirmActivity', { activityId: activity.id });
         if (error) throw new Error(error);
         setSnackbarMessage(t('work.confirmSuccess') || 'Confirmação registrada com sucesso!');
@@ -241,7 +241,7 @@ const TaskDetail: React.FC = () => {
     switch (status) {
       case 'open': return 'primary';
       case 'in_progress': return 'warning';
-      case 'pending_approval': return 'info';
+      case 'pending_validation': return 'info';
       case 'completed': return 'success';
       case 'rejected': return 'error';
       default: return 'default';
@@ -401,7 +401,7 @@ const TaskDetail: React.FC = () => {
                   sx={{ height: 10, borderRadius: 5, bgcolor: 'rgba(255,255,255,0.05)' }}
                 />
                 
-                {(activity.status === 'pending_approval' || activity.status === 'pending_validation') && isOwner && (
+                {activity.status === 'pending_validation' && isOwner && (
                   <Button 
                     fullWidth
                     variant="contained"
@@ -560,7 +560,7 @@ const TaskDetail: React.FC = () => {
               </Button>
             )}
 
-            {(activity.status === 'pending_approval' || activity.status === 'pending_validation') && canConfirm && (
+            {activity.status === 'pending_validation' && canConfirm && (
               <Button 
                 fullWidth 
                 variant="contained" 

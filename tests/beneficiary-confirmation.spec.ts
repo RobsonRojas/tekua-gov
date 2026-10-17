@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Beneficiary Confirmation Flow', () => {
+test.describe('Beneficiary - Village Task Visibility (Moderation Removed)', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/rest/v1/profiles*', async route => {
       const json = [{ id: 'beneficiary-user', role: 'member', roles: ['member', 'beneficiary'], full_name: 'Village Beneficiary', village_id: 'village-1' }];
@@ -28,34 +28,29 @@ test.describe('Beneficiary Confirmation Flow', () => {
       }
     });
 
+    // Village tasks are created directly as 'open'; there is no moderation step to confirm.
     await page.route('**/functions/v1/api-work', async route => {
       const body = JSON.parse(route.request().postData() || '{}');
-      
       if (body.action === 'fetchActivities') {
-        const json = {
-          data: [
-            {
-              id: 'village-task-1',
-              title: { pt: 'Tarefa da Vila', en: 'Village Task' },
-              description: { pt: 'Descrição da tarefa', en: 'Task description' },
-              type: 'task',
-              status: 'pending_approval',
-              reward_amount: 50,
-              beneficiary_type: 'village',
-              beneficiary_id: 'village-1',
-              requester_id: 'user-2',
-              requester: { full_name: 'Regular Member' },
-              confirmations: [{ count: 0 }]
-            }
-          ],
-          error: null
-        };
-        await route.fulfill({ json: { data: json.data } });
-      } else if (body.action === 'moderateActivity') {
-        const params = body.params || {};
-        expect(params.activityId).toBeDefined();
-        expect(params.action).toBe('confirm');
-        await route.fulfill({ json: { data: { success: true } } });
+        await route.fulfill({
+          json: {
+            data: [
+              {
+                id: 'village-task-1',
+                title: { pt: 'Tarefa da Vila', en: 'Village Task' },
+                description: { pt: 'Descrição da tarefa', en: 'Task description' },
+                type: 'task',
+                status: 'open',
+                reward_amount: 50,
+                beneficiary_type: 'village',
+                beneficiary_id: 'village-1',
+                requester_id: 'user-2',
+                requester: { full_name: 'Regular Member' },
+                confirmations: [{ count: 0 }]
+              }
+            ]
+          }
+        });
       } else {
         await route.fulfill({ json: { data: [] } });
       }
@@ -68,17 +63,10 @@ test.describe('Beneficiary Confirmation Flow', () => {
     await expect(page).toHaveURL('/');
   });
 
-  test('should allow beneficiary to confirm a village task', async ({ page }) => {
+  test('should show the village task without a moderation tab', async ({ page }) => {
     await page.goto('/work-wall');
-    
-    const moderationTab = page.getByRole('tab', { name: /Moderação/i });
-    await expect(moderationTab).toBeVisible();
-    await moderationTab.click();
-    
-    await expect(page.locator('text=/Tarefa da Vila/i')).toBeVisible();
-    
-    const confirmButton = page.getByRole('button', { name: /Confirmar/i });
-    await expect(confirmButton).toBeVisible();
-    await confirmButton.click();
+
+    await expect(page.locator('text=/Moderação/i')).toHaveCount(0);
+    await expect(page.locator('text=/Tarefa da Vila/i').first()).toBeVisible();
   });
 });

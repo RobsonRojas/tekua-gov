@@ -107,7 +107,7 @@ const CreateTask: React.FC = () => {
 
       if (error) throw new Error(error);
 
-      setMessage({ type: 'success', text: t('work.pendingApprovalMessage') || 'Sua tarefa foi enviada e aguarda aprovação do Conselho Transversal.' });
+      setMessage({ type: 'success', text: t('work.activityCreatedMessage') || 'Sua tarefa foi publicada na coluna Open do Mural.' });
       setTimeout(() => navigate('/tasks-board'), 500);
     } catch (err: any) {
       console.error('Error creating task:', err);

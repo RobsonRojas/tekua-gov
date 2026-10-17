@@ -213,7 +213,7 @@ serve(async (req) => {
             reward_amount: amount,
             type: type,
             requester_id: user.id,
-            status: 'pending_approval',
+            status: 'open',
             geo_required: geoRequired,
             validation_method: 'requester_approval',
             min_confirmations: minConfirmations,
@@ -503,93 +503,6 @@ serve(async (req) => {
         }
 
         responseData = data
-        break
-      }
-
-      case 'moderateActivity': {
-        const { activityId, action: modAction } = params
-        if (!activityId || !modAction) throw new Error('Missing moderation details')
-        
-        // 1. Verify role and fetch user profile with village_id
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('role, roles, village_id')
-          .eq('id', user.id)
-          .single()
-        
-        const isAdmin = profile?.role === 'admin' || 
-                       profile?.roles?.includes('admin') || 
-                       profile?.role === 'transversal_council' ||
-                       profile?.roles?.includes('transversal_council')
-        
-        const isBeneficiary = profile?.roles?.includes('beneficiary')
-        
-        // 2. If not admin/council, check if beneficiary can confirm this specific activity
-        if (!isAdmin) {
-          if (!isBeneficiary) {
-            throw new Error('Only transversal council or admins can moderate activities')
-          }
-          
-          // Beneficiary can only confirm (not approve/reject other actions)
-          if (modAction !== 'confirm') {
-            throw new Error('Beneficiary users can only confirm activities')
-          }
-          
-          // Fetch activity to check beneficiary match
-          const { data: activity } = await supabaseClient
-            .from('activities')
-            .select('beneficiary_type, beneficiary_id')
-            .eq('id', activityId)
-            .single()
-          
-          if (!activity) throw new Error('Activity not found')
-          
-          // Check if activity is for village and matches user's village_id
-          if (activity.beneficiary_type !== 'village' || activity.beneficiary_id !== profile?.village_id) {
-            throw new Error('You can only confirm activities for your assigned village')
-          }
-        }
-        
-        const canModerate = isAdmin || isBeneficiary
-        
-        if (!canModerate) throw new Error('Forbidden')
-
-        // 2. Apply moderation action
-        if (isBeneficiary) {
-          // Beneficiary uses admin client to bypass RPC (which checks admin/council only)
-          const { error } = await supabaseAdmin
-            .from('activities')
-            .update({ status: 'open', updated_at: new Date().toISOString() })
-            .eq('id', activityId)
-            .eq('status', 'pending_approval')
-
-          if (error) throw error
-        } else {
-          const { error } = await supabaseClient.rpc('moderate_activity', {
-            p_activity_id: activityId,
-            p_action: modAction
-          })
-
-          if (error) throw error
-        }
-
-        // 3. Auto-transition to in_progress if approved and has worker_id
-        if (modAction === 'approve') {
-          const { data: activity } = await supabaseAdmin
-            .from('activities')
-            .select('worker_id, status')
-            .eq('id', activityId)
-            .single()
-
-          if (activity && activity.worker_id && activity.status === 'open') {
-            await supabaseAdmin
-              .from('activities')
-              .update({ status: 'in_progress', updated_at: new Date().toISOString() })
-              .eq('id', activityId)
-          }
-        }
-
-        responseData = { success: true }
         break
       }
 
