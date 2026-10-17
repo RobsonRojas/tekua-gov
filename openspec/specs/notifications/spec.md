@@ -44,11 +44,11 @@ O sistema SHALL suportar templates de email dinâmicos para diferentes tipos de 
 - **THEN** o email enviado SHALL conter o título da demanda, o valor sugerido em Surreais e um link direto para a tarefa no portal.
 
 ### Requirement: Multi-channel Delivery (Push and Email)
-O sistema SHALL tentar entregar notificações via push e email simultaneamente para garantir visibilidade.
+O sistema SHALL tentar entregar notificações via push multiplataforma e email simultaneamente para garantir visibilidade.
 
 #### Scenario: Redundant Delivery
 - **WHEN** um evento de alta prioridade (como tarefa finalizada) é processado.
-- **THEN** o sistema SHALL disparar tanto a notificação Web Push quanto o email transacional.
+- **THEN** o sistema SHALL disparar notificações push para todos os canais registrados do usuário (Web, PWA, Mobile nativo) e enviar o email transacional.
 
 ### Requirement: Suporte a tipo de notifica��o "surreal_receipt"
 O sistema SHALL estender o schema de tipos de notifica��o para incluir `surreal_receipt`, permitindo notifica��es estruturadas de recebimento de surreais.
