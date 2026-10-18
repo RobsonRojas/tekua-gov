@@ -126,7 +126,13 @@
     "area": "Gift Economy",
     "create": "Create Gift",
     "recordUsage": "I used this",
-    "usageRecorded": "Usage recorded! The provider received gift points."
+    "usageRecorded": "Usage recorded! The provider received gift points.",
+    "linkLabel": "Access link (optional)",
+    "linkHelp": "E.g. form, album, document or location",
+    "linkInvalid": "Enter a valid URL starting with http:// or https://",
+    "openLink": "Open link in a new tab",
+    "markdownHint": "You can use Markdown to format the text (**bold**, lists, links, headings).",
+    "markdownPreview": "Preview"
   },
   "home": {
     "title": "Tekua Governance Portal",

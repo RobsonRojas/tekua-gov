@@ -4,6 +4,32 @@ import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
 
 const corsHeaders = getResponseHeaders();
 
+/**
+ * Normaliza o link de acesso opcional de uma dádiva.
+ * Retorna null quando ausente/vazio e rejeita qualquer valor que não seja
+ * uma URL absoluta http/https (bloqueia javascript:, data:, file:, etc.).
+ */
+const normalizeLinkUrl = (value: unknown): string | null => {
+  if (value === undefined || value === null) return null
+  if (typeof value !== 'string') throw new Error('Invalid link: expected a string')
+
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  let parsed: URL
+  try {
+    parsed = new URL(trimmed)
+  } catch {
+    throw new Error('Invalid link: must be an absolute http/https URL')
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Invalid link: only http and https URLs are allowed')
+  }
+
+  return parsed.toString()
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -44,14 +70,17 @@ serve(async (req) => {
 
     switch (action) {
       case 'createGift': {
-        const { title, description } = params
+        const { title, description, linkUrl, link_url } = params
         if (!title || !description) throw new Error('Missing title or description')
+
+        const link = normalizeLinkUrl(linkUrl ?? link_url)
 
         const { data, error } = await supabaseClient
           .from('gifts')
           .insert({
             title: typeof title === 'string' ? { pt: title, en: title } : title,
             description: typeof description === 'string' ? { pt: description, en: description } : description,
+            link_url: link,
             provider_id: user.id,
             status: 'active'
           })
@@ -66,6 +95,8 @@ serve(async (req) => {
       case 'fetchGifts': {
         const { limit = 50 } = params
 
+        // `*` already includes link_url, so the link travels to the client with
+        // no extra serialization work.
         const { data, error } = await supabaseClient
           .from('gifts')
           .select(`

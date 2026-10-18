@@ -11,9 +11,14 @@ import {
   CircularProgress,
   Tooltip,
 } from '@mui/material';
-import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
+import {
+  CheckCircle as CheckCircleIcon,
+  OpenInNew as OpenInNewIcon,
+} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/useAuth';
+import SafeMarkdown from './common/SafeMarkdown';
+import { isValidHttpUrl } from '../lib/links';
 
 interface GiftDetailsModalProps {
   open: boolean;
@@ -38,6 +43,9 @@ const GiftDetailsModal: React.FC<GiftDetailsModalProps> = ({
   const title = typeof gift.title === 'string' ? gift.title : (gift.title?.pt || gift.title?.en || '');
   const desc = typeof gift.description === 'string' ? gift.description : (gift.description?.pt || gift.description?.en || '');
   const isOwnGift = user?.id === gift.provider_id;
+  // Só oferece o link quando ele é uma URL http/https válida (defesa extra
+  // contra valores perigosos vindos do banco).
+  const linkUrl = isValidHttpUrl(gift.link_url) ? (gift.link_url as string).trim() : null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -46,7 +54,7 @@ const GiftDetailsModal: React.FC<GiftDetailsModalProps> = ({
           {title}
         </Typography>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, mt: 1 }}>
           <Avatar src={gift.provider?.avatar_url} sx={{ width: 40, height: 40, mr: 2 }} />
           <Box>
@@ -58,11 +66,23 @@ const GiftDetailsModal: React.FC<GiftDetailsModalProps> = ({
             </Typography>
           </Box>
         </Box>
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
-          {desc}
-        </Typography>
+        <SafeMarkdown content={desc} linkTarget="_blank" contained />
       </DialogContent>
       <DialogActions sx={{ p: 2, pt: 0, flexDirection: 'column', gap: 1 }}>
+        {linkUrl && (
+          <Button
+            component="a"
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            color="secondary"
+            startIcon={<OpenInNewIcon />}
+            fullWidth
+          >
+            {t('gifts.openLink')}
+          </Button>
+        )}
         <Tooltip title={isOwnGift ? "Você não pode utilizar sua própria dádiva" : ""}>
           <span style={{ width: '100%' }}>
             <Button

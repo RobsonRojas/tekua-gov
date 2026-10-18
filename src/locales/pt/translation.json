@@ -130,7 +130,13 @@
     "area": "Economia de Dádivas",
     "create": "Cadastrar Dádiva",
     "recordUsage": "Eu utilizei isso",
-    "usageRecorded": "Uso registrado! O provedor recebeu pontos de dádiva."
+    "usageRecorded": "Uso registrado! O provedor recebeu pontos de dádiva.",
+    "linkLabel": "Link de acesso (opcional)",
+    "linkHelp": "Ex.: formulário, álbum, documento ou localização",
+    "linkInvalid": "Informe uma URL válida começando com http:// ou https://",
+    "openLink": "Abrir link em nova aba",
+    "markdownHint": "Você pode usar Markdown para formatar (**negrito**, listas, links, títulos).",
+    "markdownPreview": "Pré-visualização"
   },
   "home": {
     "title": "Portal de Governança Tekua",

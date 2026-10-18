@@ -16,18 +16,22 @@ import {
   CircularProgress,
   Alert,
   Avatar,
+  IconButton,
   Tooltip
 } from '@mui/material';
 import { 
   CardGiftcard as GiftIcon,
   Add as AddIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  OpenInNew as OpenInNewIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import GiftDetailsModal from '../components/GiftDetailsModal';
+import SafeMarkdown from '../components/common/SafeMarkdown';
+import { isOptionalHttpUrl, isValidHttpUrl } from '../lib/links';
 
 const GiftsArea: React.FC = () => {
   const { t } = useTranslation();
@@ -40,7 +44,10 @@ const GiftsArea: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const linkUrlInvalid = !isOptionalHttpUrl(newLinkUrl);
   
   const [recordingUsageId, setRecordingUsageId] = useState<string | null>(null);
   const [selectedGift, setSelectedGift] = useState<any | null>(null);
@@ -63,19 +70,21 @@ const GiftsArea: React.FC = () => {
   }, []);
 
   const handleCreateGift = async () => {
-    if (!newTitle.trim() || !newDescription.trim()) return;
+    if (!newTitle.trim() || !newDescription.trim() || linkUrlInvalid) return;
     
     setSubmitting(true);
     try {
       const { error } = await apiClient.invoke('api-gifts', 'createGift', {
         title: newTitle,
-        description: newDescription
+        description: newDescription,
+        linkUrl: newLinkUrl.trim()
       });
       if (error) throw new Error(error);
       
       setIsDialogOpen(false);
       setNewTitle('');
       setNewDescription('');
+      setNewLinkUrl('');
       fetchGifts();
     } catch (err: any) {
       alert('Error: ' + err.message);
@@ -141,6 +150,7 @@ const GiftsArea: React.FC = () => {
               const title = typeof gift.title === 'string' ? gift.title : (gift.title?.pt || gift.title?.en || '');
               const desc = typeof gift.description === 'string' ? gift.description : (gift.description?.pt || gift.description?.en || '');
               const isOwnGift = user?.id === gift.provider_id;
+              const linkUrl = isValidHttpUrl(gift.link_url) ? (gift.link_url as string).trim() : null;
 
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={gift.id}>
@@ -163,13 +173,15 @@ const GiftsArea: React.FC = () => {
                         <Typography variant="h6" fontWeight="bold" gutterBottom>
                           {title}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
-                          {desc}
-                        </Typography>
+                        <SafeMarkdown
+                          content={desc}
+                          contained
+                          sx={{ typography: 'body2', color: 'text.secondary' }}
+                        />
                       </CardContent>
-                      <CardActions sx={{ p: 2, pt: 0 }}>
+                      <CardActions sx={{ p: 2, pt: 0, gap: 1 }}>
                         <Tooltip title={isOwnGift ? "Você não pode utilizar sua própria dádiva" : ""}>
-                          <span>
+                          <span style={{ flex: 1 }}>
                             <Button
                               variant="outlined"
                               color="secondary"
@@ -185,6 +197,21 @@ const GiftsArea: React.FC = () => {
                             </Button>
                           </span>
                         </Tooltip>
+                        {linkUrl && (
+                          <Tooltip title={t('gifts.openLink')}>
+                            <IconButton
+                              component="a"
+                              href={linkUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              color="secondary"
+                              aria-label={t('gifts.openLink')}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <OpenInNewIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </CardActions>
                     </Card>
                   </motion.div>
@@ -221,6 +248,40 @@ const GiftsArea: React.FC = () => {
             onChange={(e) => setNewDescription(e.target.value)}
             required
             placeholder="Descreva o que você está oferecendo e como a pessoa pode ter acesso..."
+            helperText={t('gifts.markdownHint')}
+          />
+          {newDescription.trim() && (
+            <Box
+              sx={{
+                mt: 1,
+                p: 1.5,
+                border: '1px dashed',
+                borderColor: 'divider',
+                borderRadius: 1,
+                bgcolor: 'action.hover',
+              }}
+            >
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                {t('gifts.markdownPreview')}
+              </Typography>
+              <SafeMarkdown
+                content={newDescription}
+                contained
+                sx={{ typography: 'body2', color: 'text.secondary' }}
+              />
+            </Box>
+          )}
+          <TextField
+            margin="dense"
+            label={t('gifts.linkLabel')}
+            type="url"
+            fullWidth
+            value={newLinkUrl}
+            onChange={(e) => setNewLinkUrl(e.target.value)}
+            placeholder="https://..."
+            error={linkUrlInvalid}
+            helperText={linkUrlInvalid ? t('gifts.linkInvalid') : t('gifts.linkHelp')}
+            sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions>
@@ -231,7 +292,7 @@ const GiftsArea: React.FC = () => {
             onClick={handleCreateGift} 
             variant="contained" 
             color="secondary"
-            disabled={submitting || !newTitle.trim() || !newDescription.trim()}
+            disabled={submitting || !newTitle.trim() || !newDescription.trim() || linkUrlInvalid}
           >
             {submitting ? <CircularProgress size={24} /> : t('common.publish')}
           </Button>

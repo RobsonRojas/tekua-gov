@@ -71,4 +71,48 @@ describe('SafeMarkdown', () => {
     const { container } = render(<SafeMarkdown content={''} />);
     expect(container).not.toBeNull();
   });
+
+  it('opens links in a new tab with rel="noopener noreferrer" when linkTarget is set', () => {
+    const { container } = render(
+      <SafeMarkdown content={'[site](https://example.com/page)'} linkTarget="_blank" />
+    );
+    const link = container.querySelector('a');
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', 'https://example.com/page');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('does not add target/rel to links by default', () => {
+    const { container } = render(<SafeMarkdown content={'[site](https://example.com)'} />);
+    const link = container.querySelector('a');
+    expect(link).toHaveAttribute('href', 'https://example.com');
+    expect(link).not.toHaveAttribute('target');
+    expect(link).not.toHaveAttribute('rel');
+  });
+
+  it('still blocks dangerous protocols when linkTarget is set', () => {
+    const { container } = render(
+      <SafeMarkdown content={'[bad](javascript:alert(1)) [ok](https://example.com)'} linkTarget="_blank" />
+    );
+    const links = Array.from(container.querySelectorAll('a'));
+    expect(links.some((a) => a.getAttribute('href')?.toLowerCase().startsWith('javascript:'))).toBe(false);
+    const safe = links.find((a) => a.getAttribute('href') === 'https://example.com');
+    expect(safe).toHaveAttribute('target', '_blank');
+    expect(safe).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('renders bare markdown without a wrapper when no styling props are given', () => {
+    const { container } = render(<SafeMarkdown content={'plain text'} />);
+    expect(container.firstElementChild?.tagName).toBe('P');
+  });
+
+  it('wraps the content in a container when contained is set', () => {
+    const { container } = render(
+      <SafeMarkdown content={'a very long word: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'} contained />
+    );
+    const wrapper = container.firstElementChild;
+    expect(wrapper?.tagName).toBe('DIV');
+    expect(wrapper?.querySelector('p')).not.toBeNull();
+  });
 });
