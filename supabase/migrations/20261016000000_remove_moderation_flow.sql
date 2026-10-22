@@ -4,9 +4,12 @@
 -- 'open'; contributions already executed go straight to 'pending_validation'. Existing
 -- activities stuck in 'pending_approval' are migrated to their post-approval state.
 --
--- NOTE: The enum value 'pending_approval' in activity_status is intentionally kept for
--- backward compatibility (removing a value from a Postgres enum requires recreating the
--- type). It is LEGACY and MUST NOT be produced by the application anymore.
+-- NOTE: The enum value 'pending_approval' in activity_status was kept here for backward
+-- compatibility (removing a value from a Postgres enum requires recreating the type). It was
+-- LEGACY and MUST NOT be produced by the application anymore.
+-- The value itself was finally removed in
+-- 20261021000000_remove_pending_approval_from_activity_status.sql, which recreates the type
+-- without it. This file is left untouched as the historical record of what was applied.
 
 -- 1. New activities default to 'open' again.
 ALTER TABLE public.activities ALTER COLUMN status SET DEFAULT 'open'::activity_status;
