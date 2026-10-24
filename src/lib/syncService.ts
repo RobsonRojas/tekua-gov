@@ -35,14 +35,19 @@ const executeAction = async (action: PendingAction) => {
     }
 
     case 'submit_task': {
+      // The evidence is optional: an action queued without it must be reprocessed
+      // without error. `evidenceUrl` is normalized to an empty string so that the
+      // edge function sends an explicit NULL to the RPC (which then skips the
+      // evidence row) instead of dropping the parameter.
       const { error } = await apiClient.invoke('api-work', 'submitActivity', {
         title: action.data.p_title,
-        description: action.data.p_description?.pt || action.data.p_description,
+        description: action.data.p_description,
         rewardAmount: action.data.p_reward_amount,
-        evidenceUrl: action.data.p_evidence_url,
+        evidenceUrl: action.data.p_evidence_url ?? '',
         requesterId: action.data.p_requester_id,
         executorIds: action.data.p_executor_ids,
-        categoryId: action.data.p_category_id
+        categoryId: action.data.p_category_id,
+        attachments: action.data.attachments ?? []
       });
       if (error) throw new Error(error);
       break;

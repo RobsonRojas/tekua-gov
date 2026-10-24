@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
+import { completeTask, addEvidence } from "./taskCompletion.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -251,52 +252,49 @@ serve(async (req) => {
         break
       }
 
+      // Completion of a task. The evidence is OPTIONAL: a task is completed even
+      // when the member attaches nothing (mutual-trust principle).
+      // `submitProof` is kept as a retro-compatible alias of `completeTask`.
+      case 'completeTask':
       case 'submitProof': {
         const { activityId, evidenceUrl, location, attachments = [] } = params
         if (!activityId) throw new Error('Missing activityId')
 
-        // 1. Insert legacy evidence record if evidenceUrl is provided
-        if (evidenceUrl) {
-          const { error: evidenceError } = await supabaseClient
-            .from('activity_evidence')
-            .insert({ 
-              activity_id: activityId, 
-              worker_id: user.id, 
-              evidence_url: evidenceUrl,
-              location: location
-            })
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
 
-          if (evidenceError) throw evidenceError
-        }
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
 
-        // 2. Insert new attachments if any
-        if (attachments && attachments.length > 0) {
-          const attachmentsToInsert = attachments.map((att: any) => ({
-            activity_id: activityId,
-            user_id: user.id,
-            file_url: att.file_url,
-            file_name: att.file_name,
-            file_type: att.file_type,
-            file_size: att.file_size,
-            is_evidence: true
-          }))
+        responseData = await completeTask(
+          supabaseClient,
+          { userId: user.id, isAdmin },
+          { activityId, evidenceUrl, location, attachments }
+        )
+        break
+      }
 
-          const { error: attError } = await supabaseClient
-            .from('activity_attachments')
-            .insert(attachmentsToInsert)
+      // Attaches evidence to an activity WITHOUT changing its status.
+      // Released to the executor, to the requester and to the admins.
+      case 'addEvidence': {
+        const { activityId, evidenceUrl, location, attachments = [] } = params
+        if (!activityId) throw new Error('Missing activityId')
 
-          if (attError) throw attError
-        }
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
 
-        // 3. Update activity status
-        const { error: activityError } = await supabaseClient
-          .from('activities')
-          .update({ status: 'pending_validation', updated_at: new Date().toISOString() })
-          .eq('id', activityId)
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
 
-        if (activityError) throw activityError
-
-        responseData = { success: true }
+        responseData = await addEvidence(
+          supabaseClient,
+          { userId: user.id, isAdmin },
+          { activityId, evidenceUrl, location, attachments }
+        )
         break
       }
 
@@ -352,12 +350,17 @@ serve(async (req) => {
         
         const validationMethod = (requesterId && requesterId.trim() !== '') ? 'requester_approval' : 'community_consensus';
 
+        // The evidence is optional. `undefined` would be dropped from the RPC payload
+        // (and break the call, since the parameter has no default), so it is sent as
+        // an explicit NULL — the RPC then skips the evidence row entirely.
+        const normalizedEvidenceUrl = typeof evidenceUrl === 'string' ? evidenceUrl.trim() : '';
+
         // Use the RPC for complex transaction logic (creating activity + notifications)
         const { data, error } = await supabaseClient.rpc('submit_activity', {
           p_title: title,
           p_description: description,
           p_reward_amount: rewardAmount,
-          p_evidence_url: evidenceUrl,
+          p_evidence_url: normalizedEvidenceUrl === '' ? null : normalizedEvidenceUrl,
           p_requester_id: requesterId,
           p_validation_method: validationMethod,
           p_urgency: urgency,
@@ -369,8 +372,12 @@ serve(async (req) => {
         if (error) throw error
 
         // Insert attachments if any
-        if (attachments && attachments.length > 0) {
-          const attachmentsToInsert = attachments.map((att: any) => ({
+        const validAttachments = Array.isArray(attachments)
+          ? attachments.filter((att: any) => att && att.file_url)
+          : []
+
+        if (validAttachments.length > 0) {
+          const attachmentsToInsert = validAttachments.map((att: any) => ({
             activity_id: data, // RPC returns the new ID
             user_id: user.id,
             file_url: att.file_url,

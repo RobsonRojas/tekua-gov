@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import WorkWall from './WorkWall';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
@@ -67,7 +67,44 @@ describe('WorkWall Component', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('Tarefa 1')).toBeNull();
-      expect(screen.getByText('work.noItems')).toBeDefined();
+      expect(screen.getAllByText('work.noItemsColumn').length).toBeGreaterThan(0);
     });
+  });
+
+  it('should complete the task in a single step when it is dragged to "Para Validar"', async () => {
+    (apiClient.invoke as any).mockImplementation((_domain: string, action: string) => {
+      if (action === 'fetchActivities') {
+        return Promise.resolve({ data: mockActivities, error: null });
+      }
+      if (action === 'completeTask') {
+        return Promise.resolve({ data: { success: true }, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    render(
+      <BrowserRouter>
+        <WorkWall />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Tarefa 2')).toBeDefined();
+    });
+
+    const column = document.getElementById('kanban-col-pending_validation');
+    expect(column).toBeTruthy();
+
+    fireEvent.drop(column as HTMLElement, {
+      dataTransfer: {
+        getData: () => JSON.stringify({ activityId: '2', sourceStatus: 'in_progress' }),
+      },
+    });
+
+    // The task is completed directly — the member is NOT sent to the proof page.
+    await waitFor(() => {
+      expect(apiClient.invoke).toHaveBeenCalledWith('api-work', 'completeTask', { activityId: '2' });
+    });
+    expect(apiClient.invoke).not.toHaveBeenCalledWith('api-work', 'submitProof', expect.anything());
   });
 });

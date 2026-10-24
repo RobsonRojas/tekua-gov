@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RegisterWork from './RegisterWork';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
+import { apiClient } from '../lib/api';
 
 // Mock supabase
 vi.mock('../lib/supabase', () => ({
@@ -18,6 +19,13 @@ vi.mock('../lib/supabase', () => ({
   },
 }));
 
+// Mock the API client used by the page
+vi.mock('../lib/api', () => ({
+  apiClient: {
+    invoke: vi.fn(),
+  },
+}));
+
 // Mock useAuth
 vi.mock('../context/useAuth', () => ({
   useAuth: () => ({
@@ -29,6 +37,7 @@ vi.mock('../context/useAuth', () => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    i18n: { language: 'pt' },
   }),
 }));
 
@@ -40,6 +49,11 @@ vi.mock('../utils/activityLogger', () => ({
 const theme = createTheme();
 
 describe('RegisterWork', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (apiClient.invoke as any).mockResolvedValue({ data: null, error: null });
+  });
+
   const renderPage = () => {
     return render(
       <BrowserRouter>
@@ -54,18 +68,55 @@ describe('RegisterWork', () => {
     renderPage();
     expect(screen.getAllByText('work.register').length).toBeGreaterThan(0);
     expect(screen.getByLabelText(/work.description/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/work.evidence/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/work.suggested/i)).toBeInTheDocument();
+  });
+
+  it('labels the evidence as optional and shows the trust notice', () => {
+    renderPage();
+    expect(screen.getAllByText(/work.evidenceOptional/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/work.evidenceOptionalHint/).length).toBeGreaterThan(0);
   });
 
   it('validates required fields', async () => {
     renderPage();
-    const submitButton = screen.getByRole('button', { name: /work.submit/i });
+    const submitButton = screen.getByRole('button', { name: /work.registerSubmit/i });
     fireEvent.click(submitButton);
-    
-    // MUI TextField uses required attribute which browser handles, 
-    // but we can check if rpc was NOT called
-    const { supabase } = await import('../lib/supabase');
-    expect(supabase.rpc).not.toHaveBeenCalled();
+
+    // The description and the amount are still required.
+    await waitFor(() => {
+      expect(apiClient.invoke).not.toHaveBeenCalledWith(
+        'api-work',
+        'submitActivity',
+        expect.anything()
+      );
+    });
+  });
+
+  it('submits a contribution without any evidence', async () => {
+    const { container } = renderPage();
+
+    const description = screen.getByLabelText(/work.description/i);
+    fireEvent.change(description, { target: { value: 'Reforço na horta da vila' } });
+
+    const amount = screen.getByLabelText(/work.suggested/i);
+    fireEvent.change(amount, { target: { value: '50' } });
+
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(apiClient.invoke).toHaveBeenCalledWith(
+        'api-work',
+        'submitActivity',
+        expect.objectContaining({ evidenceUrl: '' })
+      );
+    });
+
+    const call = (apiClient.invoke as any).mock.calls.find(
+      ([, action]: [string, string]) => action === 'submitActivity'
+    );
+    // No evidence and no attachment is sent.
+    expect(call[2].evidenceUrl).toBe('');
+    expect(call[2].attachments).toEqual([]);
   });
 });

@@ -52,6 +52,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
   const [loading, setLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState(activity.status);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [viewerState, setViewerState] = useState<{ open: boolean; url: string | null }>({ open: false, url: null });
   
@@ -97,7 +98,29 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
     e.stopPropagation();
     const url = `${window.location.origin}/tasks/${activity.id}`;
     navigator.clipboard.writeText(url);
+    setSnackbarMessage(null);
     setSnackbarOpen(true);
+  };
+
+  // Completes the task in a single step. The evidence is optional
+  // (mutual-trust principle), so nothing has to be attached.
+  const handleCompleteTask = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const { error } = await apiClient.invoke('api-work', 'completeTask', { activityId: activity.id });
+      if (error) throw new Error(error);
+      setLocalStatus('pending_validation');
+      setSnackbarMessage(t('work.completeTaskSuccess', 'Tarefa concluída e enviada para validação!'));
+      setSnackbarOpen(true);
+      onRefresh();
+    } catch (err: any) {
+      console.error('Error completing task:', err);
+      setErrorMessage(err?.message || t('common.error', 'Erro ao executar ação.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -399,7 +422,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               size="small"
               variant="contained" 
               startIcon={<CheckCircle2 size={16} />}
-              onClick={() => navigate(`/tasks/${activity.id}/submit`)}
+              onClick={handleCompleteTask}
+              disabled={loading}
               sx={{ 
                 bgcolor: '#f59e0b', 
                 color: '#ffffff', 
@@ -412,7 +436,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
                 '&:hover': { bgcolor: '#d97706', boxShadow: '0 6px 16px rgba(245, 158, 11, 0.45)' }
               }}
             >
-              {t('work.submit', 'Concluir e Enviar')}
+              {t('work.completeTask', 'Concluir Tarefa')}
             </Button>
           )}
 
@@ -460,7 +484,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
           </Alert>
         ) : (
           <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%', borderRadius: '12px' }}>
-            {t('work.linkCopied', 'Link da tarefa copiado!')}
+            {snackbarMessage || t('work.linkCopied', 'Link da tarefa copiado!')}
           </Alert>
         )}
       </Snackbar>

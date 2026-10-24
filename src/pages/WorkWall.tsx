@@ -185,8 +185,12 @@ const WorkWall: React.FC = () => {
         setSnackbarState({ open: true, message: t('work.taskClaimedSuccess') || 'Tarefa assumida com sucesso!', severity: 'success' });
         refetch();
       } else if (targetColumnId === 'pending_validation' && sourceStatus === 'in_progress') {
-        // Submit proof / evidence
-        navigate(`/tasks/${activityId}/submit`);
+        // Complete the task. The evidence is optional (mutual-trust principle),
+        // so the task is completed in a single step without any attachment.
+        const { error: apiErr } = await apiClient.invoke('api-work', 'completeTask', { activityId });
+        if (apiErr) throw new Error(typeof apiErr === 'string' ? apiErr : (apiErr as any).message || 'Erro ao concluir tarefa.');
+        setSnackbarState({ open: true, message: t('work.completeTaskSuccess') || 'Tarefa concluída e enviada para validação!', severity: 'success' });
+        refetch();
       } else if (targetColumnId === 'completed' && sourceStatus === 'pending_validation') {
         // Confirm activity
         const { error: apiErr } = await apiClient.invoke('api-work', 'confirmActivity', { activityId });

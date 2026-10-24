@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
   Container, 
@@ -17,7 +17,8 @@ import {
   Home as HomeIcon,
   Camera,
   MapPin,
-  Send
+  Send,
+  ShieldCheck
 } from 'lucide-react';
 import FileUploader from '../components/common/FileUploader';
 import type { Attachment } from '../components/common/FileUploader';
@@ -38,7 +39,40 @@ const SubmitTaskProof: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [capturingGeo, setCapturingGeo] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [activityStatus, setActivityStatus] = useState<string | null>(null);
+  const [loadingActivity, setLoadingActivity] = useState(true);
 
+  // The status of the activity decides what the primary action does:
+  //  - `in_progress` -> the task is completed (evidence optional);
+  //  - anything else -> the evidence is only attached (the status is untouched).
+  useEffect(() => {
+    let active = true;
+
+    const loadActivity = async () => {
+      if (!id) {
+        setLoadingActivity(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await apiClient.invoke('api-work', 'fetchActivityDetail', { id });
+        if (error) throw new Error(error);
+        if (active) setActivityStatus(data?.status ?? null);
+      } catch (err) {
+        console.error('Error loading activity:', err);
+      } finally {
+        if (active) setLoadingActivity(false);
+      }
+    };
+
+    loadActivity();
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  const isAlreadyCompleted = activityStatus !== null && activityStatus !== 'in_progress';
 
   const handleCaptureLocation = () => {
     setCapturingGeo(true);
@@ -70,8 +104,10 @@ const SubmitTaskProof: React.FC = () => {
 
     setUploading(true);
     try {
-      // 1. Submit proof via API
-      const { error: apiError } = await apiClient.invoke('api-work', 'submitProof', {
+      // The evidence is optional: the task is completed even when nothing is attached.
+      const action = isAlreadyCompleted ? 'addEvidence' : 'completeTask';
+
+      const { error: apiError } = await apiClient.invoke('api-work', action, {
         activityId: id,
         location: location ? `POINT(${location.lng} ${location.lat})` : null,
         attachments
@@ -79,15 +115,24 @@ const SubmitTaskProof: React.FC = () => {
 
       if (apiError) throw new Error(apiError);
 
-      setMessage({ type: 'success', text: t('work.success') });
-      setTimeout(() => navigate('/tasks-board'), 2000);
+      setMessage({
+        type: 'success',
+        text: isAlreadyCompleted
+          ? t('work.evidenceAttachedSuccess')
+          : t('work.completeTaskSuccess')
+      });
+      setTimeout(() => navigate(`/tasks/${id}`), 2000);
     } catch (err: any) {
-      console.error('Error submitting proof:', err);
+      console.error('Error completing task:', err);
       setMessage({ type: 'error', text: err.message || t('common.error') });
     } finally {
       setUploading(false);
     }
   };
+
+  const primaryLabel = isAlreadyCompleted
+    ? t('work.attachEvidence')
+    : t('work.completeTask');
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -102,23 +147,33 @@ const SubmitTaskProof: React.FC = () => {
         <MuiLink component={Link} to="/tasks-board" sx={{ color: 'text.secondary', textDecoration: 'none' }}>
           {t('work.title')}
         </MuiLink>
-        <Typography color="primary.main" fontWeight={600}>{t('work.submit')}</Typography>
+        <Typography color="primary.main" fontWeight={600}>{t('work.completeTask')}</Typography>
       </Breadcrumbs>
 
       <Paper elevation={0} sx={{ p: 4, borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Camera size={40} style={{ marginRight: '16px', color: '#6366f1' }} />
           <Typography variant="h4" fontWeight={700}>
-            {t('work.submit')}
+            {t('work.completeTask')}
           </Typography>
         </Box>
+
+        <Alert severity="info" icon={<ShieldCheck size={20} />} sx={{ borderRadius: '12px', mb: 3 }}>
+          {t('work.trustNotice')}
+        </Alert>
+
+        {isAlreadyCompleted && (
+          <Alert severity="warning" sx={{ borderRadius: '12px', mb: 3 }}>
+            {t('work.alreadyCompletedNotice')}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>{t('work.evidence') || 'Evidências do Trabalho'} (opcional)</Typography>
+              <Typography variant="h6" sx={{ mb: 1 }}>{t('work.evidenceOptional')}</Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Você pode concluir a tarefa sem anexar evidências.
+                {t('work.evidenceOptionalHint')}
               </Typography>
               <FileUploader 
                 onUploadComplete={setAttachments} 
@@ -132,12 +187,12 @@ const SubmitTaskProof: React.FC = () => {
                 <Paper sx={{ p: 3, borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                     <MapPin size={24} color={location ? '#10b981' : '#ef4444'} />
-                    <Typography variant="h6">Localização (GPS)</Typography>
+                    <Typography variant="h6">{t('work.gpsLocation')}</Typography>
                   </Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     {location 
-                      ? `Coordenadas capturadas: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` 
-                      : 'Aguardando captura de GPS...'}
+                      ? t('work.gpsCaptured', { lat: location.lat.toFixed(6), lng: location.lng.toFixed(6) })
+                      : t('work.gpsWaiting')}
                   </Typography>
                   <Button 
                     variant="outlined" 
@@ -146,12 +201,12 @@ const SubmitTaskProof: React.FC = () => {
                     disabled={capturingGeo}
                     startIcon={capturingGeo ? <CircularProgress size={16} /> : <MapPin size={16} />}
                   >
-                    {location ? 'Recapturar Localização' : 'Capturar Localização'}
+                    {location ? t('work.recaptureLocation') : t('work.captureLocation')}
                   </Button>
                 </Paper>
 
-                <Alert severity="info" sx={{ borderRadius: '12px' }}>
-                  Sua prova será enviada para o requisitante e para a comunidade validar. O pagamento em Surreais será automático após a aprovação.
+                <Alert severity="success" sx={{ borderRadius: '12px' }}>
+                  {t('work.validationNotice')}
                 </Alert>
 
                 <Box sx={{ mt: 'auto', display: 'flex', gap: 2 }}>
@@ -160,11 +215,11 @@ const SubmitTaskProof: React.FC = () => {
                     fullWidth
                     size="large"
                     type="submit"
-                    disabled={uploading}
+                    disabled={uploading || loadingActivity}
                     startIcon={uploading ? <CircularProgress size={20} /> : <Send size={18} />}
                     sx={{ borderRadius: '12px', py: 1.5 }}
                   >
-                    {uploading ? 'Enviando...' : 'Enviar Prova'}
+                    {uploading ? t('work.sending') : primaryLabel}
                   </Button>
                   <Button
                     variant="outlined"

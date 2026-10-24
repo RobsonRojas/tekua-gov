@@ -204,8 +204,11 @@ const RegisterWork: React.FC = () => {
 
             <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
-                {t('work.evidence') || 'Evidência do Trabalho'}
+                {t('work.evidenceOptional', 'Evidência (opcional)')}
               </Typography>
+              <Alert severity="info" sx={{ mb: 2, borderRadius: '12px' }}>
+                {t('work.evidenceOptionalHint', 'Você pode registrar sua contribuição sem anexar nenhuma evidência. Se quiser, anexe fotos ou documentos para dar contexto aos validadores.')}
+              </Alert>
               <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
                 <Button
                   variant="outlined"
@@ -322,7 +325,7 @@ const RegisterWork: React.FC = () => {
                 startIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
                 sx={{ px: 4, borderRadius: 2 }}
               >
-                {t('work.submit')}
+                {t('work.registerSubmit', 'Registrar Trabalho')}
               </Button>
               <Button
                 variant="outlined"

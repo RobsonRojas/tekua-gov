@@ -31,7 +31,8 @@ import {
   PlayCircle, 
   User,
   MapPin,
-  Pencil
+  Pencil,
+  Paperclip as PaperclipIcon
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -171,6 +172,28 @@ const TaskDetail: React.FC = () => {
     }
   };
 
+  const handleCompleteTask = async () => {
+    if (!activity) return;
+    setActionLoading(true);
+    try {
+      // The evidence is optional (mutual-trust principle): the task is completed
+      // in a single step, without any attachment.
+      const { error } = await apiClient.invoke('api-work', 'completeTask', { activityId: activity.id });
+      if (error) throw new Error(error);
+      setSnackbarMessage(t('work.completeTaskSuccess') || 'Tarefa concluída e enviada para validação!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      await fetchDetail();
+    } catch (err: any) {
+      console.error('Error completing task:', err);
+      setSnackbarMessage(err.message || t('common.error', 'Erro ao executar ação.'));
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleAction = async () => {
     if (!activity) return;
     setActionLoading(true);
@@ -229,6 +252,9 @@ const TaskDetail: React.FC = () => {
   const title = typeof activity.title === 'string' ? activity.title : (activity.title?.[lang] || activity.title?.pt || 'Untitled');
   const description = typeof activity.description === 'string' ? activity.description : (activity.description?.[lang] || activity.description?.pt || 'No description');
   const isWorker = user?.id === activity.worker_id || (activity.executor_ids && activity.executor_ids.includes(user?.id));
+  // The legacy evidence rows created without content (empty URL) are not shown:
+  // the evidence is optional, so its absence must not be displayed as a broken item.
+  const legacyEvidence = (activity.evidence || []).filter((ev: any) => !!ev?.evidence_url);
   const confirmCount = activity.confirmations?.length || 0;
   const threshold = activity.min_confirmations || 3;
   const progress = (confirmCount / threshold) * 100;
@@ -421,10 +447,10 @@ const TaskDetail: React.FC = () => {
           <Divider sx={{ my: 5, borderColor: 'rgba(255,255,255,0.05)' }} />
 
           {/* Evidence Section */}
-          {(activity.evidence && activity.evidence.length > 0 || activity.attachments?.some((a: any) => a.is_evidence)) && (
+          {(activity.evidence && legacyEvidence.length > 0 || activity.attachments?.some((a: any) => a.is_evidence)) && (
             <Box sx={{ mb: 5 }}>
               <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-                {t('work.evidence') || 'Evidências'}
+                {t('work.evidenceSection', 'Evidências')}
               </Typography>
               
               {/* Render new attachments marked as evidence */}
@@ -436,7 +462,7 @@ const TaskDetail: React.FC = () => {
               )}
 
               <Grid container spacing={2}>
-                {activity.evidence.map((ev: any) => (
+                {legacyEvidence.map((ev: any) => (
                   <Grid size={{ xs: 12, sm: 6 }} key={ev.id}>
                     <Paper 
                       sx={{ 
@@ -547,16 +573,46 @@ const TaskDetail: React.FC = () => {
             )}
 
             {activity.status === 'in_progress' && isWorker && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Button 
+                  fullWidth 
+                  variant="contained" 
+                  size="large"
+                  color="warning"
+                  startIcon={<CheckCircle2 />}
+                  onClick={handleCompleteTask}
+                  disabled={actionLoading}
+                  sx={{ borderRadius: '16px', py: 2, fontSize: '1.1rem', fontWeight: 700 }}
+                >
+                  {t('work.completeTask') || 'Concluir Tarefa'}
+                </Button>
+                <Button 
+                  fullWidth 
+                  variant="outlined" 
+                  size="large"
+                  startIcon={<PaperclipIcon />}
+                  onClick={() => navigate(`/tasks/${activity.id}/submit`)}
+                  disabled={actionLoading}
+                  sx={{ borderRadius: '16px', py: 1.5, fontWeight: 700 }}
+                >
+                  {t('work.attachEvidence') || 'Anexar evidência (opcional)'}
+                </Button>
+                <Alert severity="info" sx={{ borderRadius: '12px' }}>
+                  {t('work.trustNotice')}
+                </Alert>
+              </Box>
+            )}
+
+            {activity.status !== 'in_progress' && activity.status !== 'open' && (isWorker || isOwner || isAdmin) && (
               <Button 
                 fullWidth 
-                variant="contained" 
+                variant="outlined" 
                 size="large"
-                color="warning"
-                startIcon={<CheckCircle2 />}
+                startIcon={<PaperclipIcon />}
                 onClick={() => navigate(`/tasks/${activity.id}/submit`)}
-                sx={{ borderRadius: '16px', py: 2, fontSize: '1.1rem', fontWeight: 700 }}
+                sx={{ borderRadius: '16px', py: 1.5, fontWeight: 700 }}
               >
-                {t('work.submit') || 'Concluir e Enviar'}
+                {t('work.attachEvidence') || 'Anexar evidência (opcional)'}
               </Button>
             )}
 
