@@ -149,7 +149,10 @@
   "pwa": {
     "install": "Install App",
     "ready": "App ready for offline use!",
-    "newContent": "New content available, click to refresh."
+    "updateRequiredTitle": "Update required",
+    "updateRequiredDesc": "A new version of the app is available. To continue using the portal safely and reliably, you need to update now.",
+    "updateNow": "Update now",
+    "updating": "Updating…"
   },
   "common": {
     "none": "None",

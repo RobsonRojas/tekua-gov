@@ -4,10 +4,20 @@ import './lib/i18n'
 import App from './App.tsx'
 import { registerSW } from 'virtual:pwa-register'
 import { initSyncListener } from './lib/syncService'
+import { markUpdateAvailable, setUpdateServiceWorker } from './lib/pwaUpdate'
 
-registerSW({ immediate: true })
+if (!import.meta.env.DEV) {
+  const updateSW = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      markUpdateAvailable()
+    },
+  })
+  setUpdateServiceWorker(updateSW)
+} else {
+  registerSW({ immediate: true })
+}
+
 initSyncListener()
 
-createRoot(document.getElementById('root')!).render(
-  <App />
-)
+createRoot(document.getElementById('root')!).render(<App />)

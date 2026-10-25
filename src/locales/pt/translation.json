@@ -153,7 +153,10 @@
   "pwa": {
     "install": "Instalar Aplicativo",
     "ready": "Aplicativo pronto para uso offline!",
-    "newContent": "Novo conteúdo disponível, clique para atualizar."
+    "updateRequiredTitle": "Atualização obrigatória",
+    "updateRequiredDesc": "Uma nova versão do aplicativo está disponível. Para continuar usando o portal com segurança e estabilidade, é necessário atualizar agora.",
+    "updateNow": "Atualizar agora",
+    "updating": "Atualizando…"
   },
   "common": {
     "none": "Nenhum",

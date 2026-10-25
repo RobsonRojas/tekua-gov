@@ -5,7 +5,7 @@ if (workbox) {
 
   // Cache images
   workbox.routing.registerRoute(
-    ({request}) => request.destination === 'image',
+    ({ request }) => request.destination === 'image',
     new workbox.strategies.CacheFirst({
       cacheName: 'images',
       plugins: [
@@ -19,7 +19,7 @@ if (workbox) {
 
   // Cache fonts
   workbox.routing.registerRoute(
-    ({request}) => request.destination === 'font',
+    ({ request }) => request.destination === 'font',
     new workbox.strategies.CacheFirst({
       cacheName: 'fonts',
       plugins: [
@@ -31,6 +31,25 @@ if (workbox) {
     })
   );
 }
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      if (typeof self.clients?.claim === 'function') {
+        await self.clients.claim();
+      }
+      if (typeof workbox?.precaching?.cleanupOutdatedCaches === 'function') {
+        workbox.precaching.cleanupOutdatedCaches();
+      }
+    })()
+  );
+});
 
 self.addEventListener('push', function (event) {
   let data = {};
@@ -45,8 +64,8 @@ self.addEventListener('push', function (event) {
     badge: '/favicon.ico',
     vibrate: [100, 50, 100],
     data: {
-      url: data.url || '/'
-    }
+      url: data.url || '/',
+    },
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
