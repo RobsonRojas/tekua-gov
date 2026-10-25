@@ -179,7 +179,8 @@ serve(async (req) => {
             }, JSON.stringify({
               title: template.pushTitle,
               body: template.pushBody,
-              url: template.link
+              url: template.link || '/',
+              data: { url: template.link || '/' }
             }))
           } catch (e) {
             console.error(`Push delivery failed for user ${userId}:`, e)
