@@ -21,6 +21,7 @@
 
 - [x] 4.1 Criar a rota `/share/circle/:token` com a página de detalhes da convocação.
 - [x] 4.2 Exigir login antes de exibir qualquer detalhe, e tratar token inexistente com mensagem genérica.
+- [x] 4.3 Botão para o autor encerrar a própria convocação aberta, na página de compartilhamento (o servidor informa `is_author`, sem expor o id do autor).
 
 ## 5. Dashboard e painel do administrador
 
@@ -40,4 +41,4 @@
 - [x] 7.5 Rodar `npm run test`, `npm run build` e `npm run lint` nos arquivos alterados, sem regressões.
 - [x] 7.6 Rodar `openspec validate restorative-circle-convocation --strict`.
 - [x] 7.7 Aplicar a migração no Supabase de produção somente com confirmação explícita, sem `db push`.
-- [ ] 7.8 Publicar e verificar em produção: criação, email e push recebidos, link de compartilhamento, destaque no dashboard e cancelamento pelo administrador.
+\1

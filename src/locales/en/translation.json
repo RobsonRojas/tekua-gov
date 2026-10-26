@@ -572,6 +572,9 @@
     "adminEmpty": "No convocations recorded.",
     "adminClose": "Close",
     "adminCancel": "Cancel",
-    "adminCancelConfirm": "Cancel this convocation? It will be removed from the dashboard."
+    "adminCancelConfirm": "Cancel this convocation? It will be removed from the dashboard.",
+      "closeOwn": "Close my convocation",
+      "closeOwnConfirm": "Close this convocation? It will be removed from the dashboard.",
+      "closeFailed": "Could not close the convocation."
   }
 }

@@ -314,13 +314,15 @@ serve(async (req) => {
 
         const { data, error } = await supabaseClient
           .from('restorative_circles')
-          .select('id, title, description, scheduled_at, location_or_link, status, share_token, created_at')
+          .select('id, title, description, scheduled_at, location_or_link, status, share_token, created_at, created_by')
           .eq('share_token', token)
           .maybeSingle()
 
         if (error) throw error
         if (!data) throw new Error('Restorative circle not found')
-        responseData = data
+        // Não expõe o id do autor: informa apenas se quem consulta é o autor.
+        const { created_by, ...circle } = data
+        responseData = { ...circle, is_author: created_by === user.id }
         break
       }
 

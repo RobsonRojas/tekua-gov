@@ -79,9 +79,12 @@ Como **Membro B** (em até alguns minutos):
 
 ### 7. Encerramento pelo autor
 
-1. Como **Membro A**, abrir o link da convocação de teste e localizar a ação de encerrar.
-   - *Observação: a página de compartilhamento mostra só os detalhes. Se não houver ação de encerrar para o autor nesta tela, registre isso e siga para o passo 8 pelo painel do administrador.*
-2. **Esperado:** a convocação passa a "Encerrada" e sai do destaque da Home.
+1. Como **Membro A**, abrir o link da convocação de teste (com sessão).
+   - **Esperado:** aparece o botão "Encerrar minha convocação".
+2. Clicar no botão e confirmar.
+   - **Esperado:** o status passa a "Encerrada", o botão some e a convocação sai do destaque da Home.
+3. Como **Membro B**, abrir o mesmo link.
+   - **Esperado:** não aparece o botão de encerrar (só o autor vê).
 
 ### 8. Painel do administrador
 

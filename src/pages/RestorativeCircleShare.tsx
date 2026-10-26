@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Box, Chip, CircularProgress, Container, Link as MuiLink, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, Container, Link as MuiLink, Paper, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { isValidHttpUrl } from '../lib/links';
 
 interface CircleDetail {
   id: string;
+  is_author?: boolean;
   title: string;
   description: string | null;
   scheduled_at: string;
@@ -21,6 +22,8 @@ const RestorativeCircleShare: React.FC = () => {
   const [circle, setCircle] = useState<CircleDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +54,25 @@ const RestorativeCircleShare: React.FC = () => {
       cancelled = true;
     };
   }, [token]);
+
+  const handleCloseOwn = async () => {
+    if (!circle) return;
+    if (!window.confirm(t('circle.closeOwnConfirm', 'Encerrar esta convocação? Ela sairá do dashboard.'))) return;
+    setClosing(true);
+    setActionError('');
+    try {
+      const { error } = await apiClient.invoke('api-governance', 'closeRestorativeCircle', { id: circle.id });
+      if (error) {
+        setActionError(t('circle.closeFailed', 'Não foi possível encerrar a convocação.'));
+      } else {
+        setCircle({ ...circle, status: 'closed' });
+      }
+    } catch {
+      setActionError(t('circle.closeFailed', 'Não foi possível encerrar a convocação.'));
+    } finally {
+      setClosing(false);
+    }
+  };
 
   const statusLabel = (status: CircleDetail['status']) => {
     switch (status) {
@@ -108,6 +130,16 @@ const RestorativeCircleShare: React.FC = () => {
               )}
             </Typography>
           )}
+
+          {circle.is_author && circle.status === 'open' && (
+            <Box>
+              <Button variant="outlined" color="error" onClick={handleCloseOwn} disabled={closing}>
+                {t('circle.closeOwn', 'Encerrar minha convocação')}
+              </Button>
+            </Box>
+          )}
+
+          {actionError && <Alert severity="error">{actionError}</Alert>}
 
           {circle.description && (
             <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import RestorativeCircleShare from './RestorativeCircleShare';
 import { apiClient } from '../lib/api';
@@ -89,5 +89,59 @@ describe('RestorativeCircleShare', () => {
     await waitFor(() => {
       expect(apiClient.invoke).toHaveBeenCalledWith('api-governance', 'fetchRestorativeCircleByToken', { token: 'meu-token' });
     });
+  });
+});
+
+describe('RestorativeCircleShare — encerramento pelo autor (4.3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('shows the close button only to the author of an open convocation', async () => {
+    vi.mocked(apiClient.invoke).mockResolvedValue({ data: { ...baseCircle, is_author: true }, error: null } as never);
+
+    renderAt('token-autor');
+
+    expect(await screen.findByRole('button', { name: 'Encerrar minha convocação' })).toBeInTheDocument();
+  });
+
+  it('hides the close button from members who are not the author', async () => {
+    vi.mocked(apiClient.invoke).mockResolvedValue({ data: { ...baseCircle, is_author: false }, error: null } as never);
+
+    renderAt('token-outro');
+
+    expect(await screen.findByText('Conflito na horta')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Encerrar minha convocação' })).not.toBeInTheDocument();
+  });
+
+  it('closes the convocation after confirmation and shows the closed status', async () => {
+    window.confirm = vi.fn(() => true);
+    vi.mocked(apiClient.invoke)
+      .mockResolvedValueOnce({ data: { ...baseCircle, is_author: true }, error: null } as never)
+      .mockResolvedValueOnce({ data: { id: 'c1', status: 'closed' }, error: null } as never);
+
+    renderAt('token-fechar');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Encerrar minha convocação' }));
+
+    await waitFor(() => {
+      expect(apiClient.invoke).toHaveBeenCalledWith('api-governance', 'closeRestorativeCircle', { id: 'c1' });
+    });
+    expect(await screen.findByText('Encerrada')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Encerrar minha convocação' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the convocation open and shows an error when closing fails', async () => {
+    window.confirm = vi.fn(() => true);
+    vi.mocked(apiClient.invoke)
+      .mockResolvedValueOnce({ data: { ...baseCircle, is_author: true }, error: null } as never)
+      .mockResolvedValueOnce({ data: null, error: 'Forbidden' } as never);
+
+    renderAt('token-falha');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Encerrar minha convocação' }));
+
+    expect(await screen.findByText('Não foi possível encerrar a convocação.')).toBeInTheDocument();
+    expect(screen.getByText('Aberta')).toBeInTheDocument();
   });
 });
