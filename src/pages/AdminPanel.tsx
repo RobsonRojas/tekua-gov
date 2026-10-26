@@ -62,7 +62,8 @@ import NewMemberModal from '../components/admin/NewMemberModal';
 import EconomyTab from '../components/admin/EconomyTab';
 import { useAuth } from '../context/useAuth';
 import { useMembers } from '../hooks/useMembers';
-import { History, TrendingUp, Gift, MailWarning } from 'lucide-react';
+import { History, TrendingUp, Gift, MailWarning, Megaphone } from 'lucide-react';
+import RestorativeCirclesTab from '../components/admin/RestorativeCirclesTab';
 import RewardsManager from '../components/admin/RewardsManager';
 import EmailQueuePanel from '../components/admin/EmailQueuePanel';
 
@@ -98,7 +99,8 @@ const AdminPanel: React.FC = () => {
     { id: 'payouts', label: t('admin.payoutAudit'), icon: <ShieldCheck size={18} />, value: 5 },
     { id: 'activity', label: t('audit.title'), icon: <History size={18} />, value: 6 },
     { id: 'rewards', label: 'Prêmios', icon: <Gift size={18} />, value: 7 },
-    { id: 'email-queue', label: 'Fila de E-mails', icon: <MailWarning size={18} />, value: 8 }
+    { id: 'email-queue', label: 'Fila de E-mails', icon: <MailWarning size={18} />, value: 8 },
+    { id: 'circles', label: t('circle.adminTab', 'Convocações'), icon: <Megaphone size={18} />, value: 9 }
   ];
 
   const [tabValue, setTabValue] = useState(() => {
@@ -864,6 +866,8 @@ const AdminPanel: React.FC = () => {
         <RewardsManager />
       ) : tabValue === 8 ? (
         <EmailQueuePanel />
+      ) : tabValue === 9 ? (
+        <RestorativeCirclesTab />
       ) : null}
 
       <Menu

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import RestorativeCircleForm from './RestorativeCircleForm';
 import { 
   Box, 
   Typography, 
@@ -15,6 +16,7 @@ const steps = ['Auto-reflexão', 'Diálogo Direto', 'Mediação', 'Câmara Colet
 
 const WizardFlow: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const [convening, setConvening] = useState(false);
 
   // Form states to demonstrate inputs, but we will clean them up on unmount implicitly by not saving globally
   const [osnpObservacao, setOsnpObservacao] = useState('');
@@ -107,7 +109,7 @@ const WizardFlow: React.FC = () => {
           <Box>
             <Typography variant="h6" gutterBottom>Passo 4: Câmara de Justiça Restaurativa</Typography>
             <Typography variant="body1" paragraph>
-              Para conflitos escalados ou com impacto coletivo. A Câmara é ativada via convite genérico no mural da comunidade.
+              Para conflitos escalados ou com impacto coletivo. A Câmara é convocada pelo formulário abaixo, e a convocação é divulgada para toda a vila.
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
               - Requer pré-círculos individuais (preparação).<br/>
@@ -115,14 +117,18 @@ const WizardFlow: React.FC = () => {
               - Foco em acordo regenerativo com ações SMART.
             </Typography>
             <Alert severity="warning" sx={{ mb: 3 }}>
-              Você deseja convocar a Câmara? Poste no ponto de comunicação: "Convoco Círculo Restaurativo para [tema]. Quem se voluntaria?"
+              Antes de convocar, confirme que os pré-círculos individuais foram feitos e que a convocação não expõe as partes.
             </Alert>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
-              <Button onClick={prevStep}>Voltar</Button>
-              <Button variant="contained" onClick={() => alert('Procure a Equipe de Harmonia para organizar os pré-círculos.')}>
-                Entendido, vou convocar
-              </Button>
-            </Box>
+            {convening ? (
+              <RestorativeCircleForm onBack={() => setConvening(false)} />
+            ) : (
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
+                <Button onClick={prevStep}>Voltar</Button>
+                <Button variant="contained" onClick={() => setConvening(true)}>
+                  Entendido, vou convocar
+                </Button>
+              </Box>
+            )}
           </Box>
         );
       default:

@@ -526,5 +526,51 @@
       "vote": "Voting",
       "system": "System"
     }
+  },
+  "circle": {
+    "pageTitle": "Restorative Circle",
+    "when": "When",
+    "where": "Where",
+    "notFound": "Convocation not found.",
+    "created": "Convocation created. The village was notified by email and notification.",
+    "shareLabel": "Share link",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "visibilityNotice": "This convocation is visible to the whole village. Do not include the names of the parties involved.",
+    "fieldTitle": "Circle theme",
+    "fieldDescription": "General description",
+    "fieldDate": "Date and time",
+    "fieldLocation": "Location or link (optional)",
+    "confirmPreCircles": "I confirm the individual pre-circles were considered.",
+    "confirmPrivacy": "I confirm the description does not identify the parties involved.",
+    "submit": "Convene circle",
+    "errors": {
+      "title": "Enter the circle theme.",
+      "dateRequired": "Enter the date and time.",
+      "datePast": "The date and time must be in the future.",
+      "preCircles": "Confirm the individual pre-circles were considered.",
+      "privacy": "Confirm the description does not identify the parties involved.",
+      "generic": "Could not create the convocation. Please try again."
+    },
+    "status": {
+      "open": "Open",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "highlightLabel": "Restorative circle convocation",
+    "highlightTitle": "Restorative Circle convened",
+    "highlightAction": "View convocation",
+    "adminTab": "Convocations",
+    "adminTitle": "Restorative Circle Convocations",
+    "adminColTitle": "Theme",
+    "adminColStatus": "Status",
+    "adminColAuthor": "Author",
+    "adminColScheduled": "Scheduled for",
+    "adminColCreated": "Created at",
+    "adminColActions": "Actions",
+    "adminEmpty": "No convocations recorded.",
+    "adminClose": "Close",
+    "adminCancel": "Cancel",
+    "adminCancelConfirm": "Cancel this convocation? It will be removed from the dashboard."
   }
 }

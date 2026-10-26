@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
+import { canCancelCircle, canCloseCircle, validateNewCircle } from "./circleRules.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,6 +28,15 @@ serve(async (req) => {
     if (authError || !user) throw new Error('Unauthorized')
 
     const { action, params } = await req.json()
+
+    const isAdminUser = async (userId: string) => {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('role, roles')
+        .eq('id', userId)
+        .single()
+      return profile?.role === 'admin' || !!profile?.roles?.includes('admin')
+    }
 
     let responseData: any = null
 
@@ -237,6 +247,146 @@ serve(async (req) => {
 
         if (error) throw error
         responseData = data
+        break
+      }
+
+      case 'createRestorativeCircle': {
+        const { title, description, scheduledAt, locationOrLink, confirmedPreCircles } = params
+        const checked = validateNewCircle({ title, scheduledAt, confirmedPreCircles }, Date.now())
+        if (!checked.ok) throw new Error(checked.error)
+        const cleanTitle = checked.title
+
+        const { data, error } = await supabaseClient
+          .from('restorative_circles')
+          .insert([{
+            title: cleanTitle,
+            description: typeof description === 'string' && description.trim() ? description.trim() : null,
+            scheduled_at: checked.scheduledAt,
+            location_or_link: typeof locationOrLink === 'string' && locationOrLink.trim() ? locationOrLink.trim() : null,
+            created_by: user.id,
+          }])
+          .select()
+          .single()
+
+        if (error) {
+          if (error.code === '23505') throw new Error('You already have an open restorative circle')
+          throw error
+        }
+        responseData = data
+
+        // Convite à vila por email, notificação in-app e push (não bloqueia a resposta)
+        fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/notify-engine`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+          },
+          body: JSON.stringify({
+            event: 'restorative_circle.convened',
+            payload: {
+              circle_id: data.id,
+              title: data.title,
+              scheduled_at: data.scheduled_at,
+              share_token: data.share_token
+            }
+          })
+        }).catch(err => console.error('Failed to notify restorative circle:', err))
+        break
+      }
+
+      case 'fetchOpenRestorativeCircles': {
+        const { data, error } = await supabaseClient
+          .from('restorative_circles')
+          .select('id, title, scheduled_at, share_token')
+          .eq('status', 'open')
+          .gt('scheduled_at', new Date().toISOString())
+          .order('scheduled_at', { ascending: true })
+          .limit(5)
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'fetchRestorativeCircleByToken': {
+        const { token } = params
+        if (!token || typeof token !== 'string') throw new Error('Missing token')
+
+        const { data, error } = await supabaseClient
+          .from('restorative_circles')
+          .select('id, title, description, scheduled_at, location_or_link, status, share_token, created_at')
+          .eq('share_token', token)
+          .maybeSingle()
+
+        if (error) throw error
+        if (!data) throw new Error('Restorative circle not found')
+        responseData = data
+        break
+      }
+
+      case 'closeRestorativeCircle': {
+        const { id } = params
+        if (!id) throw new Error('Missing circle ID')
+
+        const { data: circle, error: fetchError } = await supabaseAdmin
+          .from('restorative_circles')
+          .select('id, created_by, status')
+          .eq('id', id)
+          .maybeSingle()
+
+        if (fetchError) throw fetchError
+        if (!circle) throw new Error('Restorative circle not found')
+        if (circle.status !== 'open') throw new Error('Restorative circle is not open')
+
+        if (!canCloseCircle(circle, user.id, await isAdminUser(user.id))) throw new Error('Forbidden')
+
+        const { error } = await supabaseAdmin
+          .from('restorative_circles')
+          .update({ status: 'closed' })
+          .eq('id', id)
+
+        if (error) throw error
+        responseData = { id, status: 'closed' }
+        break
+      }
+
+      case 'cancelRestorativeCircle': {
+        const { id } = params
+        if (!id) throw new Error('Missing circle ID')
+        if (!canCancelCircle(await isAdminUser(user.id))) throw new Error('Forbidden')
+
+        const { data, error } = await supabaseAdmin
+          .from('restorative_circles')
+          .update({ status: 'cancelled', cancelled_by: user.id })
+          .eq('id', id)
+          .eq('status', 'open')
+          .select('id, status, cancelled_by')
+          .maybeSingle()
+
+        if (error) throw error
+        if (!data) throw new Error('Restorative circle is not open')
+        responseData = data
+        break
+      }
+
+      case 'fetchAllRestorativeCircles': {
+        if (!(await isAdminUser(user.id))) throw new Error('Forbidden')
+
+        const { data: circles, error } = await supabaseAdmin
+          .from('restorative_circles')
+          .select('id, title, status, scheduled_at, created_at, created_by, cancelled_by, share_token')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+
+        const authorIds = [...new Set((circles || []).map((c: any) => c.created_by))]
+        const { data: authors } = await supabaseAdmin
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', authorIds)
+        const names = new Map((authors || []).map((a: any) => [a.id, a.full_name]))
+
+        responseData = (circles || []).map((c: any) => ({ ...c, author_name: names.get(c.created_by) ?? null }))
         break
       }
 

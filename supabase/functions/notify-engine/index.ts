@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'
+import { deliverEach } from './notifyDelivery.ts'
 import webpush from 'https://esm.sh/web-push'
 
 const corsHeaders = {
@@ -121,6 +122,21 @@ serve(async (req) => {
         title: { pt: 'Nova Pauta para Votação', en: 'New Agenda for Voting' },
         message: { pt: `Uma nova pauta de governança foi criada e está disponível para discussão e votação: "${title}". Acesse o portal para participar.`, en: `A new governance agenda was created and is available for discussion and voting: "${title}". Visit the portal to participate.` }
       }
+    } else if (event === 'restorative_circle.convened') {
+      // Convite à vila: broadcast para todos os perfis. O corpo não inclui a descrição nem nomes das partes.
+      const { data: members } = await supabaseClient.from('profiles').select('id')
+      recipients = members?.map(m => m.id) || []
+      const circleTitle = typeof payload.title === 'string' ? payload.title : 'Círculo restaurativo'
+      const when = new Date(payload.scheduled_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+      template = {
+        subject: `Convite: Círculo Restaurativo - ${circleTitle}`,
+        body: `Um círculo restaurativo foi convocado para ${when}: "${circleTitle}". Acesse o link para ver os detalhes e se voluntariar.`,
+        pushTitle: 'Círculo Restaurativo convocado',
+        pushBody: `${circleTitle} · ${when}`,
+        link: `/share/circle/${payload.share_token}`,
+        title: { pt: 'Círculo Restaurativo convocado', en: 'Restorative circle convened' },
+        message: { pt: `Um círculo restaurativo foi convocado para ${when}: "${circleTitle}". Acesse o link para ver os detalhes e se voluntariar.`, en: `A restorative circle was convened for ${when}: "${circleTitle}". Open the link to see the details and volunteer.` }
+      }
     } else if (event === 'notification.surreal_receipt') {
       // Surreal receipt broadcast - notifications are already created by the DB trigger
       // This handler only sends push and email notifications
@@ -148,7 +164,7 @@ serve(async (req) => {
     }
 
     // 2. Deliver Notifications
-    const notificationPromises = recipients.map(async (userId) => {
+    await deliverEach(recipients, async (userId) => {
       try {
       // a. Save In-App Notification (skip for surreal_receipt - already created by DB trigger)
       if (event !== 'notification.surreal_receipt') {
@@ -282,7 +298,6 @@ serve(async (req) => {
       }
     })
 
-    await Promise.allSettled(notificationPromises)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

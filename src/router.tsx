@@ -30,6 +30,7 @@ const TasksBoard = lazy(() => import('./pages/TasksBoard'));
 const CreateTask = lazy(() => import('./pages/CreateTask'));
 const SubmitTaskProof = lazy(() => import('./pages/SubmitTaskProof'));
 const AIAgent = lazy(() => import('./pages/AIAgent'));
+const RestorativeCircleShare = lazy(() => import('./pages/RestorativeCircleShare'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const TaskDetail = lazy(() => import('./pages/TaskDetail'));
 const SharingMarketplace = lazy(() => import('./pages/Sharing/index'));
@@ -111,6 +112,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <Suspense fallback={<LoadingFallback />}>
               <Home />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'share/circle/:token',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <RestorativeCircleShare />
             </Suspense>
           </ProtectedRoute>
         ),

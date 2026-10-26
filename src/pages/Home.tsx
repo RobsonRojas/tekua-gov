@@ -11,6 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import WalletCard from '../components/WalletCard';
+import RestorativeCircleHighlight from '../components/restorative/RestorativeCircleHighlight';
 import PushNotificationBanner from '../components/PushNotificationBanner';
 import { usePWA } from '../context/PWAContext';
 import { InstallPrompt } from '../components/pwa/InstallPrompt';
@@ -66,6 +67,7 @@ const Home: React.FC = () => {
 
   return (
     <Box>
+      <RestorativeCircleHighlight />
       <Box sx={{ mb: 6, textAlign: 'center' }}>
         <Typography variant="h1" gutterBottom color="primary.main">
           {t('home.title')}
