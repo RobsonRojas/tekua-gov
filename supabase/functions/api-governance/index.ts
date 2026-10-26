@@ -252,7 +252,7 @@ serve(async (req) => {
 
       case 'createRestorativeCircle': {
         const { title, description, scheduledAt, locationOrLink, confirmedPreCircles } = params
-        const checked = validateNewCircle({ title, scheduledAt, confirmedPreCircles }, Date.now())
+        const checked = validateNewCircle({ title, description, scheduledAt, confirmedPreCircles }, Date.now())
         if (!checked.ok) throw new Error(checked.error)
         const cleanTitle = checked.title
 

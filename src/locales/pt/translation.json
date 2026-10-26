@@ -541,7 +541,7 @@
     "shareLabel": "Link para compartilhamento",
     "copy": "Copiar link",
     "copied": "Link copiado",
-    "visibilityNotice": "Esta convocação é visível a toda a vila. Não inclua nomes das partes envolvidas.",
+    "visibilityNotice": "Esta convocação é visível a toda a vila. Não inclua endereços de email nem dados que identifiquem as partes envolvidas.",
     "fieldTitle": "Tema do círculo",
     "fieldDescription": "Descrição geral",
     "fieldDate": "Data e horário",
@@ -555,7 +555,8 @@
       "datePast": "A data e o horário precisam ser futuros.",
       "preCircles": "Confirme que os pré-círculos individuais foram considerados.",
       "privacy": "Confirme que a descrição não identifica as partes envolvidas.",
-      "generic": "Não foi possível criar a convocação. Tente novamente."
+      "generic": "Não foi possível criar a convocação. Tente novamente.",
+      "email": "Remova os endereços de email do tema e da descrição."
     },
     "status": {
       "open": "Aberta",

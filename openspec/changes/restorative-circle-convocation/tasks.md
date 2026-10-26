@@ -14,7 +14,7 @@
 
 - [x] 3.1 Substituir o alerta do botão "Entendido, vou convocar" por um formulário de convocação, mantendo o texto de orientação acima dele.
 - [x] 3.2 Validar no cliente tema, data e horário, e confirmação dos pré-círculos, e bloquear data passada.
-- [ ] 3.3 Exibir alerta de visibilidade quando a descrição contiver nomes, antes da confirmação.
+- [x] 3.3 Bloquear a criação quando o tema ou a descrição contiver endereço de email, com alerta visível antes da confirmação (formulário e backend). A detecção de nomes foi substituída pela de email.
 - [x] 3.4 Após criar, exibir o link de compartilhamento com a opção de copiá-lo.
 
 ## 4. Página de compartilhamento

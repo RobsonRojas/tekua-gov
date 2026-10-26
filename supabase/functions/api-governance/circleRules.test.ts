@@ -34,6 +34,15 @@ Deno.test("criação recusa data passada e aceita data futura", () => {
   assertEquals(future.ok, true)
 })
 
+Deno.test("criação recusa endereço de email no tema ou na descrição (3.3)", () => {
+  const inTitle = validateNewCircle({ title: "Fale com ana@exemplo.org", scheduledAt: "2099-02-01T10:00:00.000Z", confirmedPreCircles: true }, NOW)
+  assertEquals(inTitle.ok, false)
+  const inDescription = validateNewCircle({ title: "Horta", description: "Contato: ana.silva@mail.com.br", scheduledAt: "2099-02-01T10:00:00.000Z", confirmedPreCircles: true }, NOW)
+  assertEquals(inDescription.ok, false)
+  const clean = validateNewCircle({ title: "Horta", description: "Encontro geral, sem contatos", scheduledAt: "2099-02-01T10:00:00.000Z", confirmedPreCircles: true }, NOW)
+  assertEquals(clean.ok, true)
+})
+
 Deno.test("criação exige título e confirmação dos pré-círculos", () => {
   const noTitle = validateNewCircle({ title: "   ", scheduledAt: "2099-02-01T10:00:00.000Z", confirmedPreCircles: true }, NOW)
   assertEquals(noTitle.ok, false)

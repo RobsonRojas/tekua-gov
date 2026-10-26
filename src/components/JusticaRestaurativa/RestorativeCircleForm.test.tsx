@@ -92,6 +92,19 @@ describe('RestorativeCircleForm', () => {
     expect(screen.getByLabelText(/Tema do círculo/)).toHaveValue('Conflito na horta');
   });
 
+  it('blocks submission while the title or description contains an e-mail address (3.3)', async () => {
+    render(<RestorativeCircleForm onBack={() => {}} />);
+    fillForm();
+    fireEvent.change(screen.getByLabelText(/Descrição geral/), { target: { value: 'Contato: ana.silva@mail.com.br' } });
+
+    expect(screen.getAllByText('Remova os endereços de email do tema e da descrição.').length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Convocar círculo' }));
+
+    await waitFor(() => expect(screen.getAllByText('Remova os endereços de email do tema e da descrição.').length).toBeGreaterThan(0));
+    expect(apiClient.invoke).not.toHaveBeenCalled();
+  });
+
   it('shows the visibility notice before any input', () => {
     render(<RestorativeCircleForm onBack={() => {}} />);
     expect(screen.getByText(/visível a toda a vila/)).toBeInTheDocument();

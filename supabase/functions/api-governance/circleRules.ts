@@ -19,8 +19,16 @@ export function canCancelCircle(isAdmin: boolean): boolean {
   return isAdmin
 }
 
+// Endereço de email (não nomes): detecção confiável, usada para impedir que contatos sejam publicados.
+export const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/
+
+export function containsEmail(text: string): boolean {
+  return EMAIL_PATTERN.test(text)
+}
+
 export interface NewCircleInput {
   title?: unknown
+  description?: unknown
   scheduledAt?: unknown
   confirmedPreCircles?: unknown
 }
@@ -33,6 +41,10 @@ export type NewCircleResult =
 export function validateNewCircle(input: NewCircleInput, now: number): NewCircleResult {
   const title = typeof input.title === 'string' ? input.title.trim() : ''
   if (!title) return { ok: false, error: 'Missing circle title' }
+  const description = typeof input.description === 'string' ? input.description : ''
+  if (containsEmail(title) || containsEmail(description)) {
+    return { ok: false, error: 'Remove e-mail addresses from the convocation' }
+  }
   if (input.confirmedPreCircles !== true) {
     return { ok: false, error: 'Pre-circles must be confirmed before convening' }
   }

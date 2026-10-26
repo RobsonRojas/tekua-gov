@@ -26,9 +26,10 @@ A convocação SHALL NOT conter nem exigir nomes das partes envolvidas no confli
 - **WHEN** o membro preenche o tema e a descrição da convocação
 - **THEN** o sistema SHALL exibir a convocação a todos os membros sem nenhum campo que identifique as partes
 
-#### Scenario: Descrição com nomes
-- **WHEN** a descrição informada contém nomes de pessoas
-- **THEN** o sistema SHALL alertar o membro de que a convocação é visível a toda a vila e SHALL permitir revisar o texto antes de confirmar
+#### Scenario: Descrição com endereço de email
+- **WHEN** o tema ou a descrição informados contêm um endereço de email
+- **THEN** o sistema SHALL alertar o membro, em destaque antes da confirmação, de que a convocação é visível a toda a vila
+- **AND** SHALL NOT criar a convocação enquanto o endereço não for removido, tanto no formulário quanto no backend
 
 ### Requirement: Link de Compartilhamento da Convocação
 Ao criar a convocação, o sistema SHALL gerar um link de compartilhamento único (`/share/circle/<token>`), em que o token SHALL ser não adivinhável e SHALL NOT repetir entre convocações.

@@ -14,6 +14,8 @@ interface CreatedCircle {
 const MAX_TITLE = 200;
 const MAX_DESCRIPTION = 2000;
 const MAX_LOCATION = 500;
+// Mesmo critério do backend (circleRules.ts): endereços de email não podem ser publicados.
+const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 
 /** Formulário de convocação do círculo restaurativo, exibido ao final do Passo 4 do wizard. */
 const RestorativeCircleForm: React.FC<RestorativeCircleFormProps> = ({ onBack }) => {
@@ -32,8 +34,11 @@ const RestorativeCircleForm: React.FC<RestorativeCircleFormProps> = ({ onBack })
 
   const scheduledDate = scheduledAt ? new Date(scheduledAt) : null;
 
+  const hasEmail = EMAIL_PATTERN.test(title) || EMAIL_PATTERN.test(description);
+
   const errors = useMemo(() => {
     const list: string[] = [];
+    if (hasEmail) list.push(t('circle.errors.email', 'Remova os endereços de email do tema e da descrição.'));
     if (!title.trim()) list.push(t('circle.errors.title', 'Informe o tema do círculo.'));
     if (!scheduledAt) {
       list.push(t('circle.errors.dateRequired', 'Informe a data e o horário.'));
@@ -43,7 +48,7 @@ const RestorativeCircleForm: React.FC<RestorativeCircleFormProps> = ({ onBack })
     if (!confirmedPreCircles) list.push(t('circle.errors.preCircles', 'Confirme que os pré-círculos individuais foram considerados.'));
     if (!acknowledgedPrivacy) list.push(t('circle.errors.privacy', 'Confirme que a descrição não identifica as partes envolvidas.'));
     return list;
-  }, [title, scheduledAt, scheduledDate, confirmedPreCircles, acknowledgedPrivacy, t]);
+  }, [title, description, hasEmail, scheduledAt, scheduledDate, confirmedPreCircles, acknowledgedPrivacy, t]);
 
   const handleSubmit = async () => {
     setAttempted(true);
@@ -142,6 +147,12 @@ const RestorativeCircleForm: React.FC<RestorativeCircleFormProps> = ({ onBack })
         onChange={(e) => setLocationOrLink(e.target.value.slice(0, MAX_LOCATION))}
         fullWidth
       />
+
+      {hasEmail && (
+        <Alert severity="warning">
+          {t('circle.errors.email', 'Remova os endereços de email do tema e da descrição.')}
+        </Alert>
+      )}
 
       <FormControlLabel
         control={<Checkbox checked={confirmedPreCircles} onChange={(e) => setConfirmedPreCircles(e.target.checked)} />}

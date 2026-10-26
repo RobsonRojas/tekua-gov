@@ -63,4 +63,5 @@ Ver `proposal.md` — Why. Estado atual que condiciona a abordagem:
 
 - **Quem pode convocar**: qualquer membro autenticado pode convocar pelo wizard. O autor encerra a própria convocação enquanto estiver aberta, e o administrador pode encerrar ou cancelar qualquer uma.
 - **Uma convocação aberta por autor**: garantido por índice único parcial no banco (`status = 'open'`).
+- **Privacidade por email**: a detecção automática de nomes de pessoas não é confiável. Em vez disso, o sistema bloqueia endereços de email no tema e na descrição, nos dois lados (formulário e backend), e mantém a confirmação obrigatória de que a descrição não identifica as partes.
 - **Tema**: não há coluna `theme` separada. O tema é o campo `title`.

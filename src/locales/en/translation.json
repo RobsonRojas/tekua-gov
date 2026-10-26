@@ -536,7 +536,7 @@
     "shareLabel": "Share link",
     "copy": "Copy link",
     "copied": "Link copied",
-    "visibilityNotice": "This convocation is visible to the whole village. Do not include the names of the parties involved.",
+    "visibilityNotice": "This convocation is visible to the whole village. Do not include e-mail addresses or details that identify the parties involved.",
     "fieldTitle": "Circle theme",
     "fieldDescription": "General description",
     "fieldDate": "Date and time",
@@ -550,7 +550,8 @@
       "datePast": "The date and time must be in the future.",
       "preCircles": "Confirm the individual pre-circles were considered.",
       "privacy": "Confirm the description does not identify the parties involved.",
-      "generic": "Could not create the convocation. Please try again."
+      "generic": "Could not create the convocation. Please try again.",
+      "email": "Remove the e-mail addresses from the theme and description."
     },
     "status": {
       "open": "Open",
