@@ -33,5 +33,5 @@
 - [x] 5.4 Teste do lembrete: envia só a quem não agradeceu, no máximo uma vez por semana, e uma falha de email não interrompe os demais. [testes automatizados: um envio por membro e por semana, e falha de um não interrompe os demais]
 - [x] 5.5 Rodar `npm run test`, `npm run build` e `npm run lint` nos arquivos alterados, sem regressões.
 - [x] 5.6 Rodar `openspec validate gift-gratitude --strict`.
-- [ ] 5.7 Aplicar a migração no Supabase de produção **somente** com confirmação explícita, e sem `db push`.
+- [x] 5.7 Aplicar a migração no Supabase de produção **somente** com confirmação explícita, e sem `db push`. [migração aplicada em produção; funções publicadas]
 - [ ] 5.8 Publicar e verificar em produção: registro com agradecimento, dashboard, privacidade e recebimento do lembrete.
