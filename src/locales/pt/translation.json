@@ -581,5 +581,34 @@
       "closeOwn": "Encerrar minha convocação",
       "closeOwnConfirm": "Encerrar esta convocação? Ela sairá do dashboard.",
       "closeFailed": "Não foi possível encerrar a convocação."
+  },
+  "workWallAssistant": {
+    "title": "Assistente do mural",
+    "open": "Assistente do mural",
+    "welcome": "Posso explicar como o mural funciona ou ajudar você a criar uma tarefa. Diga o que precisa.",
+    "you": "Você",
+    "assistant": "Assistente",
+    "placeholder": "Pergunte sobre o mural ou descreva a tarefa…",
+    "send": "Enviar",
+    "draftTitle": "Rascunho de tarefa (ainda não criada)",
+    "fieldTitle": "Título",
+    "fieldDescription": "Descrição",
+    "fieldReward": "Recompensa (Surreals)",
+    "draftNote": "Categoria, executores e confirmações são definidos depois, no formulário de tarefa.",
+    "save": "Salvar alterações",
+    "create": "Criar",
+    "edit": "Editar",
+    "cancel": "Cancelar",
+    "created": "Tarefa criada.",
+    "viewTask": "Ver tarefa",
+    "errors": {
+      "title": "Informe o título da tarefa.",
+      "titleLength": "O título pode ter até 200 caracteres.",
+      "description": "Informe a descrição da tarefa.",
+      "descriptionLength": "A descrição pode ter até 2000 caracteres.",
+      "reward": "A recompensa precisa ser um valor positivo.",
+      "generic": "Não foi possível responder agora.",
+      "create": "Não foi possível criar a tarefa. Seu rascunho foi mantido."
+    }
   }
 }

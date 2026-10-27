@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "https://esm.sh/@google/generative-ai@0.11.4"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
 import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
+import { AssistantMode, DRAFT_TOOL_NAME, WORK_WALL_GUIDE, functionDeclarationsFor, validateActivityDraft } from "./workWall.ts"
 
 const corsHeaders = getResponseHeaders();
 
@@ -94,7 +95,9 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { messages, systemInstruction: documentContext } = body;
+    const { messages, systemInstruction: documentContext, mode: requestedMode } = body;
+    // Modo do mural (work-wall-assistant): só este modo recebe o guia do mural e a ferramenta de rascunho.
+    const mode: AssistantMode = requestedMode === 'work-wall' ? 'work-wall' : 'default';
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: 'Histórico de mensagens inválido ou vazio.' }), {
@@ -129,6 +132,8 @@ serve(async (req) => {
       </document_context>
     `;
 
+    const systemPrompt = mode === 'work-wall' ? BASE_SYSTEM_PROMPT + WORK_WALL_GUIDE : BASE_SYSTEM_PROMPT;
+
     // Wrap user message in delimiters
     const wrappedLastMessage = `<user_input>${lastMessage}</user_input>`;
 
@@ -156,34 +161,8 @@ serve(async (req) => {
 
     const genAI = new GoogleGenerativeAI(API_KEY)
     
-    // 1. Define Tools (Task 1.1)
-    const tools = [
-      {
-        functionDeclarations: [
-          {
-            name: "get_user_balance",
-            description: "Obtém o saldo atual do usuário autenticado em Surreals (SRL).",
-            parameters: {
-              type: "object",
-              properties: {},
-            },
-          },
-          {
-            name: "get_activity_history",
-            description: "Obtém o histórico recente de atividades e contribuições do usuário.",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "number",
-                  description: "Número máximo de atividades a retornar (padrão 5).",
-                },
-              },
-            },
-          }
-        ],
-      },
-    ];
+    // Ferramentas conforme o modo: o rascunho do mural não grava nada, só é mostrado ao membro
+    const tools = [{ functionDeclarations: functionDeclarationsFor(mode) }];
 
     // 3. Dispatch Loop Logic
     const functions: Record<string, Function> = {
@@ -225,7 +204,7 @@ serve(async (req) => {
             console.log(`ai-handler: Trying model ${modelName}...`);
             const model = genAI.getGenerativeModel({ 
               model: modelName,
-              systemInstruction: BASE_SYSTEM_PROMPT,
+              systemInstruction: systemPrompt,
               tools: tools,
               safetySettings: [
                 { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
@@ -253,7 +232,12 @@ serve(async (req) => {
               console.log(`AI invoking tool: ${fnName}`, args);
 
               let fnResult;
-              try {
+              if (fnName === DRAFT_TOOL_NAME) {
+                // Rascunho: valida e mostra ao membro. Não grava nada; a criação depende de confirmação no cliente.
+                const checked = validateActivityDraft(args);
+                if (checked.ok) sendEvent({ type: 'draft', draft: checked.draft });
+                fnResult = checked.ok ? { status: 'draft_shown_to_user' } : { error: checked.error };
+              } else try {
                 if (functions[fnName]) {
                   fnResult = await functions[fnName](args);
                 } else {

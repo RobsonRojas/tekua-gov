@@ -43,7 +43,8 @@ const getValidToken = async (forceRefresh?: boolean): Promise<string> => {
 export const chatWithGemini = async (
   messages: Message[], 
   systemInstruction?: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  mode?: 'work-wall'
 ) => {
   let token = await getValidToken();
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -60,7 +61,7 @@ export const chatWithGemini = async (
       'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
       'Accept': 'text/event-stream',
     },
-    body: JSON.stringify({ messages, systemInstruction }),
+    body: JSON.stringify({ messages, systemInstruction, mode }),
     signal,
   });
 
@@ -74,7 +75,7 @@ export const chatWithGemini = async (
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Accept': 'text/event-stream',
       },
-      body: JSON.stringify({ messages, systemInstruction }),
+      body: JSON.stringify({ messages, systemInstruction, mode }),
       signal,
     });
   }
@@ -114,6 +115,9 @@ export const chatWithGemini = async (
                 yield { type: 'tool', name: event.name };
               } else if (event.type === 'text') {
                 yield { type: 'text', content: event.content };
+              } else if (event.type === 'draft') {
+                // Rascunho de tarefa do mural: só é gravado após confirmação do membro
+                yield { type: 'draft', draft: event.draft };
               } else if (event.type === 'error') {
                 throw new Error(event.message);
               }

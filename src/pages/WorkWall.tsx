@@ -6,8 +6,12 @@ import {
   Button,
   Alert,
   Snackbar,
-  Chip
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from '@mui/material';
+import WorkWallAssistant from '../components/workwall/WorkWallAssistant';
 import { 
   Add as AddIcon, 
   Refresh as RefreshIcon,
@@ -76,6 +80,7 @@ const WorkWall: React.FC = () => {
   const taskId = searchParams.get('task');
 
   const [filters, setFilters] = useState<WorkFilterValues>(() => loadStoredFilters());
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [snackbarState, setSnackbarState] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
     open: false,
@@ -215,6 +220,7 @@ const WorkWall: React.FC = () => {
   };
 
   return (
+    <>
     <Container maxWidth={false} disableGutters sx={{ py: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 3 }, width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Header Bar */}
       <Box sx={{ mb: 2.5, width: '100%', boxSizing: 'border-box' }}>
@@ -268,6 +274,9 @@ const WorkWall: React.FC = () => {
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, width: { xs: '100%', sm: 'auto' } }}>
+          <Button variant="outlined" onClick={() => setAssistantOpen(true)}>
+            {t('workWallAssistant.open', 'Assistente do mural')}
+          </Button>
           <Button 
             variant="contained" 
             color="secondary" 
@@ -459,6 +468,14 @@ const WorkWall: React.FC = () => {
         </Alert>
       </Snackbar>
     </Container>
+
+      <Dialog open={assistantOpen} onClose={() => setAssistantOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('workWallAssistant.title', 'Assistente do mural')}</DialogTitle>
+        <DialogContent>
+          <WorkWallAssistant />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

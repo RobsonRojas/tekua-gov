@@ -576,5 +576,34 @@
       "closeOwn": "Close my convocation",
       "closeOwnConfirm": "Close this convocation? It will be removed from the dashboard.",
       "closeFailed": "Could not close the convocation."
+  },
+  "workWallAssistant": {
+    "title": "Work wall assistant",
+    "open": "Work wall assistant",
+    "welcome": "I can explain how the wall works or help you create a task. Tell me what you need.",
+    "you": "You",
+    "assistant": "Assistant",
+    "placeholder": "Ask about the wall or describe the task…",
+    "send": "Send",
+    "draftTitle": "Task draft (not created yet)",
+    "fieldTitle": "Title",
+    "fieldDescription": "Description",
+    "fieldReward": "Reward (Surreals)",
+    "draftNote": "Category, executors and confirmations are set later, in the task form.",
+    "save": "Save changes",
+    "create": "Create",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "created": "Task created.",
+    "viewTask": "View task",
+    "errors": {
+      "title": "Enter the task title.",
+      "titleLength": "The title can have up to 200 characters.",
+      "description": "Enter the task description.",
+      "descriptionLength": "The description can have up to 2000 characters.",
+      "reward": "The reward must be a positive value.",
+      "generic": "Could not answer right now.",
+      "create": "Could not create the task. Your draft was kept."
+    }
   }
 }
