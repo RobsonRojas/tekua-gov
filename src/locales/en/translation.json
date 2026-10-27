@@ -605,5 +605,30 @@
       "generic": "Could not answer right now.",
       "create": "Could not create the task. Your draft was kept."
     }
+  },
+  "gratitude": {
+    "optional": "Optional: leave a thank-you to support the person who offered it.",
+    "message": "Thank-you message",
+    "emojis": "Emojis (up to {{max}})",
+    "showPublic": "Show on the public gratitude dashboard",
+    "myUsages": "Gifts I have used",
+    "myUsagesEmpty": "You have not used any gift yet.",
+    "none": "No thank-you yet.",
+    "edit": "Edit thank-you",
+    "add": "Leave a thank-you",
+    "public": "Public",
+    "private": "Private",
+    "dialogTitle": "Thank-you",
+    "skip": "Skip",
+    "submit": "Record use",
+    "dashboardLink": "View gratitude dashboard",
+    "dashboardTitle": "Community gratitude",
+    "dashboardIntro": "Public thank-yous for the gifts used. Whoever recorded it can make their thank-you private at any time.",
+    "dashboardEmpty": "There are no public gratitudes yet.",
+    "someone": "A member",
+    "sentimentGratitude": "Gratitude",
+    "sentimentIngratitude": "Ingratitude",
+    "ingratitudeNote": "Ingratitude records stay private for now and do not appear on the dashboard.",
+    "ingratitudePrivate": "Ingratitude (always private)"
   }
 }

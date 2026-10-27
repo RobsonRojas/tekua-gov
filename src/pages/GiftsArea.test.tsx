@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import GiftsArea from './GiftsArea';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
@@ -35,7 +36,7 @@ describe('GiftsArea — cadastro de dádiva', () => {
 
   it('accepts a gift without a link', async () => {
     (apiClient.invoke as any).mockResolvedValue({ data: [], error: null });
-    render(<GiftsArea />);
+    render(<MemoryRouter><GiftsArea /></MemoryRouter>);
     await waitFor(() => expect(apiClient.invoke).toHaveBeenCalled());
 
     openCreateDialog();
@@ -47,7 +48,7 @@ describe('GiftsArea — cadastro de dádiva', () => {
 
   it('blocks publication and shows an error for an invalid link', async () => {
     (apiClient.invoke as any).mockResolvedValue({ data: [], error: null });
-    render(<GiftsArea />);
+    render(<MemoryRouter><GiftsArea /></MemoryRouter>);
     await waitFor(() => expect(apiClient.invoke).toHaveBeenCalled());
 
     openCreateDialog();
@@ -65,7 +66,7 @@ describe('GiftsArea — cadastro de dádiva', () => {
 
   it('sends the link and the markdown description on create', async () => {
     (apiClient.invoke as any).mockResolvedValue({ data: [], error: null });
-    render(<GiftsArea />);
+    render(<MemoryRouter><GiftsArea /></MemoryRouter>);
     await waitFor(() => expect(apiClient.invoke).toHaveBeenCalled());
 
     (apiClient.invoke as any).mockClear();
@@ -88,7 +89,7 @@ describe('GiftsArea — cadastro de dádiva', () => {
 
   it('previews the Markdown description while typing', async () => {
     (apiClient.invoke as any).mockResolvedValue({ data: [], error: null });
-    render(<GiftsArea />);
+    render(<MemoryRouter><GiftsArea /></MemoryRouter>);
     await waitFor(() => expect(apiClient.invoke).toHaveBeenCalled());
 
     openCreateDialog();
@@ -114,7 +115,7 @@ describe('GiftsArea — cadastro de dádiva', () => {
       ],
       error: null,
     });
-    render(<GiftsArea />);
+    render(<MemoryRouter><GiftsArea /></MemoryRouter>);
 
     expect(await screen.findByText('Empresto', { selector: 'strong' })).toBeInTheDocument();
 

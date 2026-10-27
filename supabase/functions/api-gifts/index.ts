@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
+import { effectiveVisibility, validateGratitude, validateSentiment } from "./giftGratitude.ts"
 
 const corsHeaders = getResponseHeaders();
 
@@ -113,8 +114,14 @@ serve(async (req) => {
       }
 
       case 'recordUsage': {
-        const { giftId } = params
+        const { giftId, thanksMessage, thanksEmojis, isPublic, sentiment: rawSentiment } = params
         if (!giftId) throw new Error('Missing giftId')
+
+        const gratitude = validateGratitude({ message: thanksMessage, emojis: thanksEmojis })
+        if (!gratitude.ok) throw new Error(gratitude.error)
+        const sentimentCheck = validateSentiment(rawSentiment)
+        if (!sentimentCheck.ok) throw new Error(sentimentCheck.error)
+        const sentiment = sentimentCheck.sentiment
 
         // Fetch gift to check if provider is same as consumer
         const { data: gift } = await supabaseClient
@@ -128,12 +135,103 @@ serve(async (req) => {
           throw new Error('You cannot record usage of your own gift')
         }
 
-        // Check if user already used this gift recently to prevent spam? Not required by spec, but good practice.
-        // For now, just call the RPC
+        // Os Pontos de Dádiva são contabilizados pela mesma RPC, com ou sem agradecimento
         const { data, error } = await supabaseClient.rpc('award_gift_points', {
           p_gift_id: giftId,
-          p_consumer_id: user.id
+          p_consumer_id: user.id,
+          p_thanks_message: gratitude.message,
+          p_thanks_emojis: gratitude.emojis,
+          p_is_public: effectiveVisibility(sentiment, isPublic !== false),
+          p_sentiment: sentiment
         })
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'fetchMyUsages': {
+        // Histórico das próprias dádivas utilizadas (RLS libera as próprias linhas)
+        const { data, error } = await supabaseClient
+          .from('gift_usages')
+          .select('id, created_at, thanks_message, thanks_emojis, is_public, sentiment, gift:gifts(id, title)')
+          .eq('consumer_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(100)
+
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'updateUsageGratitude': {
+        const { usageId, thanksMessage, thanksEmojis } = params
+        if (!usageId) throw new Error('Missing usageId')
+
+        const gratitude = validateGratitude({ message: thanksMessage, emojis: thanksEmojis })
+        if (!gratitude.ok) throw new Error(gratitude.error)
+
+        // Somente o consumidor que registrou o uso pode alterar o agradecimento
+        const { data, error } = await supabaseAdmin
+          .from('gift_usages')
+          .update({ thanks_message: gratitude.message, thanks_emojis: gratitude.emojis })
+          .eq('id', usageId)
+          .eq('consumer_id', user.id)
+          .select('id, thanks_message, thanks_emojis, is_public')
+          .maybeSingle()
+
+        if (error) throw error
+        if (!data) throw new Error('Usage not found or not yours')
+        responseData = data
+        break
+      }
+
+      case 'setUsageVisibility': {
+        const { usageId, isPublic } = params
+        if (!usageId) throw new Error('Missing usageId')
+        if (typeof isPublic !== 'boolean') throw new Error('isPublic must be a boolean')
+
+        // Somente o autor do registro altera a visibilidade. Ingratidões permanecem privadas por enquanto.
+        const { data: current, error: currentError } = await supabaseAdmin
+          .from('gift_usages')
+          .select('sentiment')
+          .eq('id', usageId)
+          .eq('consumer_id', user.id)
+          .maybeSingle()
+        if (currentError) throw currentError
+        if (!current) throw new Error('Usage not found or not yours')
+        if (isPublic && !effectiveVisibility(current.sentiment, true)) {
+          throw new Error('Ingratidões permanecem privadas por enquanto')
+        }
+
+        const { data, error } = await supabaseAdmin
+          .from('gift_usages')
+          .update({ is_public: isPublic })
+          .eq('id', usageId)
+          .eq('consumer_id', user.id)
+          .select('id, is_public')
+          .maybeSingle()
+
+        if (error) throw error
+        if (!data) throw new Error('Usage not found or not yours')
+        responseData = data
+        break
+      }
+
+      case 'fetchGratitudeDashboard': {
+        // Dashboard público: somente registros públicos com algum agradecimento
+        const { data, error } = await supabaseClient
+          .from('gift_usages')
+          .select(`
+            id, created_at, thanks_message, thanks_emojis,
+            consumer:profiles!consumer_id (full_name),
+            gift:gifts (id, title, provider:profiles!provider_id (full_name))
+          `)
+          .eq('is_public', true)
+          .eq('sentiment', 'gratitude')
+          .or('thanks_message.not.is.null,thanks_emojis.not.is.null')
+          .order('created_at', { ascending: false })
+          .limit(100)
 
         if (error) throw error
         responseData = data

@@ -137,6 +137,19 @@ serve(async (req) => {
         title: { pt: 'Círculo Restaurativo convocado', en: 'Restorative circle convened' },
         message: { pt: `Um círculo restaurativo foi convocado para ${when}: "${circleTitle}". Acesse o link para ver os detalhes e se voluntariar.`, en: `A restorative circle was convened for ${when}: "${circleTitle}". Open the link to see the details and volunteer.` }
       }
+    } else if (event === 'gift.gratitude_reminder') {
+      // Lembrete semanal de agradecimento: destinatários vêm do cron, já filtrados e deduplicados por semana
+      recipients = Array.isArray(payload.user_ids) ? payload.user_ids : []
+      const reminderText = 'Você recebeu alguma dádiva essa semana? Gostaria de deixar um agradecimento para apoiar a alma caridosa.'
+      template = {
+        subject: 'Deixe um agradecimento pela dádiva recebida',
+        body: reminderText,
+        pushTitle: 'Deixe um agradecimento',
+        pushBody: 'Você recebeu uma dádiva essa semana.',
+        link: '/gifts',
+        title: { pt: 'Deixe um agradecimento', en: 'Leave a thank-you' },
+        message: { pt: reminderText, en: 'Did you receive a gift this week? Would you like to leave a thank-you to support the generous soul?' }
+      }
     } else if (event === 'notification.surreal_receipt') {
       // Surreal receipt broadcast - notifications are already created by the DB trigger
       // This handler only sends push and email notifications

@@ -32,6 +32,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GiftDetailsModal from '../components/GiftDetailsModal';
 import SafeMarkdown from '../components/common/SafeMarkdown';
 import { isOptionalHttpUrl, isValidHttpUrl } from '../lib/links';
+import { Link as RouterLink } from 'react-router-dom';
+import GratitudeFields from '../components/gifts/GratitudeFields';
+import { shortenBareUrls } from '../lib/markdownLinks';
+import { emptyGratitude, type GratitudeValue } from '../components/gifts/gratitudeConfig';
+import MyUsages from '../components/gifts/MyUsages';
 
 const GiftsArea: React.FC = () => {
   const { t } = useTranslation();
@@ -50,6 +55,9 @@ const GiftsArea: React.FC = () => {
   const linkUrlInvalid = !isOptionalHttpUrl(newLinkUrl);
   
   const [recordingUsageId, setRecordingUsageId] = useState<string | null>(null);
+  const [usageGift, setUsageGift] = useState<{ id: string } | null>(null);
+  const [usageGratitude, setUsageGratitude] = useState<GratitudeValue>(emptyGratitude);
+  const [usagesVersion, setUsagesVersion] = useState(0);
   const [selectedGift, setSelectedGift] = useState<any | null>(null);
 
   const fetchGifts = async () => {
@@ -93,15 +101,28 @@ const GiftsArea: React.FC = () => {
     }
   };
 
-  const handleRecordUsage = async (giftId: string) => {
-    if (!user) return;
+  const openUsageDialog = (gift: { id: string }) => {
+    setUsageGift(gift);
+    setUsageGratitude(emptyGratitude);
+  };
+
+  // O agradecimento é opcional: "Pular" registra o uso sem mensagem nem emojis.
+  const submitUsage = async (withGratitude: boolean) => {
+    if (!user || !usageGift) return;
+    const giftId = usageGift.id;
     setRecordingUsageId(giftId);
     try {
       const { error } = await apiClient.invoke('api-gifts', 'recordUsage', {
-        giftId
+        giftId,
+        thanksMessage: withGratitude ? usageGratitude.message.trim() || null : null,
+        thanksEmojis: withGratitude && usageGratitude.emojis.length > 0 ? usageGratitude.emojis : null,
+        isPublic: usageGratitude.isPublic,
+        sentiment: usageGratitude.sentiment,
       });
       if (error) throw new Error(error);
-      
+
+      setUsageGift(null);
+      setUsagesVersion((v) => v + 1);
       alert(t('gifts.usageRecorded'));
     } catch (err: any) {
       alert('Error: ' + err.message);
@@ -174,7 +195,7 @@ const GiftsArea: React.FC = () => {
                           {title}
                         </Typography>
                         <SafeMarkdown
-                          content={desc}
+                          content={shortenBareUrls(desc)}
                           contained
                           sx={{ typography: 'body2', color: 'text.secondary' }}
                         />
@@ -189,7 +210,7 @@ const GiftsArea: React.FC = () => {
                               fullWidth
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleRecordUsage(gift.id);
+                                openUsageDialog(gift);
                               }}
                               disabled={isOwnGift || recordingUsageId === gift.id}
                             >
@@ -221,6 +242,28 @@ const GiftsArea: React.FC = () => {
           </AnimatePresence>
         )}
       </Grid>
+
+      <Dialog open={Boolean(usageGift)} onClose={() => !recordingUsageId && setUsageGift(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('gifts.recordUsage')}</DialogTitle>
+        <DialogContent>
+          <GratitudeFields value={usageGratitude} onChange={setUsageGratitude} disabled={Boolean(recordingUsageId)} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => submitUsage(false)} disabled={Boolean(recordingUsageId)}>
+            {t('gratitude.skip', 'Pular')}
+          </Button>
+          <Button variant="contained" onClick={() => submitUsage(true)} disabled={Boolean(recordingUsageId)}>
+            {t('gratitude.submit', 'Registrar uso')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Box sx={{ mt: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Button variant="outlined" component={RouterLink} to="/gratidoes" sx={{ alignSelf: 'flex-start' }}>
+          {t('gratitude.dashboardLink', 'Ver dashboard de gratidões')}
+        </Button>
+        <MyUsages key={usagesVersion} />
+      </Box>
 
       <Dialog open={isDialogOpen} onClose={() => !submitting && setIsDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{t('gifts.create')}</DialogTitle>
@@ -302,8 +345,8 @@ const GiftsArea: React.FC = () => {
         open={!!selectedGift}
         onClose={() => setSelectedGift(null)}
         gift={selectedGift}
-        onRecordUsage={(giftId) => {
-          handleRecordUsage(giftId);
+        onRecordUsage={() => {
+          if (selectedGift) openUsageDialog(selectedGift);
           setSelectedGift(null);
         }}
         recordingUsageId={recordingUsageId}

@@ -610,5 +610,30 @@
       "generic": "Não foi possível responder agora.",
       "create": "Não foi possível criar a tarefa. Seu rascunho foi mantido."
     }
+  },
+  "gratitude": {
+    "optional": "Opcional: deixe um agradecimento para apoiar quem ofereceu.",
+    "message": "Mensagem de agradecimento",
+    "emojis": "Emojis (até {{max}})",
+    "showPublic": "Mostrar no dashboard público de gratidões",
+    "myUsages": "Minhas dádivas utilizadas",
+    "myUsagesEmpty": "Você ainda não utilizou nenhuma dádiva.",
+    "none": "Sem agradecimento ainda.",
+    "edit": "Editar agradecimento",
+    "add": "Deixar agradecimento",
+    "public": "Público",
+    "private": "Privado",
+    "dialogTitle": "Agradecimento",
+    "skip": "Pular",
+    "submit": "Registrar uso",
+    "dashboardLink": "Ver dashboard de gratidões",
+    "dashboardTitle": "Gratidões da comunidade",
+    "dashboardIntro": "Agradecimentos públicos pelas dádivas utilizadas. Quem registrou pode tornar o próprio agradecimento privado a qualquer momento.",
+    "dashboardEmpty": "Ainda não há gratidões públicas.",
+    "someone": "Um membro",
+    "sentimentGratitude": "Gratidão",
+    "sentimentIngratitude": "Ingratidão",
+    "ingratitudeNote": "Registros de ingratidão ficam privados por enquanto e não aparecem no dashboard.",
+    "ingratitudePrivate": "Ingratidão (sempre privada)"
   }
 }
