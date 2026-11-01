@@ -12,11 +12,16 @@ O sistema **SHALL** permitir que o modelo de IA solicite a execução de ferrame
 - **AND** O resultado da ferramenta é fornecido ao LLM para compor a resposta final ao usuário.
 
 ### Requirement: Restrição de Ferramentas a Somente Leitura
-Nesta fase, o sistema **MUST** garantir que nenhuma ferramenta executada pela IA possa realizar alterações no estado do banco de dados (escrita).
+Nesta fase, o sistema **MUST** garantir que nenhuma ferramenta executada pela IA possa realizar alterações no estado do banco de dados (escrita). A ferramenta `propose_circle_convocation` é explicitamente permitida como exceção a essa regra porque **não escreve no banco** — ela apenas propõe um rascunho ao usuário para confirmação explícita na interface.
 
 #### Scenario: Tentativa de transferência via IA
-- **WHEN** O usuário solicita "Transfira 10 Surreals para o João".
+- **WHEN** O usuário solicita "Transfira 10 Surreals para o João"
 - **THEN** O agente informa educadamente que ainda não possui permissão para realizar transações financeiras diretamente.
+
+#### Scenario: Proposta de convocação de Câmara via ferramenta
+- **WHEN** o agente invoca `propose_circle_convocation` com os dados coletados do usuário
+- **THEN** o sistema SHALL retornar um evento de rascunho para o frontend — sem gravar nada no banco de dados
+- **AND** o banco de dados SHALL ser alterado somente após confirmação explícita do usuário na interface
 
 ### Requirement: Validação de Parâmetros de Ferramentas
 O sistema SHALL validar rigorosamente todos os parâmetros fornecidos pelo modelo de IA para uma ferramenta antes de sua execução.
@@ -42,4 +47,3 @@ The system SHALL handle AI service failures gracefully and provide diagnostic in
 #### Scenario: Streaming Response Error
 - **WHEN** an error occurs during the streaming of an AI response.
 - **THEN** the system SHALL emit an `error` event in the event-stream and the frontend SHALL display an appropriate error alert instead of hanging.
-
