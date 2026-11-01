@@ -18,6 +18,11 @@ interface SafeMarkdownProps {
    * anterior (Markdown puro, sem wrapper).
    */
   contained?: boolean;
+  /**
+   * Interrompe a propagação do clique nos links, para que um container clicável
+   * (ex.: card que abre um modal) não reaja ao clique no link.
+   */
+  stopLinkPropagation?: boolean;
   /** Estilos extras do container (implica o uso do wrapper). */
   sx?: SxProps<Theme>;
 }
@@ -78,7 +83,7 @@ const containmentSx: SxProps<Theme> = {
  *  2. ReactMarkdown (sem rehype-raw) não renderiza HTML cru remanescente;
  *  3. urlTransform bloqueia URLs perigosas (javascript:, data:, vbscript:, file:).
  */
-const SafeMarkdown: React.FC<SafeMarkdownProps> = ({ content, linkTarget, contained, sx }) => {
+const SafeMarkdown: React.FC<SafeMarkdownProps> = ({ content, linkTarget, contained, stopLinkPropagation, sx }) => {
   const sanitized = useMemo(() => {
     return DOMPurify.sanitize(content ?? '', {
       ALLOWED_TAGS: [],
@@ -88,17 +93,18 @@ const SafeMarkdown: React.FC<SafeMarkdownProps> = ({ content, linkTarget, contai
   }, [content]);
 
   const components = useMemo(() => {
-    if (!linkTarget) return undefined;
+    if (!linkTarget && !stopLinkPropagation) return undefined;
     return {
       a: ({ node: _node, ...props }: any) => (
         <a
           {...props}
           target={linkTarget}
           rel={linkTarget === '_blank' ? 'noopener noreferrer' : undefined}
+          onClick={stopLinkPropagation ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
         />
       ),
     };
-  }, [linkTarget]);
+  }, [linkTarget, stopLinkPropagation]);
 
   const markdown = (
     <ReactMarkdown urlTransform={safeUrlTransform} components={components}>

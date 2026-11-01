@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { canCancelCircle, canCloseCircle, validateNewCircle } from "./circleRules.ts"
+import { canWriteProtocols, isProtocolStatus, validateProtocolInput } from "./protocolRules.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,6 +37,16 @@ serve(async (req) => {
         .eq('id', userId)
         .single()
       return profile?.role === 'admin' || !!profile?.roles?.includes('admin')
+    }
+
+    // Escrita de protocolos: administrador ou membro do Conselho Transversal.
+    const canWriteProtocolsUser = async (userId: string) => {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('role, roles')
+        .eq('id', userId)
+        .single()
+      return canWriteProtocols(profile?.role, profile?.roles)
     }
 
     let responseData: any = null
@@ -419,6 +430,93 @@ serve(async (req) => {
 
         const { created_by: _createdBy, ...fields } = circle
         responseData = { ...fields, author_name: author?.full_name ?? null }
+        break
+      }
+
+      case 'listProtocols': {
+        const writer = await canWriteProtocolsUser(user.id)
+        let query = supabaseAdmin
+          .from('governance_protocols')
+          .select('id, title, status, updated_at')
+          .order('title', { ascending: true })
+        // Arquivados só para quem escreve e pede explicitamente.
+        if (!(writer && params?.includeArchived === true)) query = query.eq('status', 'active')
+        const { data, error } = await query
+        if (error) throw error
+        responseData = { protocols: data || [], canWrite: writer }
+        break
+      }
+
+      case 'fetchProtocol': {
+        const { id } = params || {}
+        if (!id || typeof id !== 'string') throw new Error('Missing protocol ID')
+        // Protocolos arquivados continuam legíveis: atividades antigas ainda os usam.
+        const { data, error } = await supabaseAdmin
+          .from('governance_protocols')
+          .select('id, title, content, status, updated_at')
+          .eq('id', id)
+          .maybeSingle()
+        if (error) {
+          if (error.code === '22P02') throw new Error('Protocol not found')
+          throw error
+        }
+        if (!data) throw new Error('Protocol not found')
+        responseData = data
+        break
+      }
+
+      case 'createProtocol': {
+        if (!(await canWriteProtocolsUser(user.id))) throw new Error('Forbidden')
+        const checked = validateProtocolInput(params || {})
+        if (!checked.ok) throw new Error(checked.error)
+        const { data, error } = await supabaseAdmin
+          .from('governance_protocols')
+          .insert({ title: checked.title, content: checked.content, created_by: user.id })
+          .select('id, title, content, status, updated_at')
+          .single()
+        if (error) throw error
+        responseData = data
+        break
+      }
+
+      case 'updateProtocol': {
+        if (!(await canWriteProtocolsUser(user.id))) throw new Error('Forbidden')
+        const { id } = params || {}
+        if (!id || typeof id !== 'string') throw new Error('Missing protocol ID')
+        const checked = validateProtocolInput(params || {})
+        if (!checked.ok) throw new Error(checked.error)
+        const { data, error } = await supabaseAdmin
+          .from('governance_protocols')
+          .update({ title: checked.title, content: checked.content, updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .select('id, title, content, status, updated_at')
+          .maybeSingle()
+        if (error) {
+          if (error.code === '22P02') throw new Error('Protocol not found')
+          throw error
+        }
+        if (!data) throw new Error('Protocol not found')
+        responseData = data
+        break
+      }
+
+      case 'setProtocolStatus': {
+        if (!(await canWriteProtocolsUser(user.id))) throw new Error('Forbidden')
+        const { id, status } = params || {}
+        if (!id || typeof id !== 'string') throw new Error('Missing protocol ID')
+        if (!isProtocolStatus(status)) throw new Error('Invalid protocol status')
+        const { data, error } = await supabaseAdmin
+          .from('governance_protocols')
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .select('id, status')
+          .maybeSingle()
+        if (error) {
+          if (error.code === '22P02') throw new Error('Protocol not found')
+          throw error
+        }
+        if (!data) throw new Error('Protocol not found')
+        responseData = data
         break
       }
 

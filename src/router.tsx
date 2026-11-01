@@ -25,6 +25,7 @@ const Voting = lazy(() => import('./pages/Voting'));
 const TopicDetail = lazy(() => import('./pages/TopicDetail'));
 const MemberManagement = lazy(() => import('./pages/MemberManagement'));
 const Documentation = lazy(() => import('./pages/Documentation'));
+const Protocols = lazy(() => import('./pages/Protocols'));
 const GovernanceServices = lazy(() => import('./pages/GovernanceServices'));
 const TasksBoard = lazy(() => import('./pages/TasksBoard'));
 const CreateTask = lazy(() => import('./pages/CreateTask'));
@@ -211,6 +212,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute adminOnly>
             <Suspense fallback={<LoadingFallback />}>
               <MemberManagement />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'protocols',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <Protocols />
             </Suspense>
           </ProtectedRoute>
         ),

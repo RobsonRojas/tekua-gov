@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { completeTask, addEvidence } from "./taskCompletion.ts"
+import { normalizeEvidenceAttachments } from "./evidenceLinks.ts"
+import { resolveProtocolId } from "./protocolLink.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,7 +72,8 @@ serve(async (req) => {
             confirmations:activity_confirmations (count),
             evidence:activity_evidence (evidence_url),
             attachments:activity_attachments (count),
-            category:work_categories (id, name)
+            category:work_categories (id, name),
+            protocol:governance_protocols (id, title)
           `)
         
         if (type && type !== 'all') query = query.eq('type', type)
@@ -144,7 +147,8 @@ serve(async (req) => {
             confirmations:activity_confirmations (*, profile:profiles(full_name, avatar_url)),
             evidence:activity_evidence (*),
             attachments:activity_attachments (*),
-            category:work_categories (id, name)
+            category:work_categories (id, name),
+            protocol:governance_protocols (id, title)
           `)
           .eq('id', id)
           .single()
@@ -190,7 +194,8 @@ serve(async (req) => {
           attachments = [],
           executorIds = [],
           projectId = null,
-          categoryId = null
+          categoryId = null,
+          protocolId = undefined
         } = params
         if (!title || !description) throw new Error('Missing activity title or description')
         
@@ -205,6 +210,7 @@ serve(async (req) => {
           .maybeSingle()
           
         const minConfirmations = govSettings?.min_contribution_confirmations || 3;
+        const resolvedProtocolId = await resolveProtocolId(supabaseClient, protocolId)
 
         const { data: activityData, error } = await supabaseClient
           .from('activities')
@@ -222,7 +228,8 @@ serve(async (req) => {
             importance,
             executor_ids: executorIds,
             project_id: projectId,
-            category_id: categoryId || null
+            category_id: categoryId || null,
+            protocol_id: resolvedProtocolId ?? null
           })
           .select()
           .single()
@@ -325,7 +332,6 @@ serve(async (req) => {
         
         if (fetchError || !activity) throw new Error('Activity not found')
         if (activity.status !== 'open') throw new Error('Task is no longer open')
-        if (activity.requester_id === user.id) throw new Error('You cannot claim your own task')
 
         // 2. Claim it
         const { data, error } = await supabaseClient
@@ -348,6 +354,9 @@ serve(async (req) => {
       case 'submitActivity': {
         const { title, description, rewardAmount, evidenceUrl, requesterId, urgency = false, importance = false, attachments = [], executorIds = [], categoryId = null } = params
         
+        // Links inválidos são recusados antes de criar a atividade.
+        const validAttachments = normalizeEvidenceAttachments<any>(attachments)
+
         const validationMethod = (requesterId && requesterId.trim() !== '') ? 'requester_approval' : 'community_consensus';
 
         // The evidence is optional. `undefined` would be dropped from the RPC payload
@@ -372,9 +381,6 @@ serve(async (req) => {
         if (error) throw error
 
         // Insert attachments if any
-        const validAttachments = Array.isArray(attachments)
-          ? attachments.filter((att: any) => att && att.file_url)
-          : []
 
         if (validAttachments.length > 0) {
           const attachmentsToInsert = validAttachments.map((att: any) => ({
@@ -567,7 +573,8 @@ serve(async (req) => {
           projectId,
           minConfirmations,
           attachments = [],
-          executorIds
+          executorIds,
+          protocolId
         } = params
         
         if (!activityId) throw new Error('Missing activityId')
@@ -575,7 +582,7 @@ serve(async (req) => {
         // 1. Fetch existing activity to verify requester
         const { data: activity, error: fetchError } = await supabaseClient
           .from('activities')
-          .select('requester_id, status')
+          .select('requester_id, status, protocol_id')
           .eq('id', activityId)
           .single()
           
@@ -618,6 +625,8 @@ serve(async (req) => {
         if (executorIds !== undefined) {
           updates.executor_ids = executorIds
         }
+        const resolvedProtocol = await resolveProtocolId(supabaseClient, protocolId, activity.protocol_id)
+        if (resolvedProtocol !== undefined) updates.protocol_id = resolvedProtocol
         if (minConfirmations !== undefined) {
           const mConf = Number(minConfirmations)
           if (isNaN(mConf) || mConf < 1) throw new Error('Min confirmations must be at least 1')

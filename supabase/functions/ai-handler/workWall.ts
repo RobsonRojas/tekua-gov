@@ -10,7 +10,7 @@ export const DRAFT_TOOL_NAME = 'propose_activity_draft'
 export const WORK_WALL_GUIDE = `
 GUIA DO MURAL DE TRABALHO (fonte oficial para explicar o mural):
 - O mural mostra as tarefas (atividades) em colunas por status: Open (disponível), In Progress (em execução), Pending Validation (aguardando validação) e Completed (concluída).
-- Assumir uma tarefa: um membro que não é o solicitante clica em assumir na tarefa aberta. Ela passa a "em execução" e fica vinculada a quem assumiu.
+- Assumir uma tarefa: qualquer membro, inclusive o solicitante, clica em assumir na tarefa aberta. Ela passa a "em execução" e fica vinculada a quem assumiu.
 - Evidências: quem executa pode anexar evidências (opcional). A tarefa pode ser concluída mesmo sem evidências.
 - Confirmação: em "aprovação do solicitante", o solicitante confirma o trabalho. Em "consenso da comunidade", membros confirmam até atingir o número necessário.
 - Pagamento: ao confirmar, a recompensa em Surreais é creditada ao executor.

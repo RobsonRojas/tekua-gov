@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import ProtocolSelect from '../components/work/ProtocolSelect';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { logActivity } from '../utils/activityLogger';
@@ -43,13 +44,13 @@ const CreateDemand: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number | string>('');
-  const [minConfirmations, setMinConfirmations] = useState<number>(3);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [executorIds, setExecutorIds] = useState<string[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [projectId, setProjectId] = useState<string>('');
   const [projects, setProjects] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<string>('');
+  const [protocolId, setProtocolId] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [beneficiaryId, setBeneficiaryId] = useState<string>('village');
   
@@ -114,12 +115,12 @@ const CreateDemand: React.FC = () => {
         title,
         description,
         rewardAmount: Number(amount),
-        minConfirmations: Number(minConfirmations),
         type: 'task',
         attachments,
         executorIds: executorIds.length > 0 ? executorIds : [],
         projectId: projectId || null,
         categoryId: categoryId || null,
+        protocolId,
         beneficiaryId: beneficiaryId === 'village' ? null : (beneficiaryId || null)
       });
 
@@ -235,17 +236,10 @@ const CreateDemand: React.FC = () => {
               </Alert>
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label={t('work.minConfirmations') || 'Confirmações Necessárias'}
-                type="number"
-                value={minConfirmations}
-                onChange={(e) => setMinConfirmations(Number(e.target.value))}
-                required
-                InputProps={{ inputProps: { min: 1 } }}
-                helperText="Quantidade de confirmações para concluir"
-              />
+            <Grid size={{ xs: 12 }}>
+              <Alert severity="info" sx={{ borderRadius: '12px' }}>
+                {t('work.requesterApprovalNotice', 'Confirmação: o solicitante (ou um administrador) confirma o trabalho. Uma única confirmação conclui a atividade e paga a recompensa. Em regra, quem executa não confirma o próprio trabalho.')}
+              </Alert>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
@@ -294,6 +288,10 @@ const CreateDemand: React.FC = () => {
                   </MenuItem>
                 ))}
               </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <ProtocolSelect value={protocolId} onChange={setProtocolId} />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

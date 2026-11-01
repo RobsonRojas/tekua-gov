@@ -20,7 +20,9 @@ import {
   Eye
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import LinkIcon from '@mui/icons-material/Link';
 import type { Attachment } from './FileUploader';
+import { isValidHttpUrl } from '../../lib/links';
 
 interface AttachmentListProps {
   attachments: Attachment[];
@@ -34,6 +36,7 @@ const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, title, onV
   if (!attachments || attachments.length === 0) return null;
 
   const getFileIcon = (type: string) => {
+    if (type === 'link') return <LinkIcon />;
     if (type?.startsWith('image/')) return <ImageIcon size={20} />;
     if (type === 'application/pdf') return <FileText size={20} />;
     return <File size={20} />;
@@ -58,7 +61,7 @@ const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, title, onV
               key={index}
               divider={index < attachments.length - 1}
               secondaryAction={
-                onView ? (
+                att.file_type === 'link' ? null : onView ? (
                   <Tooltip title={t('common.view', 'Visualizar')}>
                     <IconButton edge="end" size="small" onClick={() => onView(att.file_url)}>
                       <Eye size={18} />
@@ -84,9 +87,13 @@ const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, title, onV
                 {getFileIcon(att.file_type)}
               </ListItemIcon>
               <ListItemText 
-                primary={att.file_name} 
+                primary={
+                  att.file_type === 'link' && isValidHttpUrl(att.file_url) ? (
+                    <a href={att.file_url.trim()} target="_blank" rel="noopener noreferrer">{att.file_name || att.file_url}</a>
+                  ) : att.file_name
+                }
                 secondary={att.file_size ? `${(att.file_size / 1024 / 1024).toFixed(2)} MB` : ''}
-                primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                primaryTypographyProps={{ variant: 'body2', fontWeight: 600, sx: { overflowWrap: 'anywhere' } }}
               />
             </ListItem>
           ))}

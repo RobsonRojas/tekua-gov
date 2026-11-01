@@ -21,6 +21,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import FileUploader from '../components/common/FileUploader';
+import EvidenceLinksInput from '../components/common/EvidenceLinksInput';
 import type { Attachment } from '../components/common/FileUploader';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -35,6 +36,7 @@ const SubmitTaskProof: React.FC = () => {
 
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [links, setLinks] = useState<Attachment[]>([]);
   
   const [uploading, setUploading] = useState(false);
   const [capturingGeo, setCapturingGeo] = useState(false);
@@ -110,7 +112,7 @@ const SubmitTaskProof: React.FC = () => {
       const { error: apiError } = await apiClient.invoke('api-work', action, {
         activityId: id,
         location: location ? `POINT(${location.lng} ${location.lat})` : null,
-        attachments
+        attachments: [...attachments, ...links]
       });
 
       if (apiError) throw new Error(apiError);
@@ -180,6 +182,7 @@ const SubmitTaskProof: React.FC = () => {
                 maxFiles={5}
                 bucket="task-evidence"
               />
+              <Box sx={{ mt: 2 }}><EvidenceLinksInput value={links} onChange={setLinks} /></Box>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>

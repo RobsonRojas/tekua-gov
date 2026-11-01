@@ -197,6 +197,8 @@ const GiftsArea: React.FC = () => {
                         <SafeMarkdown
                           content={shortenBareUrls(desc)}
                           contained
+                          linkTarget="_blank"
+                          stopLinkPropagation
                           sx={{ typography: 'body2', color: 'text.secondary' }}
                         />
                       </CardContent>

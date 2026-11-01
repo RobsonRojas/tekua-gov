@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Home as HomeIcon
 } from 'lucide-react';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,6 +43,13 @@ const GovernanceServices: React.FC = () => {
       icon: <FileText size={32} />,
       color: '#f59e0b',
       path: '/documents'
+    },
+    {
+      title: t('protocols.title', 'Protocolos e POPs'),
+      description: t('protocols.cardDesc', 'Procedimentos e protocolos da vila para consulta e uso nas tarefas.'),
+      icon: <MenuBookIcon sx={{ fontSize: 32 }} />,
+      color: '#10b981',
+      path: '/protocols'
     }
   ];
 

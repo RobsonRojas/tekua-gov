@@ -11,6 +11,8 @@
  *   - it can be unit-tested with Vitest (see `src/lib/apiWorkCompletion.test.ts`).
  */
 
+import { normalizeEvidenceAttachments } from './evidenceLinks.ts'
+
 export const TASK_SOURCE_STATUS = 'in_progress'
 export const TASK_TARGET_STATUS = 'pending_validation'
 
@@ -128,6 +130,8 @@ export async function recordEvidence(
   activityId: string,
   input: EvidenceInput
 ): Promise<void> {
+  // Valida os links antes de qualquer gravação.
+  const normalizedAttachments = normalizeEvidenceAttachments<AttachmentInput & { file_url: string }>(input.attachments)
   const evidenceUrl = typeof input.evidenceUrl === 'string' ? input.evidenceUrl.trim() : ''
 
   if (evidenceUrl !== '') {
@@ -141,9 +145,7 @@ export async function recordEvidence(
     if (error) throw error
   }
 
-  const attachments = Array.isArray(input.attachments)
-    ? input.attachments.filter((att) => att && typeof att.file_url === 'string' && att.file_url !== '')
-    : []
+  const attachments = normalizedAttachments
 
   if (attachments.length > 0) {
     const { error } = await client

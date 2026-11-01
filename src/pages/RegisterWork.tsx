@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import CameraCapture from '../components/CameraCapture';
 import FileUploader from '../components/common/FileUploader';
+import EvidenceLinksInput from '../components/common/EvidenceLinksInput';
 import type { Attachment } from '../components/common/FileUploader';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -45,6 +46,7 @@ const RegisterWork: React.FC = () => {
   const [executorIds, setExecutorIds] = useState<string[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [links, setLinks] = useState<Attachment[]>([]);
   const [categoryId, setCategoryId] = useState<string>('');
   const [categories, setCategories] = useState<any[]>([]);
   
@@ -125,7 +127,7 @@ const RegisterWork: React.FC = () => {
         p_requester_id: beneficiaryType === 'member' ? beneficiaryId : null,
         p_executor_ids: executorIds.length > 0 ? executorIds : [user.id],
         p_category_id: categoryId || null,
-        attachments
+        attachments: [...attachments, ...links]
       };
 
       if (!navigator.onLine) {
@@ -225,6 +227,7 @@ const RegisterWork: React.FC = () => {
                 maxFiles={5}
                 bucket="task-evidence"
               />
+              <Box sx={{ mt: 2 }}><EvidenceLinksInput value={links} onChange={setLinks} /></Box>
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
@@ -314,6 +317,17 @@ const RegisterWork: React.FC = () => {
                   ))
                 }
               />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Alert severity="info" sx={{ borderRadius: '12px', mb: 1 }}>
+                {t('work.registerValidationNotice', 'Ao enviar, seu trabalho vai direto para a coluna "Para Validar" do Mural, onde os validadores o confirmam. Ele não passa pelas colunas Aberta e Em Execução.')}
+              </Alert>
+              <Alert severity="info" sx={{ borderRadius: '12px' }}>
+                {beneficiaryType === 'member'
+                  ? t('work.registerConfirmNoticeMember', 'Quem confirma: somente o membro indicado como beneficiário ou um administrador. Uma única confirmação conclui a atividade e paga a recompensa.')
+                  : t('work.registerConfirmNoticeTekua', 'Quem confirma: membros da Vila e do Conselho. A atividade é concluída ao atingir o número de confirmações definido pela Governança.')}
+              </Alert>
             </Grid>
 
             <Grid size={{ xs: 12 }} sx={{ mt: 2, display: 'flex', gap: 2 }}>

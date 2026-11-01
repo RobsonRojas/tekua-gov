@@ -40,6 +40,8 @@ import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { motion } from 'framer-motion';
 import TaskInteractions from '../components/work/TaskInteractions';
+import ProtocolSelect from '../components/work/ProtocolSelect';
+import ProtocolViewDialog from '../components/work/ProtocolViewDialog';
 import DemandActionHistory from '../components/work/DemandActionHistory';
 import AttachmentList from '../components/common/AttachmentList';
 import { QRCodeSVG } from 'qrcode.react';
@@ -64,6 +66,8 @@ const TaskDetail: React.FC = () => {
   const [editAmount, setEditAmount] = useState<number | string>('');
   const [editExecutorIds, setEditExecutorIds] = useState<string[]>([]);
   const [editMinConfirmations, setEditMinConfirmations] = useState<number>(1);
+  const [editProtocolId, setEditProtocolId] = useState<string | null>(null);
+  const [protocolViewId, setProtocolViewId] = useState<string | null>(null);
   const [editBeneficiaryId, setEditBeneficiaryId] = useState<string>('');
   const [editAttachments, setEditAttachments] = useState<Attachment[]>([]);
   const [members, setMembers] = useState<any[]>([]);
@@ -124,6 +128,7 @@ const TaskDetail: React.FC = () => {
     setEditAmount(activity.reward_amount || '');
     setEditExecutorIds(activity.executor_ids || (activity.worker_id ? [activity.worker_id] : []));
     setEditMinConfirmations(activity.min_confirmations || 1);
+    setEditProtocolId(activity.protocol?.id ?? activity.protocol_id ?? null);
     setEditBeneficiaryId(activity.beneficiary_id || 'village');
     const existingRefs = activity.attachments
       ? activity.attachments
@@ -151,6 +156,7 @@ const TaskDetail: React.FC = () => {
         rewardAmount: Number(editAmount),
         executorIds: editExecutorIds,
         minConfirmations: Number(editMinConfirmations),
+        protocolId: editProtocolId,
         attachments: editAttachments,
         beneficiaryId: editBeneficiaryId === 'village' ? null : (editBeneficiaryId || null)
       });
@@ -353,9 +359,21 @@ const TaskDetail: React.FC = () => {
             {title}
           </Typography>
 
-          <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', lineHeight: 1.7, mb: 5, whiteSpace: 'pre-wrap' }}>
+          <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', lineHeight: 1.7, mb: 5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', minWidth: 0 }}>
             {description}
           </Typography>
+
+          {activity.protocol && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                {t('protocols.linked', 'Protocolo/POP a seguir')}
+              </Typography>
+              <Button variant="text" onClick={() => setProtocolViewId(activity.protocol.id)} sx={{ textTransform: 'none', p: 0, textAlign: 'left', overflowWrap: 'anywhere' }}>
+                {activity.protocol.title}
+              </Button>
+            </Box>
+          )}
+          <ProtocolViewDialog protocolId={protocolViewId} onClose={() => setProtocolViewId(null)} />
 
           {/* New Attachments Section (Specifications) */}
           {activity.attachments && activity.attachments.filter((a: any) => !a.is_evidence).length > 0 && (
@@ -505,7 +523,7 @@ const TaskDetail: React.FC = () => {
           {isOwner && activity.invite_token && activity.status === 'open' && (
             <Box sx={{ mb: 5 }}>
               <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-                {t('work.inviteExternal') || 'Convite Externo'}
+                {t('work.inviteExternal', 'Convite Externo')}
               </Typography>
               <Paper 
                 sx={{ 
@@ -525,11 +543,11 @@ const TaskDetail: React.FC = () => {
                     size={120} 
                   />
                 </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Compartilhe este QR Code ou o link abaixo para permitir que pessoas externas se cadastrem na Tekuá e assumam esta tarefa.
+                <Box sx={{ flex: 1, minWidth: 0, maxWidth: '100%' }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
+                    {t('work.inviteExternalHint', 'Compartilhe este QR Code ou o link abaixo para permitir que pessoas externas se cadastrem na Tekuá e assumam esta tarefa.')}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 2, alignItems: 'flex-start', minWidth: 0 }}>
                     <Typography 
                       variant="body2" 
                       sx={{ 
@@ -537,16 +555,17 @@ const TaskDetail: React.FC = () => {
                         bgcolor: 'rgba(0,0,0,0.2)', 
                         borderRadius: 1, 
                         flex: 1,
+                        minWidth: 0,
                         fontFamily: 'monospace',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'break-all'
                       }}
                     >
                       {`${window.location.origin}/invite/task/${activity.invite_token}`}
                     </Typography>
                     <Button 
                       variant="outlined" 
+                      sx={{ flexShrink: 0 }}
                       onClick={() => navigator.clipboard.writeText(`${window.location.origin}/invite/task/${activity.invite_token}`)}
                     >
                       Copiar
@@ -566,7 +585,7 @@ const TaskDetail: React.FC = () => {
                 size="large"
                 startIcon={<PlayCircle />}
                 onClick={handleAction}
-                disabled={actionLoading || isOwner}
+                disabled={actionLoading}
                 sx={{ borderRadius: '16px', py: 2, fontSize: '1.1rem', fontWeight: 700 }}
               >
                 {t('work.accept') || 'Assumir Tarefa'}
@@ -690,15 +709,18 @@ const TaskDetail: React.FC = () => {
                 <Alert severity="info">
                   O valor definido será depositado na carteira de cada um dos executores. Este valor não é dividido entre os executores; cada um recebe o valor integral.
                 </Alert>
-                <TextField
-                  fullWidth
-                  label={t('work.minConfirmations') || 'Número de Confirmações'}
-                  type="number"
-                  value={editMinConfirmations}
-                  onChange={(e) => setEditMinConfirmations(Number(e.target.value))}
-                  required
-                  InputProps={{ inputProps: { min: 1 } }}
-                />
+                <ProtocolSelect value={editProtocolId} onChange={setEditProtocolId} current={activity.protocol || null} />
+                {activity.validation_method === 'community_consensus' && (
+                  <TextField
+                    fullWidth
+                    label={t('work.minConfirmations') || 'Número de Confirmações'}
+                    type="number"
+                    value={editMinConfirmations}
+                    onChange={(e) => setEditMinConfirmations(Number(e.target.value))}
+                    required
+                    InputProps={{ inputProps: { min: 1 } }}
+                  />
+                )}
                 <Autocomplete
                   options={beneficiaryOptions}
                   getOptionLabel={(option) => option.full_name || option.email || ''}

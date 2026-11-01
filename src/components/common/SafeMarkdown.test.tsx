@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import SafeMarkdown from './SafeMarkdown';
 
 describe('SafeMarkdown', () => {
@@ -114,5 +114,22 @@ describe('SafeMarkdown', () => {
     const wrapper = container.firstElementChild;
     expect(wrapper?.tagName).toBe('DIV');
     expect(wrapper?.querySelector('p')).not.toBeNull();
+  });
+});
+describe('SafeMarkdown — links dentro de container clicável', () => {
+  it('abre em outra aba com rel seguro e não propaga o clique ao container', () => {
+    const onContainer = vi.fn();
+    render(
+      <div onClick={onContainer} data-testid="card">
+        <SafeMarkdown content="[grupo](https://chat.whatsapp.com/abc)" linkTarget="_blank" stopLinkPropagation />
+      </div>
+    );
+    const a = screen.getByRole('link', { name: 'grupo' });
+    expect(a.getAttribute('target')).toBe('_blank');
+    expect(a.getAttribute('rel')).toBe('noopener noreferrer');
+    fireEvent.click(a);
+    expect(onContainer).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('card'));
+    expect(onContainer).toHaveBeenCalledTimes(1);
   });
 });

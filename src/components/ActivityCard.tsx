@@ -398,7 +398,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onRefresh, highli
               variant="contained" 
               startIcon={<PlayCircle size={16} />}
               onClick={handleAction}
-              disabled={loading || isOwner}
+              disabled={loading}
               sx={{ 
                 bgcolor: '#10b981', 
                 color: '#ffffff', 
