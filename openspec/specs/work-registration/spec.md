@@ -80,3 +80,77 @@ The system SHALL allow an authenticated user to register a work activity on beha
 #### Scenario: Registering work for self
 - **WHEN** a user fills out the work registration form and does NOT select a different member (or selects themselves).
 - **THEN** the system SHALL default the executor(s) to the currently authenticated user.
+
+### Requirement: Aviso do destino do trabalho registrado
+O formulário de registro de trabalho SHALL informar ao membro, antes do envio, que o trabalho registrado vai diretamente para a coluna "Para Validar" do Mural, sem passar pelas colunas "Aberta" e "Em Execução".
+
+#### Scenario: Aviso visível no formulário
+- **WHEN** o membro abre o formulário de registro de trabalho
+- **THEN** o formulário SHALL exibir um aviso informando que, após o envio e a aprovação, o trabalho vai direto para a coluna "Para Validar"
+- **AND** o aviso SHALL estar visível sem exigir nenhuma interação do membro
+
+#### Scenario: Aviso no idioma ativo
+- **WHEN** o idioma ativo é português ou inglês
+- **THEN** o aviso SHALL ser exibido no idioma ativo, com o nome da coluna igual ao exibido no Mural
+
+### Requirement: Protocolo opcional em tarefas e demandas
+Os formulários de criação de tarefa, criação de demanda e edição de tarefa ou demanda do mural SHALL oferecer um campo opcional de pesquisa e seleção de um protocolo/POP ativo, e o detalhe da atividade SHALL exibir o protocolo vinculado.
+
+#### Scenario: Selecionar um protocolo ao criar
+- **WHEN** o membro digita parte do título no campo de protocolo e escolhe um item da lista
+- **THEN** a atividade SHALL ser criada vinculada a esse protocolo
+
+#### Scenario: Campo opcional
+- **WHEN** o membro envia o formulário sem escolher protocolo
+- **THEN** a atividade SHALL ser criada normalmente, sem protocolo
+
+#### Scenario: Alterar ou remover o protocolo na edição
+- **WHEN** o solicitante edita a atividade e troca ou limpa o protocolo
+- **THEN** o vínculo SHALL ser atualizado ou removido conforme a escolha
+
+#### Scenario: Protocolo arquivado não pode ser escolhido
+- **WHEN** o servidor recebe o vínculo a um protocolo arquivado ou inexistente
+- **THEN** a chamada SHALL falhar sem criar ou alterar a atividade
+- **AND** a atividade que já usa um protocolo depois arquivado SHALL poder ser editada mantendo-o
+
+#### Scenario: Protocolo exibido no detalhe
+- **WHEN** a atividade tem um protocolo vinculado
+- **THEN** o detalhe SHALL exibir o título do protocolo e permitir abrir o texto completo
+
+### Requirement: Explicação da regra de confirmação nos formulários
+Os formulários de criação de tarefa, criação de demanda e registro de trabalho SHALL exibir, antes do envio, um aviso que explique quem confirma a atividade e quantas confirmações bastam para concluí-la, de acordo com a regra que será aplicada.
+
+#### Scenario: Criação de tarefa ou demanda
+- **WHEN** o membro abre o formulário de criação de tarefa ou de demanda
+- **THEN** o formulário SHALL informar que o solicitante ou um administrador confirma o trabalho
+- **AND** SHALL informar que uma única confirmação conclui a atividade e paga a recompensa
+- **AND** SHALL informar que, em regra, quem executa não confirma o próprio trabalho
+
+#### Scenario: Registro de trabalho para a Tekuá
+- **WHEN** o membro abre o registro de trabalho com o beneficiário Tekuá
+- **THEN** o formulário SHALL informar que membros da Vila e do Conselho confirmam o trabalho
+- **AND** SHALL informar que a atividade é concluída ao atingir o número de confirmações definido pela Governança
+
+#### Scenario: Registro de trabalho para um membro
+- **WHEN** o membro seleciona outro membro como beneficiário no registro de trabalho
+- **THEN** o aviso SHALL mudar para informar que somente o membro indicado ou um administrador confirma
+- **AND** SHALL informar que uma única confirmação conclui a atividade
+
+#### Scenario: Aviso no idioma ativo
+- **WHEN** o idioma ativo é português ou inglês
+- **THEN** o aviso SHALL ser exibido no idioma ativo
+
+### Requirement: Campo de número de confirmações somente quando tem efeito
+O sistema SHALL oferecer o campo "Número de Confirmações" somente quando a atividade usa confirmação pela comunidade; nos formulários de criação de tarefa e de demanda, onde a aprovação é do solicitante, o campo SHALL NOT ser exibido.
+
+#### Scenario: Formulários de criação sem o campo
+- **WHEN** o membro abre o formulário de criação de tarefa ou de demanda
+- **THEN** o campo "Número de Confirmações" SHALL NOT ser exibido
+
+#### Scenario: Edição de atividade com aprovação do solicitante
+- **WHEN** o solicitante edita uma atividade cuja validação é aprovação do solicitante
+- **THEN** o formulário de edição SHALL NOT exibir o campo "Número de Confirmações"
+
+#### Scenario: Edição de atividade com confirmação pela comunidade
+- **WHEN** o solicitante edita uma atividade cuja validação é confirmação pela comunidade
+- **THEN** o formulário de edição SHALL exibir o campo "Número de Confirmações"
