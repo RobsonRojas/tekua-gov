@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.11.4"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
+import { executeJrTool, JR_TOOL_NAME, jrFunctionDeclarations } from "./jrTools.ts"
 
 const corsHeaders = getResponseHeaders();
 
@@ -118,7 +119,15 @@ serve(async (req) => {
       2. Incentive a auto-reflexão.
       3. Se o usuário quiser envolver a outra pessoa, ensine a estrutura OSNP (Passo 2).
       4. Se o diálogo direto já falhou, recomende a Mediação Individual (Passo 3) ou a Câmara (Passo 4).
-      
+
+      CONVOCAÇÃO DA CÂMARA (Passo 4):
+      - Só entre neste fluxo quando o usuário demonstrar que quer convocar a Câmara. Nas demais conversas, NÃO use a ferramenta.
+      - Antes de propor, pergunte se os pré-círculos individuais foram realizados ou considerados e aguarde confirmação afirmativa.
+      - Colete, um de cada vez: o tema do círculo (sem nomes de pessoas nem e-mails) e a data e hora pretendidas. Descrição e local/link são opcionais.
+      - A data precisa ser futura. Se for passada ou imediata, peça uma nova data. A data/hora atual é ${new Date().toISOString()} (UTC); o fuso do usuário é o de Brasília (UTC-3).
+      - Com tema e data/hora válidos e os pré-círculos confirmados, chame a ferramenta ${JR_TOOL_NAME}. Ela apenas mostra um rascunho ao usuário; o usuário decide se confirma.
+      - NUNCA diga que a convocação foi criada. Diga que o rascunho está pronto para o usuário revisar e confirmar.
+
       Mantenha as respostas curtas, em tom acolhedor. NUNCA peça nomes de outras pessoas (mantenha confidencialidade).
     `;
 
@@ -152,20 +161,41 @@ serve(async (req) => {
             console.log(`ai-justica-restaurativa: Trying model ${modelName}...`);
             const model = genAI.getGenerativeModel({ 
               model: modelName,
-              systemInstruction: BASE_SYSTEM_PROMPT
+              systemInstruction: BASE_SYSTEM_PROMPT,
+              tools: [{ functionDeclarations: jrFunctionDeclarations as any }],
             })
 
             const chat = model.startChat({
               history: formattedHistory
             })
 
-            const result = await chat.sendMessageStream(lastMessage)
-            let fullText = '';
-            for await (const chunk of result.stream) {
-              const chunkText = chunk.text();
-              fullText += chunkText;
-              sendEvent({ type: 'text_chunk', content: chunkText })
+            let result = await chat.sendMessage(lastMessage)
+            let response = result.response
+            const getCall = () => response.candidates?.[0]?.content?.parts?.find((p: any) => p.functionCall)?.functionCall
+
+            // Limite de rodadas evita laço infinito de chamadas de ferramenta.
+            let rounds = 0
+            let call = getCall()
+            while (call && rounds < 3) {
+              rounds++
+              let fnResult: Record<string, unknown>
+              if (call.name === JR_TOOL_NAME) {
+                // Rascunho: valida e mostra ao usuário. Não grava nada; a criação depende de confirmação no cliente.
+                const checked = executeJrTool(call.name, call.args)
+                if (checked.ok) sendEvent({ type: 'tool_draft', tool: JR_TOOL_NAME, data: checked.draft })
+                fnResult = checked.ok ? { status: 'draft_shown_to_user' } : { error: checked.error }
+              } else {
+                fnResult = { error: `Ferramenta '${call.name}' não disponível.` }
+              }
+
+              result = await chat.sendMessage([
+                { functionResponse: { name: call.name, response: { content: fnResult } } },
+              ])
+              response = result.response
+              call = getCall()
             }
+
+            const fullText = response.text();
             sendEvent({ type: 'text_complete', content: fullText })
             success = true;
             break; // Model succeeded, exit fallback loop

@@ -11,7 +11,9 @@ import {
   Divider
 } from '@mui/material';
 import { Send, Bot, User, Scale } from 'lucide-react';
-import { chatWithJRAgent, type Message } from '../../lib/gemini';
+import { chatWithJRAgent, type Message, type CircleConvocationDraft } from '../../lib/gemini';
+import { apiClient } from '../../lib/api';
+import CircleConvocationDraftCard from './CircleConvocationDraftCard';
 import SafeMarkdown from '../common/SafeMarkdown';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/useAuth';
@@ -22,6 +24,9 @@ const AgenteChat: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user: authUser } = useAuth();
+  const [pendingDraft, setPendingDraft] = useState<CircleConvocationDraft | null>(null);
+  const [draftSubmitting, setDraftSubmitting] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -68,7 +73,50 @@ const AgenteChat: React.FC = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, loading]);
+  }, [messages, loading, pendingDraft]);
+
+  const appendModelMessage = async (content: string) => {
+    setMessages(prev => [...prev, { role: 'model', content }]);
+    if (authUser) {
+      await supabase.from('jr_chat_messages').insert({ user_id: authUser.id, role: 'model', content });
+    }
+  };
+
+  const handleConfirmDraft = async () => {
+    if (!pendingDraft || draftSubmitting) return;
+    setDraftSubmitting(true);
+    setDraftError(null);
+    try {
+      const { data, error } = await apiClient.invoke('api-governance', 'createRestorativeCircle', {
+        ...pendingDraft,
+        confirmedPreCircles: true,
+      });
+      if (error) {
+        setDraftError(
+          typeof error === 'string' && /already have an open/i.test(error)
+            ? 'Você já tem uma convocação aberta. Encerre-a antes de criar outra.'
+            : typeof error === 'string' ? error : 'Não foi possível criar a convocação.'
+        );
+        return;
+      }
+      const shareToken = (data as { share_token?: string } | null)?.share_token;
+      const link = shareToken ? `${window.location.origin}/share/circle/${shareToken}` : '';
+      setPendingDraft(null);
+      await appendModelMessage(
+        `✅ Convocação criada! A vila foi convidada.${link ? ` Link para compartilhar: ${link}` : ''}`
+      );
+    } catch {
+      setDraftError('Não foi possível criar a convocação. Tente novamente.');
+    } finally {
+      setDraftSubmitting(false);
+    }
+  };
+
+  const handleCancelDraft = async () => {
+    setPendingDraft(null);
+    setDraftError(null);
+    await appendModelMessage('Tudo bem, descartei o rascunho. Se quiser, podemos ajustar os dados ou continuar conversando.');
+  };
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -101,6 +149,9 @@ const AgenteChat: React.FC = () => {
             ...prev.slice(0, -1),
             { role: 'model', content: assistantResponse }
           ]);
+        } else if (event.type === 'tool_draft') {
+          if (event.data) setPendingDraft(event.data);
+          setDraftError(null);
         } else if (event.type === 'text_complete') {
           if (event.content) {
             assistantResponse = event.content;
@@ -201,6 +252,15 @@ const AgenteChat: React.FC = () => {
             </Box>
           </Fade>
         ))}
+        {pendingDraft && (
+          <CircleConvocationDraftCard
+            draft={pendingDraft}
+            submitting={draftSubmitting}
+            error={draftError}
+            onConfirm={handleConfirmDraft}
+            onCancel={handleCancelDraft}
+          />
+        )}
         {loading && messages[messages.length-1]?.role !== 'model' && (
           <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 1.5, alignItems: 'center' }}>
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>

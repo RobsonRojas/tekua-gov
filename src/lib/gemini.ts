@@ -138,6 +138,13 @@ export const chatWithGemini = async (
   };
 };
 
+export interface CircleConvocationDraft {
+  title: string;
+  scheduledAt: string;
+  description?: string;
+  locationOrLink?: string;
+}
+
 export const chatWithJRAgent = async (
   messages: Message[]
 ) => {
@@ -207,6 +214,8 @@ export const chatWithJRAgent = async (
                 yield { type: 'text_chunk', content: event.content };
               } else if (event.type === 'text_complete') {
                 yield { type: 'text_complete', content: event.content };
+              } else if (event.type === 'tool_draft') {
+                yield { type: 'tool_draft', tool: event.tool as string, data: event.data as CircleConvocationDraft };
               } else if (event.type === 'error') {
                 throw new Error(event.message);
               }
