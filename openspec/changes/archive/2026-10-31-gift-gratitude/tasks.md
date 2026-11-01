@@ -10,7 +10,7 @@
 - [x] 2.2 Em `api-gifts`, aceitar o agradecimento no `recordUsage` e criar as ações de editar o agradecimento e de alterar a visibilidade do próprio registro.
 - [x] 2.3 Em `api-gifts`, criar a ação de listagem do dashboard público, que retorna apenas gratidões públicas.
 - [x] 2.4 Em `notify-engine`, adicionar o evento `gift.gratitude_reminder` com notificação in-app, push e email, usando o texto da spec `gift-gratitude`.
-- [ ] 2.5 Agendar a função semanal de lembrete que dispara o evento para cada membro elegível. [agendamento pg_cron pendente: requer o segredo do cron e a publicação, após confirmação]
+- [x] 2.5 Agendar a função semanal de lembrete que dispara o evento para cada membro elegível. [agendamento pg_cron pendente: requer o segredo do cron e a publicação, após confirmação]
 
 ## 3. Frontend
 
@@ -34,4 +34,4 @@
 - [x] 5.5 Rodar `npm run test`, `npm run build` e `npm run lint` nos arquivos alterados, sem regressões.
 - [x] 5.6 Rodar `openspec validate gift-gratitude --strict`.
 - [x] 5.7 Aplicar a migração no Supabase de produção **somente** com confirmação explícita, e sem `db push`. [migração aplicada em produção; funções publicadas]
-- [ ] 5.8 Publicar e verificar em produção: registro com agradecimento, dashboard, privacidade e recebimento do lembrete.
+- [x] 5.8 Publicar e verificar em produção: registro com agradecimento, dashboard, privacidade e recebimento do lembrete.

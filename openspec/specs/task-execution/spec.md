@@ -4,7 +4,7 @@
 Permitir que membros da comunidade assumam a responsabilidade por demandas abertas, acompanhem seu progresso e as submetam para validação.
 ## Requirements
 ### Requirement: Task Claiming
-O sistema SHALL permitir que um membro autenticado assuma uma demanda com status 'open', ou que a demanda seja transicionada automaticamente para 'in_progress' se já possuir um executor atribuído no momento da ativação.
+O sistema SHALL permitir que um membro assuma uma tarefa com status `open`, ou transicione a tarefa diretamente para `in_progress` quando ela já possuir um `worker_id` definido no momento em que se torna ativa.
 
 #### Scenario: Successful task claim
 - **WHEN** um membro clica em "Assumir Tarefa" em uma demanda aberta sem executor definido
@@ -12,11 +12,11 @@ O sistema SHALL permitir que um membro autenticado assuma uma demanda com status
 - **AND** a tarefa SHALL deixar de ser exibida na coluna "Abertas" para outros membros.
 
 #### Scenario: Auto-transition to in_progress on activation
-- **WHEN** uma atividade é ativada (aprovada por moderação) e já possui um `worker_id` definido
+- **WHEN** uma atividade se torna ativa e já possui um `worker_id` definido
 - **THEN** o sistema SHALL transicionar o status da atividade diretamente para `in_progress`.
 
 ### Requirement: Task Progress Management
-O sistema SHALL permitir que o executor (worker) transicione a tarefa para o status de validação após a conclusão, com ou sem evidências de trabalho — a evidência é opcional. As evidências de trabalho, quando fornecidas, DEVEM ser exibidas em um modal integrado, garantindo que o usuário não seja redirecionado para outra aba durante a visualização.
+O sistema SHALL permitir que o executor (worker) transicione a tarefa para o status de validação após a conclusão, com ou sem evidências de trabalho — a evidência é opcional e sua ausência **MUST NOT** impedir a transição nem gerar erro. As evidências de trabalho, quando fornecidas, DEVEM ser exibidas em um modal integrado, garantindo que o usuário não seja redirecionado para outra aba durante a visualização.
 
 #### Scenario: Submitting task for validation with multiple evidences
 - **WHEN** o executor fornece um conjunto de arquivos ou links como evidência de conclusão.
@@ -41,3 +41,22 @@ O sistema SHALL emitir eventos de sistema rastreáveis sempre que o estado de um
 - **WHEN** o executor submete a tarefa para validação.
 - **THEN** o sistema SHALL garantir que o gatilho de notificação seja disparado para as partes interessadas.
 
+### Requirement: Conclusão em Passo Único
+O sistema SHALL permitir que o executor conclua uma tarefa em execução diretamente a partir do Mural de Trabalho e da página de detalhes da tarefa, sem etapa obrigatória de envio de prova. O sistema SHALL tratar a conclusão como um ato do executor e SHALL rejeitar tentativas de conclusão por usuários não relacionados à atividade.
+
+#### Scenario: Conclusão a partir do Mural de Trabalho
+- **WHEN** o executor move uma tarefa em execução para a coluna de validação pendente no Mural de Trabalho.
+- **THEN** o sistema SHALL concluir a tarefa sem exigir anexo de evidência e sem exigir navegação para uma etapa intermediária de prova.
+- **AND** a tarefa SHALL aparecer na coluna de validação pendente.
+
+#### Scenario: Conclusão a partir do detalhe da tarefa
+- **WHEN** o executor de uma tarefa em execução aciona a ação de concluir na página de detalhes da tarefa.
+- **THEN** o sistema SHALL concluir a tarefa e disponibilizá-la para validação, com ou sem evidência anexada.
+
+#### Scenario: Conclusão por usuário não relacionado
+- **WHEN** um usuário autenticado que não é executor nem administrador aciona a conclusão de uma tarefa em execução.
+- **THEN** o sistema SHALL recusar a operação, mantendo a tarefa no estado de execução.
+
+#### Scenario: Evidência posterior à conclusão
+- **WHEN** o executor anexa evidência a uma tarefa que já foi concluída e submetida à validação.
+- **THEN** o sistema SHALL armazenar a evidência e disponibilizá-la na visualização da atividade, sem alterar o estado de validação.

@@ -28,15 +28,15 @@ A seleção de filtros no componente responsivo **SHALL** manter a sincronia com
 - **AND** o rótulo do botão de menu **SHALL** ser atualizado para o novo status.
 
 ### Requirement: Ocultação de Tarefas Pendentes
-O Mural de Trabalho **SHALL** ocultar tarefas em status `pending_approval` e `rejected` para usuários comuns, garantindo que apenas tarefas aprovadas ou em andamento sejam visíveis.
+O Mural de Trabalho **SHALL** ocultar tarefas em status `rejected` para usuários comuns, garantindo que apenas tarefas abertas, em execução, em validação ou concluídas sejam visíveis.
 
 #### Scenario: Visualização do mural por usuário padrão
 - **WHEN** um usuário padrão (sem a role `admin` ou `transversal_council`) acessa a aba "Todos" no Mural de Trabalho.
-- **THEN** nenhuma tarefa com o status `pending_approval` ou `rejected` **SHALL** ser exibida, a menos que o usuário seja o criador (`requester_id`) da tarefa.
+- **THEN** nenhuma tarefa com o status `rejected` **SHALL** ser exibida, a menos que o usuário seja o criador (`requester_id`) da tarefa.
 
-#### Scenario: Visualização do mural por conselheiro transversal
-- **WHEN** um conselheiro transversal acessa o Mural de Trabalho.
-- **THEN** ele **SHALL** ser capaz de ver as tarefas pendentes, seja em sua aba dedicada ("Moderação") ou misturadas (dependendo da lógica da aba Todos).
+#### Scenario: Coluna Moderação removida
+- **WHEN** qualquer usuário acessa o Mural de Trabalho.
+- **THEN** a coluna/aba "Moderação" **SHALL NOT** ser exibida, pois a etapa de moderação não existe mais.
 
 ### Requirement: Work Wall Filter Persistence
 The system SHALL persist the filters applied by the user on the work wall in `localStorage`, and SHALL restore and apply them automatically whenever the work wall loads.
@@ -59,4 +59,3 @@ The system SHALL clearly indicate in the UI when filters are currently applied o
 #### Scenario: Nenhum filtro ativo
 - **WHEN** all filters are in their default state
 - **THEN** the active-filters indicator SHALL NOT be shown
-

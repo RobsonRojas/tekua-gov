@@ -4,7 +4,7 @@
 TBD - created by archiving change user-register-work-done. Update Purpose after archive.
 ## Requirements
 ### Requirement: Registro de Contribuições Individuais
-O sistema **SHALL** permitir que qualquer usuário autenticado registre uma atividade realizada em prol da comunidade ou de outro membro. Todas as metadatas (título e descrição) **MUST** ser armazenadas como objetos internacionalizados (JSONB) para garantir a correta exibição na interface em diferentes idiomas.
+O sistema **SHALL** permitir que qualquer usuário autenticado registre uma atividade realizada em prol da comunidade ou de outro membro, **com ou sem evidência** — a evidência é opcional e sua ausência **MUST NOT** impedir a submissão. Todas as metadatas (título e descrição) **MUST** ser armazenadas como objetos internacionalizados (JSONB) para garantir a correta exibição na interface em diferentes idiomas.
 
 #### Scenario: Submissão com sucesso para a Tesouraria
 - **WHEN** O usuário preenche descrição, sugere um valor, anexa uma evidência e seleciona "Tekuá" como beneficiária.
@@ -19,9 +19,10 @@ O sistema **SHALL** permitir que qualquer usuário autenticado registre uma ativ
 - **WHEN** O usuário tenta sugerir um valor negativo ou zero.
 - **THEN** O sistema impede a submissão e exibe um erro de validação.
 
-#### Scenario: Obrigatoriedade de evidência
-- **WHEN** O usuário tenta submeter o formulário sem anexar um link ou arquivo de evidência.
-- **THEN** O sistema impede a submissão, destacando que a prova de trabalho é obrigatória para a transparência.
+#### Scenario: Evidência opcional no registro de contribuição
+- **WHEN** O usuário preenche a descrição e o valor da contribuição e submete o formulário sem anexar foto, documento ou link de evidência.
+- **THEN** O sistema aceita a submissão e cria a contribuição em estado de validação pendente.
+- **AND** O sistema **MUST NOT** bloquear a submissão, exibir erro ou destacar a evidência como campo obrigatório.
 
 ### Requirement: Tabbed Work Mural
 O Mural de Trabalho SHALL organizar as atividades em abas baseadas em seu status operacional, e **MUST NOT** exibir atividades que foram administrativamente removidas ou rejeitadas.
@@ -79,4 +80,3 @@ The system SHALL allow an authenticated user to register a work activity on beha
 #### Scenario: Registering work for self
 - **WHEN** a user fills out the work registration form and does NOT select a different member (or selects themselves).
 - **THEN** the system SHALL default the executor(s) to the currently authenticated user.
-

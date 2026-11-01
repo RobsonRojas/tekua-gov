@@ -18,5 +18,5 @@
 - [x] 4.1 Rodar `npm run test` e `npm run build` sem regressões nos arquivos alterados.
 - [x] 4.2 Rodar `openspec validate fix-requester-executor-confirm-button --strict`.
 - [x] 4.3 Migração `20261025000000_fix_requester_executor_confirm.sql` aplicada no Supabase de produção (`rhpcenqbelifilylwujy`) antes do frontend. Aplicada isoladamente, pois o histórico de migrações do projeto está fora de sincronia com o repositório.
-- [ ] 4.4 Publicar o frontend e confirmar em produção: solicitante-executor confirma; executor não-solicitante é bloqueado.
+- [x] 4.4 Publicar o frontend e confirmar em produção: solicitante-executor confirma; executor não-solicitante é bloqueado.
 - [x] 4.5 Administrador que também é executor pode confirmar em `requester_approval` (conforme a spec), e continua bloqueado em `community_consensus`. Coberto pelos testes de `TaskDetail` e pelo cenário S5/S6 da RPC.

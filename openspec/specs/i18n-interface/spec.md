@@ -25,3 +25,32 @@ A interface do usuário SHALL suportar internacionalização usando `react-i18ne
 - **WHEN** o usuário seleciona o idioma Inglês.
 - **THEN** o menu de navegação e os títulos das páginas SHALL exibir "Oracle" em vez de "AI Assistant".
 
+### Requirement: Placeholder de busca das colunas do mural traduzido
+O campo de busca de cada coluna do mural de trabalho SHALL exibir um placeholder traduzido no idioma ativo, nunca o nome interno da chave de tradução.
+
+#### Scenario: Idioma português
+- **WHEN** o idioma ativo é português e o mural é exibido
+- **THEN** o campo de busca de cada coluna SHALL exibir "Pesquisar..."
+
+#### Scenario: Idioma inglês
+- **WHEN** o idioma ativo é inglês e o mural é exibido
+- **THEN** o campo de busca de cada coluna SHALL exibir "Search..."
+
+#### Scenario: Chave ausente em um idioma
+- **WHEN** a tradução do placeholder não existe no idioma ativo
+- **THEN** o campo SHALL exibir o texto padrão "Pesquisar..." e NÃO o nome da chave
+
+### Requirement: Rótulo de autor desconhecido no histórico de ações traduzido
+Quando uma ação do histórico de uma demanda não tem nome de autor, o sistema SHALL exibir um rótulo genérico traduzido no idioma ativo, nunca o nome interno da chave de tradução.
+
+#### Scenario: Idioma português
+- **WHEN** o idioma ativo é português e a confirmação não tem nome de perfil
+- **THEN** o histórico SHALL exibir "Membro da Comunidade"
+
+#### Scenario: Idioma inglês
+- **WHEN** o idioma ativo é inglês e a confirmação não tem nome de perfil
+- **THEN** o histórico SHALL exibir "Community Member"
+
+#### Scenario: Chave ausente em um idioma
+- **WHEN** a tradução do rótulo não existe no idioma ativo
+- **THEN** o histórico SHALL exibir "Membro da Comunidade" e NÃO o nome da chave

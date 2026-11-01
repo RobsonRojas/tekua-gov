@@ -30,8 +30,8 @@
 
 ## 6. Verificação
 
-- [ ] 6.1 Executar `supabase/functions/api-external-emails/test_curl.sh` localmente e confirmar os códigos esperados (401/400/202) e o registro `pending` na fila.
-- [ ] 6.2 Confirmar que campos `to`/`from` enviados pelo chamador são ignorados e o registro usa `contato@tekua.com.br` como remetente e destinatário.
+- [x] 6.1 Executar `supabase/functions/api-external-emails/test_curl.sh` localmente e confirmar os códigos esperados (401/400/202) e o registro `pending` na fila.
+- [x] 6.2 Confirmar que campos `to`/`from` enviados pelo chamador são ignorados e o registro usa `contato@tekua.com.br` como remetente e destinatário.
 - [x] 6.3 Checagem de sintaxe dos arquivos TS das funções (via `node` + `ts.transpileModule`, pois Deno não está instalado).
 - [x] 6.4 Validar a sintaxe do script com `bash -n supabase/functions/api-external-emails/test_curl.sh`.
 - [x] 6.5 Rodar `npm run build` e a suíte de testes; confirmar que não há regressões novas.

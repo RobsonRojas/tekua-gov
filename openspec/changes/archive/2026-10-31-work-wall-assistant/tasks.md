@@ -24,12 +24,12 @@
 - [x] 4.2 Teste: "Cancelar" não chama o backend e remove o rascunho.
 - [x] 4.3 Teste: erro do backend é exibido no cartão e o rascunho permanece para correção.
 - [x] 4.4 Teste da validação de campos obrigatórios no cliente (título vazio, recompensa zero ou negativa).
-- [ ] 4.5 Teste do handler: a ferramenta de rascunho não executa escrita, e chamadas de escrita não permitidas são recusadas.
+- [x] 4.5 Teste do handler: a ferramenta de rascunho não executa escrita, e chamadas de escrita não permitidas são recusadas.
 
 ## 5. Verificação
 
 - [x] 5.1 Rodar `npm run test`, `npm run build` e `npm run lint` nos arquivos alterados, sem regressões.
 - [x] 5.2 Rodar `openspec validate work-wall-assistant --strict`.
-- [ ] 5.3 Deploy da edge function `ai-handler` e do frontend, nesta ordem. Requer confirmação explícita do responsável.
-- [ ] 5.4 Verificar em produção, com um membro de teste: explicação do mural, criação de tarefa com confirmação, e recusa de pedido fora do escopo.
-- [ ] 5.5 Revisão do texto do guia do mural pelo responsável pelo produto antes do deploy.
+- [x] 5.3 Deploy da edge function `ai-handler` e do frontend, nesta ordem. Requer confirmação explícita do responsável.
+- [x] 5.4 Verificar em produção, com um membro de teste: explicação do mural, criação de tarefa com confirmação, e recusa de pedido fora do escopo.
+- [x] 5.5 Revisão do texto do guia do mural pelo responsável pelo produto antes do deploy.

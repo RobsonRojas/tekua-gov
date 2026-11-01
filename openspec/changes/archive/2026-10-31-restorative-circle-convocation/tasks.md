@@ -41,4 +41,4 @@
 - [x] 7.5 Rodar `npm run test`, `npm run build` e `npm run lint` nos arquivos alterados, sem regressões.
 - [x] 7.6 Rodar `openspec validate restorative-circle-convocation --strict`.
 - [x] 7.7 Aplicar a migração no Supabase de produção somente com confirmação explícita, sem `db push`.
-\1
+

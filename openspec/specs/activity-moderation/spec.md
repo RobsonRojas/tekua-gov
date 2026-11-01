@@ -5,29 +5,47 @@ Definir as permissões e interface para a moderação de atividades na plataform
 
 ## Requirements
 
-### Requirement: Task Moderation Permissions
-The system SHALL allow any user (regardless of role) to view the Moderation column and access editing capabilities. However, the system SHALL only allow users with the `admin` or `transversal_council` roles to formally moderate activities (approve or reject). These approval/rejection permissions MUST be validated on the backend using the user's `roles` array from their profile.
+### Requirement: Activity Status Has No Pending Approval Value
+The `activity_status` type exposed by the database SHALL contain exactly the values `open`, `in_progress`, `pending_validation`, `completed` and `rejected`. The legacy value `pending_approval` SHALL NOT be part of the type, and no activity SHALL be able to be stored with that status.
 
-#### Scenario: Approved Moderation
-- **WHEN** a user with the `transversal_council` role clicks "Approve" on a task with status `pending_approval`.
-- **THEN** the system SHALL update the task status to `open` (if it's a new task) or `completed` (if it was a validation).
-- **AND** the system SHALL correctly identify the user's role from the `roles` array.
+#### Scenario: Enum range does not contain the removed value
+- **WHEN** the set of values of the `activity_status` type is inspected.
+- **THEN** it SHALL contain exactly `open`, `in_progress`, `pending_validation`, `completed` and `rejected`.
+- **AND** it SHALL NOT contain `pending_approval`.
 
-#### Scenario: Denied Moderation Approval
-- **WHEN** a user with only the `member` role attempts to approve or reject a task.
-- **THEN** the system SHALL return a "Forbidden" error and prevent the action.
+#### Scenario: Writing the removed value is rejected
+- **WHEN** an insert or an update tries to assign the status `pending_approval` to an activity.
+- **THEN** the database SHALL reject the statement as an invalid value for the `activity_status` type.
+- **AND** the activity SHALL NOT be created nor modified.
 
-#### Scenario: Column Visibility for Members
-- **WHEN** a user with only the `member` role views the tasks list.
-- **THEN** the system SHALL display the Moderation column and allow them to edit the task details, but SHALL NOT allow them to approve or reject the task.
+#### Scenario: No activity is left with the removed status
+- **WHEN** the removal of the value has been applied to the database.
+- **THEN** no row of the activities table SHALL have the status `pending_approval`.
+- **AND** every existing activity SHALL keep a status that is still valid (`open`, `in_progress`, `pending_validation`, `completed` or `rejected`).
 
-### Requirement: Localized Moderation Labels
-The system SHALL provide localized labels for task moderation actions in both Portuguese and English.
+#### Scenario: Activities keep being created with the supported statuses
+- **WHEN** a task or a demand is created by an authenticated member.
+- **THEN** the activity SHALL be registered with the status `open`.
+- **WHEN** a contribution (work already performed) is registered.
+- **THEN** the activity SHALL be registered with the status `pending_validation`.
 
-#### Scenario: Portuguese Labels
-- **WHEN** the user's language is set to Portuguese (`pt`).
-- **THEN** the "Approve" button SHALL display "Aprovar" and the "Reject" button SHALL display "Rejeitar" (ou "Reprovar").
+#### Scenario: Confirmation only accepts activities awaiting validation
+- **WHEN** a user confirms an activity.
+- **THEN** the confirmation SHALL be accepted only for activities whose status is `pending_validation`.
+- **AND** the confirmation of an activity in any other status SHALL be rejected with an error.
 
-#### Scenario: English Labels
-- **WHEN** the user's language is set to English (`en`).
-- **THEN** the "Approve" button SHALL display "Approve" and the "Reject" button SHALL display "Reject".
+### Requirement: Activity Access Rules Survive The Status Type Change
+The access control rules of the activities table SHALL remain in force after the `activity_status` type is replaced, so that removing the legacy status value SHALL NOT change who can read, create or update activities.
+
+#### Scenario: Activities stay readable by every user
+- **WHEN** any user reads the activities table.
+- **THEN** the system SHALL apply the same visibility rules that were in force before the type replacement.
+
+#### Scenario: Activities keep their write rules
+- **WHEN** a user updates an activity.
+- **THEN** the system SHALL apply the same requester, worker, executor and role based rules that were in force before the type replacement.
+
+#### Scenario: Access rules are not silently dropped
+- **WHEN** the removal of the value has been applied to the database.
+- **THEN** the access control rules of the activities table SHALL still be present.
+- **AND** no rule SHALL have been removed as a side effect of replacing the `activity_status` type.

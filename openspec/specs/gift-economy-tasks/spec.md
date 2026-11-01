@@ -8,7 +8,7 @@ O sistema SHALL permitir que membros acessem um quadro central para cadastrar e 
 
 #### Scenario: Cadastro de Nova Tarefa
 - **WHEN** um membro autenticado descreve uma tarefa, define o valor em "Surreais" e anexa a localização geográfica aproximada.
-- **THEN** a tarefa é registrada com status `pending_approval` e aguarda moderação do Conselho Transversal.
+- **THEN** a tarefa é registrada diretamente com status `open` e aparece na coluna "Open" do Mural, sem etapa de moderação.
 
 #### Scenario: Aceitação de Tarefa
 - **WHEN** um ou múltiplos membros são designados ou clicam em "Assumir Tarefa".
@@ -37,11 +37,15 @@ O sistema SHALL possuir testes automatizados para garantir a estabilidade das fu
 - **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.
 
 ### Requirement: Open Task Creation
-O sistema SHALL permitir que qualquer usuário autenticado crie uma atividade do tipo 'task' com status inicial 'pending_approval', incluindo a classificação de Urgência e Importância.
+O sistema SHALL permitir que qualquer usuário autenticado crie uma atividade do tipo 'task' ou 'demand' com status inicial 'open', incluindo a classificação de Urgência e Importância.
 
 #### Scenario: Successful task creation with priority
 - **WHEN** um membro autenticado fornece título, descrição, um valor de recompensa positivo e seleciona os níveis de Urgência e Importância.
-- **THEN** o sistema SHALL registrar a tarefa vinculando o membro como `requester_id`, definir o status como `pending_approval` e persistir os metadados de prioridade.
+- **THEN** o sistema SHALL registrar a tarefa vinculando o membro como `requester_id`, definir o status como `open` (sem moderação) e persistir os metadados de prioridade.
+
+#### Scenario: Demanda criada entra em Open
+- **WHEN** um membro autenticado cria uma demanda (`type = 'demand'`).
+- **THEN** a demanda SHALL ser registrada com status `open` e aparecer imediatamente na coluna "Open" para todos os usuários.
 
 ### Requirement: Visualização de Prioridade no Quadro
 O sistema SHALL exibir visualmente os níveis de Urgência e Importância em cada card de tarefa no mural.
@@ -55,15 +59,11 @@ The system SHALL restrict visibility of tasks based on their status.
 
 #### Scenario: Public visibility of open tasks
 - **WHEN** any user views the Work Wall.
-- **THEN** only tasks with `open` status SHALL be visible.
+- **THEN** tasks with `open` status SHALL be visible to everyone.
 
-#### Scenario: Restricted visibility of pending tasks
+#### Scenario: Rejected tasks stay hidden
 - **WHEN** a regular user views the Work Wall.
-- **THEN** tasks with `pending_approval` status SHALL NOT be visible, unless they are the creator of the task.
-
-#### Scenario: Council visibility of pending tasks
-- **WHEN** a member of the `transversal_council` views the Work Wall or moderation dashboard.
-- **THEN** tasks with `pending_approval` status SHALL be visible.
+- **THEN** tasks with `rejected` status SHALL NOT be visible, unless they are the creator of the task or an administrator.
 
 ### Requirement: Reward Value Definition
 O sistema SHALL validar que o valor da recompensa informado é um número positivo.
@@ -137,4 +137,3 @@ The system SHALL provide a search input in each column of the work wall that fil
 #### Scenario: Clearing the column search
 - **WHEN** the user clears the search field of a column
 - **THEN** all items of that column SHALL be displayed again
-

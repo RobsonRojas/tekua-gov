@@ -2,7 +2,7 @@
 
 - [x] 1.1 Criar uma migration no Supabase (`npx supabase migration new create_email_queue_table`).
 - [x] 1.2 Na migration, definir a criação da tabela `email_queue` com as colunas (id, email, status, error_message, created_at).
-- [ ] 1.3 Rodar a migration localmente (`npx supabase db push`).
+- [x] 1.3 Rodar a migration localmente (`npx supabase db push`).
 
 ## 2. Tratamento de Erros na Função Edge (`api-members`)
 

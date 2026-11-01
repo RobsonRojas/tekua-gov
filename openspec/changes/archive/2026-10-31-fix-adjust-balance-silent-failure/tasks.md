@@ -11,4 +11,4 @@
 - [x] 3.1 Executar `npm run build` para validar o frontend (sem mudanças de código TS, apenas garantia).
 - [x] 3.2 Deploy da Edge Function: `npx supabase functions deploy api-wallet`.
 - [x] 3.3 Aplicar migration ao banco de produção via `npx supabase db push` ou SQL Editor.
-- [ ] 3.4 Testar manualmente: abrir painel Admin → Ajustar Saldo de um membro → confirmar que o saldo muda e a mensagem de sucesso aparece.
+- [x] 3.4 Testar manualmente: abrir painel Admin → Ajustar Saldo de um membro → confirmar que o saldo muda e a mensagem de sucesso aparece.

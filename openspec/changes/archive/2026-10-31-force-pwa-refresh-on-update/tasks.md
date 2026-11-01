@@ -53,7 +53,7 @@
 
 ## 9. Verificação
 
-- [ ] 9.1 Rodar `npm run build` e `npm run lint` sem erros.
+- [x] 9.1 Rodar `npm run build` e `npm run lint` sem erros.
 - [x] 9.2 Rodar `openspec validate force-pwa-refresh-on-update --strict` e confirmar 0 issues.
 - [x] 9.3 Conferir manualmente em build local com SW servido: alterar um asset, recarregar e validar que o diálogo de atualização obrigatória aparece e que o reload aplica a nova versão.
 - [x] 9.4 Documentar no `openspec/changes/force-pwa-refresh-on-update/` a evidência de cada requisito de `pwa-update-refresh` e `pwa-core` verificado por teste automatizado.
