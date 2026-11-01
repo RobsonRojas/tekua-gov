@@ -250,6 +250,8 @@
     "surreais": "Surreais"
   },
   "work": {
+    "communityMember": "Membro da Comunidade",
+    "searchColumnPlaceholder": "Pesquisar...",
     "newProject": "Novo Projeto",
     "editTaskTitle": "Editar Tarefa",
     "executorHelper": "Selecione quem executou (opcional)",

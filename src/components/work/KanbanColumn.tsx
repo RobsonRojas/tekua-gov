@@ -143,7 +143,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
         <TextField
           fullWidth
           size="small"
-          placeholder={t('work.searchColumnPlaceholder') || 'Pesquisar...'}
+          placeholder={t('work.searchColumnPlaceholder', 'Pesquisar...')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           InputProps={{

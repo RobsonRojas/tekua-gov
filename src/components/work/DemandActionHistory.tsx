@@ -127,7 +127,7 @@ export const DemandActionHistory: React.FC<DemandActionHistoryProps> = ({ activi
         id: `confirmation-${conf.id}`,
         type: 'confirmation',
         title: t('work.historyEventConfirmed') || 'Confirmação Registrada',
-        actorName: conf.profile?.full_name || t('work.communityMember') || 'Membro da Comunidade',
+        actorName: conf.profile?.full_name || t('work.communityMember', 'Membro da Comunidade'),
         actorAvatar: conf.profile?.avatar_url,
         timestamp: conf.created_at,
         description: t('work.historyConfirmedDesc') || 'Validação de conclusão aprovada',
