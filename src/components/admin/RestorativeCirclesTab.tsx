@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Button, Chip, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Alert, Button, Chip, IconButton, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../lib/api';
+import RestorativeCircleDetailDialog from './RestorativeCircleDetailDialog';
 
 interface AdminCircle {
   id: string;
@@ -20,6 +22,7 @@ const RestorativeCirclesTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [selectedCircleId, setSelectedCircleId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -93,8 +96,18 @@ const RestorativeCirclesTab: React.FC = () => {
                 <TableCell>{formatDate(circle.scheduled_at)}</TableCell>
                 <TableCell>{formatDate(circle.created_at)}</TableCell>
                 <TableCell align="right">
-                  {circle.status === 'open' && (
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                  <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                    <Tooltip title={t('circle.adminDetails', 'Ver detalhes')}>
+                      <IconButton
+                        size="small"
+                        aria-label={t('circle.adminDetails', 'Ver detalhes')}
+                        onClick={() => setSelectedCircleId(circle.id)}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    {circle.status === 'open' && (
+                      <>
                       <Button size="small" disabled={busyId === circle.id} onClick={() => runAction(circle.id, 'closeRestorativeCircle')}>
                         {t('circle.adminClose', 'Encerrar')}
                       </Button>
@@ -110,14 +123,17 @@ const RestorativeCirclesTab: React.FC = () => {
                       >
                         {t('circle.adminCancel', 'Cancelar')}
                       </Button>
-                    </Stack>
-                  )}
+                      </>
+                    )}
+                  </Stack>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </Paper>
+
+      <RestorativeCircleDetailDialog circleId={selectedCircleId} onClose={() => setSelectedCircleId(null)} />
     </Stack>
   );
 };

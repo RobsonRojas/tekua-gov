@@ -263,6 +263,7 @@ serve(async (req) => {
             description: typeof description === 'string' && description.trim() ? description.trim() : null,
             scheduled_at: checked.scheduledAt,
             location_or_link: typeof locationOrLink === 'string' && locationOrLink.trim() ? locationOrLink.trim() : null,
+            confirmed_pre_circles: true,
             created_by: user.id,
           }])
           .select()
@@ -389,6 +390,35 @@ serve(async (req) => {
         const names = new Map((authors || []).map((a: any) => [a.id, a.full_name]))
 
         responseData = (circles || []).map((c: any) => ({ ...c, author_name: names.get(c.created_by) ?? null }))
+        break
+      }
+
+      case 'fetchRestorativeCircleById': {
+        if (!(await isAdminUser(user.id))) throw new Error('Forbidden')
+        const { id } = params
+        if (!id || typeof id !== 'string') throw new Error('Missing circle ID')
+
+        const { data: circle, error } = await supabaseAdmin
+          .from('restorative_circles')
+          .select('id, title, description, scheduled_at, location_or_link, status, created_at, confirmed_pre_circles, share_token, created_by')
+          .eq('id', id)
+          .maybeSingle()
+
+        if (error) {
+          // id fora do formato uuid: tratado como não encontrado
+          if (error.code === '22P02') throw new Error('Restorative circle not found')
+          throw error
+        }
+        if (!circle) throw new Error('Restorative circle not found')
+
+        const { data: author } = await supabaseAdmin
+          .from('profiles')
+          .select('full_name')
+          .eq('id', circle.created_by)
+          .maybeSingle()
+
+        const { created_by: _createdBy, ...fields } = circle
+        responseData = { ...fields, author_name: author?.full_name ?? null }
         break
       }
 
