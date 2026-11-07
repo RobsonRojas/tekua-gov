@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
   Container, 
   Typography, 
@@ -30,6 +30,7 @@ import WorkFilters, { loadStoredFilters } from '../components/WorkFilters';
 import type { WorkFilterValues } from '../components/WorkFilters';
 import { useQueryWithCache } from '../hooks/useQueryWithCache';
 import KanbanColumn from '../components/work/KanbanColumn';
+import { filterActivitiesBySearch } from '../utils/workSearch';
 
 interface ColumnDef {
   id: string;
@@ -81,6 +82,13 @@ const WorkWall: React.FC = () => {
 
   const [filters, setFilters] = useState<WorkFilterValues>(() => loadStoredFilters());
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearch(searchTerm), 250);
+    return () => clearTimeout(handle);
+  }, [searchTerm]);
 
   const [snackbarState, setSnackbarState] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
     open: false,
@@ -173,10 +181,13 @@ const WorkWall: React.FC = () => {
   ];
 
   // Group activities into columns
-  const getColumnActivities = (statuses: string[]) => {
-    if (!rawActivities) return [];
-    return rawActivities.filter((a: any) => statuses.includes(a.status));
-  };
+  const searchedActivities = useMemo(
+    () => filterActivitiesBySearch(rawActivities, debouncedSearch, (status) => t(`work.${status === 'pending_validation' ? 'forValidating' : status}`, '')),
+    [rawActivities, debouncedSearch, t]
+  );
+
+  const getColumnActivities = (statuses: string[]) =>
+    searchedActivities.filter((a: any) => statuses.includes(a.status));
 
   // Handle Drag & Drop Status Transition
   const handleDropCard = async (activityId: string, sourceStatus: string, targetColumnId: string) => {
@@ -244,7 +255,7 @@ const WorkWall: React.FC = () => {
       )}
 
       {/* Filters */}
-      <WorkFilters onFilterChange={setFilters} />
+      <WorkFilters onFilterChange={setFilters} searchValue={searchTerm} onSearchChange={setSearchTerm} />
       
       {error && (
         <Alert 

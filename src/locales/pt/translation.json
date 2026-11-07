@@ -273,6 +273,8 @@
     "linked": "Protocolo/POP a seguir"
   },
   "work": {
+    "searchPlaceholder": "Pesquisar em todas as colunas",
+    "clearSearch": "Limpar pesquisa",
     "evidenceLinks": "Links (opcional)",
     "evidenceLinkLabel": "Endereço do link",
     "evidenceLinkAdd": "Adicionar link",

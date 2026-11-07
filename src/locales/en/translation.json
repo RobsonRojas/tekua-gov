@@ -268,6 +268,8 @@
     "linked": "Protocol/SOP to follow"
   },
   "work": {
+    "searchPlaceholder": "Search all columns",
+    "clearSearch": "Clear search",
     "evidenceLinks": "Links (optional)",
     "evidenceLinkLabel": "Link address",
     "evidenceLinkAdd": "Add link",

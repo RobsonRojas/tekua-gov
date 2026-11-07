@@ -8,12 +8,16 @@ import {
   Grid,
   Button,
   Collapse,
-  Chip
+  Chip,
+  TextField,
+  InputAdornment,
+  IconButton
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { 
   FilterList as FilterIcon,
-  Clear as ClearIcon
+  Clear as ClearIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
@@ -28,6 +32,8 @@ export interface WorkFilterValues {
 
 interface WorkFiltersProps {
   onFilterChange: (filters: WorkFilterValues) => void;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 const FILTERS_STORAGE_KEY = 'tekua:workwall:filters';
@@ -52,7 +58,7 @@ export const loadStoredFilters = (): WorkFilterValues => {
   }
 };
 
-const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
+const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange, searchValue = '', onSearchChange }) => {
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
@@ -96,11 +102,13 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
     setFilters(reset);
     onFilterChange(reset);
     try { localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(reset)); } catch { /* ignore */ }
+    onSearchChange?.('');
   };
 
   const projectLabel = t('work.project', 'Projeto');
   const executorLabel = t('work.executor', 'Executor');
   const categoryLabel = t('work.category', 'Área de Atuação');
+  const searchLabel = t('work.searchPlaceholder', 'Pesquisar em todas as colunas');
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   const hasActiveFilters = Boolean(
@@ -108,7 +116,8 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
     filters.workerId || 
     (filters.type && filters.type !== 'all') || 
     filters.projectId ||
-    filters.categoryId
+    filters.categoryId ||
+    searchValue.trim()
   );
 
   return (
@@ -125,6 +134,30 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', flexGrow: 1 }}>
+          {/* Global search across all Kanban columns */}
+          {onSearchChange && (
+            <TextField
+              size="small"
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={searchLabel}
+              inputProps={{ 'aria-label': searchLabel }}
+              sx={{ flex: { xs: '1 1 100%', sm: '1 1 240px' }, maxWidth: { sm: 320 }, minWidth: 180, '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'background.paper' } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>
+                ),
+                endAdornment: searchValue ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" aria-label={t('work.clearSearch', 'Limpar pesquisa')} onClick={() => onSearchChange('')}>
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : undefined
+              }}
+            />
+          )}
+
           {/* Always Visible Project Filter */}
           <FormControl size="small" sx={{ flex: { xs: '1 1 100%', sm: '1 1 200px' }, maxWidth: { sm: 260 }, minWidth: 160 }}>
             <InputLabel id="project-filter-label">{projectLabel}</InputLabel>
@@ -189,7 +222,7 @@ const WorkFilters: React.FC<WorkFiltersProps> = ({ onFilterChange }) => {
               <Chip
                 size="small"
                 color="primary"
-                label={[filters.requesterId, filters.workerId, filters.type && filters.type !== 'all' ? filters.type : '', filters.projectId, filters.categoryId].filter(Boolean).length}
+                label={[filters.requesterId, filters.workerId, filters.type && filters.type !== 'all' ? filters.type : '', filters.projectId, filters.categoryId, searchValue.trim()].filter(Boolean).length}
                 sx={{ ml: 1, height: 18, fontSize: '0.7rem', fontWeight: 800 }}
               />
             )}
