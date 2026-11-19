@@ -328,6 +328,13 @@
     "confirmSuccess": "Tarefa confirmada!",
     "ownWorkError": "Você não pode confirmar seu próprio trabalho.",
     "alreadyConfirmed": "Você já confirmou este trabalho.",
+    "confirmRequirements": {
+      "title": "Para confirmar esta tarefa",
+      "notExecutor": "Outra pessoa que não executou a tarefa precisa confirmar",
+      "notConfirmedYet": "Você ainda não confirmou esta tarefa",
+      "met": "Atendido",
+      "unmet": "Pendente"
+    },
     "open": "Aberta",
     "in_progress": "Em Execução",
     "pending_validation": "Aguardando Validação",

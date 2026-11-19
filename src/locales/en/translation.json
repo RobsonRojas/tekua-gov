@@ -323,6 +323,13 @@
     "confirmSuccess": "Task confirmed!",
     "ownWorkError": "You cannot confirm your own work.",
     "alreadyConfirmed": "You already confirmed this work.",
+    "confirmRequirements": {
+      "title": "To confirm this task",
+      "notExecutor": "Someone who did not carry out the task needs to confirm it",
+      "notConfirmedYet": "You have not confirmed this task yet",
+      "met": "Met",
+      "unmet": "Pending"
+    },
     "open": "Open",
     "in_progress": "In Progress",
     "pending_validation": "Awaiting Validation",

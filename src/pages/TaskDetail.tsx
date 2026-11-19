@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { getConfirmRequirements } from '../utils/confirmRequirements';
+import ConfirmRequirementsList from '../components/work/ConfirmRequirementsList';
 import { 
   Container, 
   Typography, 
@@ -269,6 +271,12 @@ const TaskDetail: React.FC = () => {
                     (activity.validation_method === 'requester_approval' && (isOwner || isAdmin));
   const isAdminForcing = isAdmin && !isOwner && activity.validation_method === 'requester_approval';
   const isSelfConfirmExempt = isOwner || (isAdmin && activity.validation_method === 'requester_approval');
+  const confirmRequirements = getConfirmRequirements({
+    isWorker: !!isWorker,
+    isSelfConfirmExempt: !!isSelfConfirmExempt,
+    userHasConfirmed: !!activity.user_has_confirmed,
+  });
+  const hasUnmetRequirements = confirmRequirements.some(r => !r.met);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -644,13 +652,17 @@ const TaskDetail: React.FC = () => {
                 color={isAdminForcing ? "error" : "primary"}
                 startIcon={<CheckCircle2 />}
                 onClick={handleAction}
-                disabled={actionLoading || (isWorker && !isSelfConfirmExempt) || activity.user_has_confirmed}
+                disabled={actionLoading || hasUnmetRequirements}
                 sx={{ borderRadius: '16px', py: 2, fontSize: '1.1rem', fontWeight: 700 }}
               >
                 {activity.user_has_confirmed 
                   ? (t('work.alreadyConfirmed') || 'Já Confirmado') 
                   : (isAdminForcing ? 'Forçar Confirmação (Admin)' : (t('work.confirm') || 'Confirmar Tarefa'))}
               </Button>
+            )}
+
+            {activity.status === 'pending_validation' && canConfirm && hasUnmetRequirements && (
+              <ConfirmRequirementsList requirements={confirmRequirements} />
             )}
           </Box>
         </Paper>
