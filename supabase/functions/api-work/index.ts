@@ -4,6 +4,19 @@ import { completeTask, addEvidence } from "./taskCompletion.ts"
 import { normalizeEvidenceAttachments } from "./evidenceLinks.ts"
 import { resolveProtocolId } from "./protocolLink.ts"
 
+// Reservation failures come from Postgres as `INSUFFICIENT_AVAILABLE_BALANCE: available=X, required=Y`.
+// The message is kept as is so the client can translate it and show the available balance.
+// Only admins and council members may name ANOTHER member as beneficiary (payer).
+const assertCanNameBeneficiary = async (client: any, userId: string, beneficiaryId: string | null | undefined) => {
+  if (!beneficiaryId || beneficiaryId === 'village' || beneficiaryId === userId) return
+  const { data: profile } = await client.from('profiles').select('role, roles').eq('id', userId).single()
+  const allowed = ['admin', 'transversal_council']
+  const ok = allowed.includes(profile?.role) || (profile?.roles || []).some((r: string) => allowed.includes(r))
+  if (!ok) throw new Error('Forbidden: only admins or council members can name another member as beneficiary')
+}
+
+const formatReservationError = (message: string): string => message
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -195,7 +208,8 @@ serve(async (req) => {
           executorIds = [],
           projectId = null,
           categoryId = null,
-          protocolId = undefined
+          protocolId = undefined,
+          beneficiaryId = undefined
         } = params
         if (!title || !description) throw new Error('Missing activity title or description')
         
@@ -212,29 +226,33 @@ serve(async (req) => {
         const minConfirmations = govSettings?.min_contribution_confirmations || 3;
         const resolvedProtocolId = await resolveProtocolId(supabaseClient, protocolId)
 
-        const { data: activityData, error } = await supabaseClient
-          .from('activities')
-          .insert({ 
-            title: typeof title === 'string' ? { pt: title, en: title } : title, 
-            description: typeof description === 'string' ? { pt: description, en: description } : description, 
-            reward_amount: amount,
-            type: type,
-            requester_id: user.id,
-            status: 'open',
-            geo_required: geoRequired,
-            validation_method: 'requester_approval',
-            min_confirmations: minConfirmations,
-            urgency,
-            importance,
-            executor_ids: executorIds,
-            project_id: projectId,
-            category_id: categoryId || null,
-            protocol_id: resolvedProtocolId ?? null
-          })
-          .select()
-          .single()
+        // Beneficiary: omitted/`null`/'village' = the community (Treasury pays, no reservation);
+        // a member id = that member, who is the payer (requester) and must hold the reward as
+        // available balance, reserved atomically with the demand. Naming ANOTHER member is
+        // restricted to admins and council members.
+        await assertCanNameBeneficiary(supabaseClient, user.id, beneficiaryId)
+        const beneficiaryIsVillage = !beneficiaryId || beneficiaryId === 'village'
+        const requesterId = beneficiaryIsVillage ? user.id : beneficiaryId
+        const shouldReserve = !beneficiaryIsVillage
 
-        if (error) throw error
+        const { data: activityData, error } = await supabaseAdmin.rpc('create_activity_with_reservation', {
+          p_title: typeof title === 'string' ? { pt: title, en: title } : title,
+          p_description: typeof description === 'string' ? { pt: description, en: description } : description,
+          p_reward_amount: amount,
+          p_type: type,
+          p_requester_id: requesterId,
+          p_reserve: shouldReserve,
+          p_geo_required: geoRequired,
+          p_min_confirmations: minConfirmations,
+          p_urgency: urgency,
+          p_importance: importance,
+          p_executor_ids: executorIds,
+          p_project_id: projectId,
+          p_category_id: categoryId || null,
+          p_protocol_id: resolvedProtocolId ?? null
+        })
+
+        if (error) throw new Error(formatReservationError(error.message))
 
         // Insert attachments if any
         if (attachments && attachments.length > 0) {
@@ -357,6 +375,8 @@ serve(async (req) => {
         // Links inválidos são recusados antes de criar a atividade.
         const validAttachments = normalizeEvidenceAttachments<any>(attachments)
 
+        await assertCanNameBeneficiary(supabaseClient, user.id, requesterId)
+
         const validationMethod = (requesterId && requesterId.trim() !== '') ? 'requester_approval' : 'community_consensus';
 
         // The evidence is optional. `undefined` would be dropped from the RPC payload
@@ -378,7 +398,7 @@ serve(async (req) => {
           p_category_id: categoryId || null
         })
 
-        if (error) throw error
+        if (error) throw new Error(formatReservationError(error.message))
 
         // Insert attachments if any
 
@@ -582,7 +602,7 @@ serve(async (req) => {
         // 1. Fetch existing activity to verify requester
         const { data: activity, error: fetchError } = await supabaseClient
           .from('activities')
-          .select('requester_id, status, protocol_id')
+          .select('requester_id, status, protocol_id, reward_amount, executor_ids')
           .eq('id', activityId)
           .single()
           
@@ -641,6 +661,19 @@ serve(async (req) => {
           .single()
           
         if (updateError) throw updateError
+
+        // A held reservation follows reward x executors. If the beneficiary cannot cover the
+        // increase, the edit is reverted and the error is propagated.
+        if (rewardAmount !== undefined || executorIds !== undefined) {
+          const { error: syncError } = await supabaseAdmin.rpc('sync_activity_reservation', { p_activity_id: activityId })
+          if (syncError) {
+            await supabaseAdmin
+              .from('activities')
+              .update({ reward_amount: activity.reward_amount, executor_ids: activity.executor_ids })
+              .eq('id', activityId)
+            throw new Error(formatReservationError(syncError.message))
+          }
+        }
         
         // Manage reference attachments (is_evidence = false)
         if (attachments !== undefined) {

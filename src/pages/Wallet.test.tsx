@@ -46,6 +46,27 @@ describe('Wallet Page', () => {
     </BrowserRouter>
   );
 
+  it('shows total, reserved and available balance', async () => {
+    vi.mocked(apiClient.invoke).mockImplementation((domain, action) => {
+      if (domain === 'api-wallet' && action === 'getBalance') {
+        return Promise.resolve({
+          data: { balance: 100, reserved_balance: 70, available_balance: 30, locked_balance: 0, pending_audit_balance: 0 },
+          error: null
+        });
+      }
+      return Promise.resolve({ data: [], error: null });
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('30')).toBeInTheDocument();
+    });
+    const summary = screen.getByTestId('wallet-reserved-summary');
+    expect(summary).toHaveTextContent('wallet.totalBalance: $S 100');
+    expect(summary).toHaveTextContent('wallet.reservedBalance: $S 70');
+  });
+
   it('renders balance correctly', async () => {
     vi.mocked(apiClient.invoke).mockImplementation((domain, action) => {
       if (domain === 'api-wallet' && action === 'getBalance') {

@@ -47,7 +47,7 @@ serve(async (req) => {
         // 1. Fetch main balance and gift points
         const { data: wallet, error: walletError } = await supabaseClient
           .from('wallets')
-          .select('balance, gift_points')
+          .select('balance, reserved_balance, gift_points')
           .eq('profile_id', user.id) // Fixed column name from profile_id to user_id? Wait, check DB.
           .single()
         
@@ -74,12 +74,30 @@ serve(async (req) => {
           })
         }
 
+        const totalBalance = Number(wallet?.balance || 0)
+        const reservedBalance = Number(wallet?.reserved_balance || 0)
+
         responseData = { 
-          balance: wallet?.balance || 0, 
+          balance: totalBalance, 
+          reserved_balance: reservedBalance,
+          available_balance: totalBalance - reservedBalance,
           gift_points: wallet?.gift_points || 0,
           locked_balance, 
           pending_audit_balance 
         }
+        break
+      }
+
+      // Available balance (total - reserved) of a member, e.g. the beneficiary of a demand.
+      // Only the number is returned, never the wallet.
+      case 'getAvailableBalance': {
+        const { profileId } = params
+        if (!profileId) throw new Error('Missing profileId')
+
+        const { data, error } = await supabaseClient.rpc('get_member_available_balance', { p_profile_id: profileId })
+        if (error) throw error
+
+        responseData = { available_balance: Number(data || 0) }
         break
       }
 

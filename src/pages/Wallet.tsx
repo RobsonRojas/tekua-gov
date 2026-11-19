@@ -62,6 +62,7 @@ const Wallet: React.FC = () => {
   const { user } = useAuth();
   
   const [balance, setBalance] = useState<number>(0);
+  const [reservedBalance, setReservedBalance] = useState<number>(0);
   const [giftPoints, setGiftPoints] = useState<number>(0);
   const [lockedBalance, setLockedBalance] = useState<number>(0);
   const [auditPendingBalance, setAuditPendingBalance] = useState<number>(0);
@@ -107,6 +108,7 @@ const Wallet: React.FC = () => {
       if (transRes.error) throw new Error(transRes.error);
 
       setBalance(walletRes.data?.balance || 0);
+      setReservedBalance(walletRes.data?.reserved_balance || 0);
       setGiftPoints(walletRes.data?.gift_points || 0);
       setLockedBalance(walletRes.data?.locked_balance || 0);
       setAuditPendingBalance(walletRes.data?.pending_audit_balance || 0);
@@ -256,12 +258,26 @@ const Wallet: React.FC = () => {
               </Box>
               <Typography variant="h1" sx={{ fontWeight: 800, mb: 1, display: 'flex', alignItems: 'baseline' }}>
                 <span style={{ fontSize: '2rem', marginRight: 8 }}>$S</span>
-                {balance.toLocaleString()}
+                {(balance - reservedBalance).toLocaleString()}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 {t('wallet.surreais')}
               </Typography>
               
+              {reservedBalance > 0 && (
+                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 0.5, opacity: 0.9 }} data-testid="wallet-reserved-summary">
+                  <Typography variant="body2">
+                    {t('wallet.totalBalance')}: $S {balance.toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2">
+                    {t('wallet.reservedBalance')}: $S {reservedBalance.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                    {t('wallet.reservedHint')}
+                  </Typography>
+                </Box>
+              )}
+
               <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 1, opacity: 0.9 }}>
                 <Typography variant="body2" fontWeight={700}>
                   Pontos de Dádiva:

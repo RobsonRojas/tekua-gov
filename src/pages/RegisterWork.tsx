@@ -29,6 +29,7 @@ import EvidenceLinksInput from '../components/common/EvidenceLinksInput';
 import type { Attachment } from '../components/common/FileUploader';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { useBeneficiaryBalance, parseReservationError } from '../hooks/useBeneficiaryBalance';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { logActivity } from '../utils/activityLogger';
@@ -36,7 +37,10 @@ import { logActivity } from '../utils/activityLogger';
 const RegisterWork: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const canNameOtherBeneficiary =
+    profile?.role === 'admin' || profile?.roles?.includes('admin') ||
+    profile?.role === 'transversal_council' || profile?.roles?.includes('transversal_council');
 
   const [description, setDescription] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
@@ -113,6 +117,13 @@ const RegisterWork: React.FC = () => {
   };
 
 
+  // A member beneficiary pays the reward (for every executor) from their own wallet.
+  const memberBeneficiaryId = beneficiaryType === 'member' && beneficiaryId ? beneficiaryId : null;
+  const { available: beneficiaryAvailable } = useBeneficiaryBalance(memberBeneficiaryId);
+  const requiredReservation = (Number(amount) || 0) * Math.max(1, executorIds.length);
+  const insufficientBeneficiary =
+    memberBeneficiaryId !== null && beneficiaryAvailable !== null && requiredReservation > beneficiaryAvailable;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -161,7 +172,13 @@ const RegisterWork: React.FC = () => {
       setTimeout(() => navigate('/work-wall'), 2000);
     } catch (err: any) {
       console.error('Error submitting work:', err);
-      setMessage({ type: 'error', text: err.message || t('common.error') });
+      const reservation = parseReservationError(err.message);
+      setMessage({
+        type: 'error',
+        text: reservation
+          ? t('work.insufficientBeneficiaryBalance', { available: reservation.available, required: reservation.required })
+          : err.message || t('common.error')
+      });
     } finally {
       setLoading(false);
     }
@@ -277,7 +294,7 @@ const RegisterWork: React.FC = () => {
             {beneficiaryType === 'member' && (
               <Grid size={{ xs: 12, md: 6 }}>
                 <Autocomplete
-                  options={members}
+                  options={canNameOtherBeneficiary ? members : members.filter((m) => m.id === user?.id)}
                   getOptionLabel={(option) => option.full_name || option.email || ''}
                   value={members.find((m) => m.id === beneficiaryId) || null}
                   onChange={(_, newValue) => setBeneficiaryId(newValue ? newValue.id : '')}
@@ -319,6 +336,20 @@ const RegisterWork: React.FC = () => {
               />
             </Grid>
 
+            {memberBeneficiaryId && (
+              <Grid size={{ xs: 12 }}>
+                <Alert severity={insufficientBeneficiary ? 'error' : 'info'} sx={{ borderRadius: '12px' }} data-testid="beneficiary-balance-alert">
+                  {beneficiaryAvailable !== null && (
+                    <div>{t('work.beneficiaryAvailable', { amount: beneficiaryAvailable })}</div>
+                  )}
+                  <div>{t('work.reservationNotice')}</div>
+                  {insufficientBeneficiary && (
+                    <div>{t('work.insufficientBeneficiaryBalance', { available: beneficiaryAvailable, required: requiredReservation })}</div>
+                  )}
+                </Alert>
+              </Grid>
+            )}
+
             <Grid size={{ xs: 12 }}>
               <Alert severity="info" sx={{ borderRadius: '12px', mb: 1 }}>
                 {t('work.registerValidationNotice', 'Ao enviar, seu trabalho vai direto para a coluna "Para Validar" do Mural, onde os validadores o confirmam. Ele não passa pelas colunas Aberta e Em Execução.')}
@@ -335,7 +366,7 @@ const RegisterWork: React.FC = () => {
                 variant="contained"
                 size="large"
                 type="submit"
-                disabled={loading}
+                disabled={loading || insufficientBeneficiary}
                 startIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
                 sx={{ px: 4, borderRadius: 2 }}
               >

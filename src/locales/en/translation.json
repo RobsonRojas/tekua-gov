@@ -242,7 +242,10 @@
     "to": "To",
     "date": "Date",
     "surreal": "Surreal",
-    "surreais": "Surreais"
+    "surreais": "Surreais",
+    "totalBalance": "Total balance",
+    "reservedBalance": "Reserved",
+    "reservedHint": "Surreais reserved for demands where you are the beneficiary. They stay unavailable until payment or release."
   },
   "protocols": {
     "title": "Protocols and SOPs",
@@ -303,6 +306,9 @@
     "contribution": "Contribution",
     "taskTitle": "Title",
     "beneficiary": "Beneficiary",
+    "beneficiaryAvailable": "Beneficiary's available balance: $S {{amount}}",
+    "reservationNotice": "The reward will stay reserved in the beneficiary's wallet until confirmation or rejection.",
+    "insufficientBeneficiaryBalance": "Insufficient beneficiary balance: available $S {{available}}, required $S {{required}}.",
     "tekua": "Tekuá Association",
     "otherMember": "Other Member",
     "status": "Status",

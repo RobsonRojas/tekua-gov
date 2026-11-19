@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { useBeneficiaryBalance, parseReservationError } from '../hooks/useBeneficiaryBalance';
 import ProtocolSelect from '../components/work/ProtocolSelect';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
@@ -105,6 +106,13 @@ const CreateDemand: React.FC = () => {
     }
   };
 
+  // A member beneficiary pays the reward (for every executor) from their own wallet.
+  const memberBeneficiaryId = beneficiaryId && beneficiaryId !== 'village' ? beneficiaryId : null;
+  const { available: beneficiaryAvailable } = useBeneficiaryBalance(memberBeneficiaryId);
+  const requiredReservation = (Number(amount) || 0) * Math.max(1, executorIds.length);
+  const insufficientBeneficiary =
+    memberBeneficiaryId !== null && beneficiaryAvailable !== null && requiredReservation > beneficiaryAvailable;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -135,7 +143,13 @@ const CreateDemand: React.FC = () => {
       setTimeout(() => navigate('/work-wall'), 2000);
     } catch (err: any) {
       console.error('Error creating demand:', err);
-      setMessage({ type: 'error', text: err.message || t('common.error') });
+      const reservation = parseReservationError(err.message);
+      setMessage({
+        type: 'error',
+        text: reservation
+          ? t('work.insufficientBeneficiaryBalance', { available: reservation.available, required: reservation.required })
+          : err.message || t('common.error')
+      });
     } finally {
       setLoading(false);
     }
@@ -164,9 +178,10 @@ const CreateDemand: React.FC = () => {
     }
   };
 
+  // Only admins and council members can name another member as beneficiary.
   const beneficiaryOptions = [
     { id: 'village', full_name: 'Vila Tekuá (Comunidade)' },
-    ...members
+    ...(canAssignTask ? members : members.filter(m => m.id === user?.id))
   ];
 
   return (
@@ -234,6 +249,17 @@ const CreateDemand: React.FC = () => {
               <Alert severity="info" sx={{ mt: 1 }}>
                 O valor definido será depositado na carteira de cada um dos executores. Este valor não é dividido entre os executores; cada um recebe o valor integral.
               </Alert>
+              {memberBeneficiaryId && (
+                <Alert severity={insufficientBeneficiary ? 'error' : 'info'} sx={{ mt: 1 }} data-testid="beneficiary-balance-alert">
+                  {beneficiaryAvailable !== null && (
+                    <div>{t('work.beneficiaryAvailable', { amount: beneficiaryAvailable })}</div>
+                  )}
+                  <div>{t('work.reservationNotice')}</div>
+                  {insufficientBeneficiary && (
+                    <div>{t('work.insufficientBeneficiaryBalance', { available: beneficiaryAvailable, required: requiredReservation })}</div>
+                  )}
+                </Alert>
+              )}
             </Grid>
 
             <Grid size={{ xs: 12 }}>
@@ -355,7 +381,7 @@ const CreateDemand: React.FC = () => {
                 variant="contained"
                 size="large"
                 type="submit"
-                disabled={loading}
+                disabled={loading || insufficientBeneficiary}
                 startIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
                 sx={{ px: 4, borderRadius: 2 }}
               >

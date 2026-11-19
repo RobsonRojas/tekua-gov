@@ -247,7 +247,10 @@
     "to": "Para",
     "date": "Data",
     "surreal": "Surreal",
-    "surreais": "Surreais"
+    "surreais": "Surreais",
+    "totalBalance": "Saldo total",
+    "reservedBalance": "Reservado",
+    "reservedHint": "Surreais reservados para demandas em que você é o beneficiário. Ficam indisponíveis até o pagamento ou a liberação."
   },
   "protocols": {
     "title": "Protocolos e POPs",
@@ -308,6 +311,9 @@
     "contribution": "Contribuição",
     "taskTitle": "Título",
     "beneficiary": "Beneficiário",
+    "beneficiaryAvailable": "Saldo disponível do beneficiário: $S {{amount}}",
+    "reservationNotice": "O valor da recompensa ficará reservado na carteira do beneficiário até a confirmação ou a rejeição.",
+    "insufficientBeneficiaryBalance": "Saldo insuficiente do beneficiário: disponível $S {{available}}, necessário $S {{required}}.",
     "tekua": "Associação Tekuá",
     "otherMember": "Outro Membro",
     "status": "Status",
