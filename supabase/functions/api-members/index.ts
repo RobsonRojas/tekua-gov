@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
+import { sendPasswordSetupEmail } from "../_shared/password-email.ts"
 
 const corsHeaders = getResponseHeaders();
 
@@ -412,12 +413,14 @@ serve(async (req) => {
 
         if (createError) throw createError
 
-        // 3. Queue the invite email
-        await supabaseAdmin.from('email_queue').insert({ 
-          email, 
-          status: 'pending',
-          error_message: null
-        })
+        // 3. Send the "finish signup / set password" email (queued automatically if delivery fails)
+        let emailStatus: 'sent' | 'queued' | 'error' = 'error'
+        try {
+          const result = await sendPasswordSetupEmail(supabaseAdmin, { email, flow: 'invite', fullName: full_name })
+          emailStatus = result.status
+        } catch (emailError) {
+          console.error('Failed to send signup email:', emailError)
+        }
 
         // 4. Update profile email to ensure it's saved in the profiles table
         if (userData?.user?.id) {
@@ -430,7 +433,34 @@ serve(async (req) => {
             .eq('id', userData.user.id);
         }
 
-        responseData = userData || { user: { email, queued: true } }
+        responseData = { ...(userData || {}), emailStatus }
+        break
+      }
+
+      case 'sendPasswordSetupEmail': {
+        const { targetUserId } = params
+        if (!targetUserId) throw new Error('Missing targetUserId')
+
+        const { data: requester } = await supabaseClient
+          .from('profiles')
+          .select('roles')
+          .eq('id', user.id)
+          .single()
+        if (!requester?.roles?.includes('admin')) throw new Error('Forbidden')
+
+        const { data: target, error: targetError } = await supabaseAdmin
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', targetUserId)
+          .single()
+        if (targetError || !target?.email) throw new Error('User not found')
+
+        const result = await sendPasswordSetupEmail(supabaseAdmin, {
+          email: target.email,
+          flow: 'reset',
+          fullName: target.full_name,
+        })
+        responseData = { success: true, emailStatus: result.status }
         break
       }
 

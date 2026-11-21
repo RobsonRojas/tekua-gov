@@ -20,6 +20,7 @@ import LanguageSelector from '../components/LanguageSelector';
 const ResetPassword: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isInviteFlow = new URLSearchParams(window.location.search).get('flow') === 'invite';
   
   const [validating, setValidating] = useState(true);
   const [isValidSession, setIsValidSession] = useState(false);
@@ -97,6 +98,9 @@ const ResetPassword: React.FC = () => {
 
       setSuccess(true);
 
+      // End the session created by verifyOtp so the user signs in explicitly with the new password
+      await supabase.auth.signOut();
+
       // Auto redirect to login after 3 seconds
       setTimeout(() => {
         navigate('/login');
@@ -136,10 +140,10 @@ const ResetPassword: React.FC = () => {
         >
           <Box sx={{ mb: 4, textAlign: 'center' }}>
             <Typography variant="h4" color="primary.main" gutterBottom sx={{ fontWeight: 800 }}>
-              {t('forgotPassword.resetTitle', 'Nova Senha')}
+              {isInviteFlow ? t('forgotPassword.inviteTitle', 'Finalizar Cadastro') : t('forgotPassword.resetTitle', 'Nova Senha')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {t('forgotPassword.resetSubtitle', 'Escolha uma nova senha forte para acessar sua conta')}
+              {isInviteFlow ? t('forgotPassword.inviteSubtitle', 'Defina sua senha para concluir o cadastro e acessar a plataforma') : t('forgotPassword.resetSubtitle', 'Escolha uma nova senha forte para acessar sua conta')}
             </Typography>
           </Box>
 
@@ -266,7 +270,7 @@ const ResetPassword: React.FC = () => {
                   mb: 3
                 }}
               >
-                {loading ? t('forgotPassword.resetSubmitting', 'Processando...') : t('forgotPassword.resetSubmit', 'Confirmar e Alterar Senha')}
+                {loading ? t('forgotPassword.resetSubmitting', 'Processando...') : (isInviteFlow ? t('forgotPassword.inviteSubmit', 'Finalizar Cadastro') : t('forgotPassword.resetSubmit', 'Confirmar e Alterar Senha'))}
               </Button>
             </form>
           )}

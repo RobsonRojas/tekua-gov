@@ -25,7 +25,7 @@ import { uploadFile, getFileUrl } from '../../utils/storage';
 interface NewMemberModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (emailStatus?: 'sent' | 'queued' | 'error') => void;
 }
 
 const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSuccess }) => {
@@ -90,7 +90,7 @@ const NewMemberModal: React.FC<NewMemberModalProps> = ({ open, onClose, onSucces
       const result = await inviteMember(email, fullName, roles, functions, avatarUrl);
 
       if (result.success) {
-        onSuccess();
+        onSuccess(result.emailStatus);
         handleClose();
       } else {
         let errorMsg = result.error || t('common.error');

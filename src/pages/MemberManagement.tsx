@@ -17,9 +17,10 @@ import {
   Chip,
   Avatar,
   CircularProgress,
-  Alert
+  Alert,
+  Snackbar
 } from '@mui/material';
-import { Edit2, Search } from 'lucide-react';
+import { Edit2, Search, KeyRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMembers } from '../hooks/useMembers';
 import MemberEditModal from '../components/admin/MemberEditModal';
@@ -33,7 +34,24 @@ const MemberManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  const { members, loading, error, refreshMembers } = useMembers();
+  const { members, loading, error, refreshMembers, sendPasswordSetupEmail } = useMembers();
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ severity: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSendPasswordEmail = async (member: any) => {
+    if (sendingId || !member.email) return;
+    if (!window.confirm(t('admin.sendPasswordEmailConfirm', { email: member.email }))) return;
+    setSendingId(member.id);
+    const result = await sendPasswordSetupEmail(member.id);
+    setSendingId(null);
+    if (!result.success) {
+      setFeedback({ severity: 'error', text: result.error || t('common.error') });
+    } else if (result.emailStatus === 'queued') {
+      setFeedback({ severity: 'success', text: t('admin.sendPasswordEmailQueued') });
+    } else {
+      setFeedback({ severity: 'success', text: t('admin.sendPasswordEmailSent', { email: member.email }) });
+    }
+  };
 
   const handleEditClick = (member: any) => {
     setSelectedMember(member);
@@ -185,6 +203,15 @@ const MemberManagement: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell align="right">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleSendPasswordEmail(member)}
+                      disabled={sendingId !== null || !member.email}
+                      title={t('admin.sendPasswordEmail')}
+                      aria-label={t('admin.sendPasswordEmail')}
+                    >
+                      {sendingId === member.id ? <CircularProgress size={18} /> : <KeyRound size={18} />}
+                    </IconButton>
                     <IconButton size="small" onClick={() => handleEditClick(member)} title={t('admin.editMember')}>
                       <Edit2 size={18} />
                     </IconButton>
@@ -203,6 +230,10 @@ const MemberManagement: React.FC = () => {
           onRowsPerPageChange={(e) => setPageSize(parseInt(e.target.value, 10))}
         />
       </TableContainer>
+
+      <Snackbar open={!!feedback} autoHideDuration={6000} onClose={() => setFeedback(null)}>
+        {feedback ? <Alert severity={feedback.severity} onClose={() => setFeedback(null)}>{feedback.text}</Alert> : undefined}
+      </Snackbar>
 
       {selectedMember && (
         <MemberEditModal

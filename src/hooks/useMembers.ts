@@ -75,7 +75,7 @@ export function useMembers() {
 
   const inviteMember = async (email: string, fullName: string, roles: string[], functions: string[] = [], avatarUrl?: string | null) => {
     try {
-      const { error } = await apiClient.invoke('api-members', 'inviteMember', {
+      const { data, error } = await apiClient.invoke('api-members', 'inviteMember', {
         email,
         full_name: fullName,
         roles,
@@ -86,10 +86,21 @@ export function useMembers() {
       if (error) throw new Error(error);
       
       await fetchMembers();
-      return { success: true };
+      return { success: true, emailStatus: (data as any)?.emailStatus as 'sent' | 'queued' | 'error' | undefined };
     } catch (err: any) {
       console.error('Error inviting member:', err);
       return { success: false, error: err.message };
+    }
+  };
+
+  const sendPasswordSetupEmail = async (targetUserId: string) => {
+    try {
+      const { data, error } = await apiClient.invoke('api-members', 'sendPasswordSetupEmail', { targetUserId });
+      if (error) throw new Error(error);
+      return { success: true, emailStatus: (data as any)?.emailStatus as 'sent' | 'queued' };
+    } catch (err: any) {
+      console.error('Error sending password setup email:', err);
+      return { success: false, error: err.message as string };
     }
   };
 
@@ -122,6 +133,7 @@ export function useMembers() {
     refreshMembers: fetchMembers,
     updateMember,
     inviteMember,
+    sendPasswordSetupEmail,
     fetchMembersWithBalances,
     fetchEconomyStats
   };

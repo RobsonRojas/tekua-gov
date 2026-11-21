@@ -61,6 +61,12 @@
     }
   },
   "admin": {
+    "sendPasswordEmail": "Send password reset email",
+    "sendPasswordEmailConfirm": "Send a password reset email to {{email}}?",
+    "sendPasswordEmailSent": "Password reset email sent to {{email}}.",
+    "sendPasswordEmailQueued": "Delivery pending: the email was queued and will be resent automatically.",
+    "memberCreatedEmailQueued": "Member created, but the signup email is pending in the send queue.",
+    "memberCreatedEmailError": "Member created, but the signup email could not be sent. Use the send password reset email option.",
     "title": "Administrative Panel",
     "userManagement": "User Management",
     "subtitle": "View and manage association members and their permissions.",
@@ -195,6 +201,9 @@
     "switchToLight": "Switch to Light Mode"
   },
   "forgotPassword": {
+    "inviteTitle": "Finish Signup",
+    "inviteSubtitle": "Set your password to complete signup and access the platform",
+    "inviteSubmit": "Finish Signup",
     "title": "Recover Password",
     "subtitle": "Enter your email to receive a reset link.",
     "email": "Email Address",

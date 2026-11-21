@@ -63,6 +63,12 @@
     }
   },
   "admin": {
+    "sendPasswordEmail": "Enviar e-mail de troca de senha",
+    "sendPasswordEmailConfirm": "Enviar um e-mail de troca de senha para {{email}}?",
+    "sendPasswordEmailSent": "E-mail de troca de senha enviado para {{email}}.",
+    "sendPasswordEmailQueued": "Envio pendente: o e-mail foi colocado na fila e será reenviado automaticamente.",
+    "memberCreatedEmailQueued": "Membro cadastrado, mas o e-mail de finalização ficou pendente na fila de envio.",
+    "memberCreatedEmailError": "Membro cadastrado, mas não foi possível enviar o e-mail de finalização. Use a opção de enviar e-mail de troca de senha.",
     "title": "Painel Administrativo",
     "userManagement": "Gerenciamento de Usuários",
     "subtitle": "Visualize e gerencie os membros da associação e suas permissões.",
@@ -200,6 +206,9 @@
     "switchToLight": "Mudar para Modo Claro"
   },
   "forgotPassword": {
+    "inviteTitle": "Finalizar Cadastro",
+    "inviteSubtitle": "Defina sua senha para concluir o cadastro e acessar a plataforma",
+    "inviteSubmit": "Finalizar Cadastro",
     "title": "Recuperar Senha",
     "subtitle": "Insira seu email para receber um link de redefinição.",
     "email": "Endereço de Email",

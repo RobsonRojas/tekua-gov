@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
+import { sendPasswordSetupEmail } from "../_shared/password-email.ts"
 
 // Sender/recipient for external emails are always fixed.
 const FIXED_ADDRESS = 'contato@tekua.com.br'
@@ -53,12 +54,9 @@ serve(async (req) => {
             throw new Error(`Resend ${response.status}: ${errorBody}`);
           }
         } else {
-          // Invite flow (unchanged): types other than 'external' are treated as invites.
-          const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(item.email, {
-            data: { email: item.email } // keep it simple, the original trigger created the profile already
-          });
-
-          if (inviteError) throw inviteError;
+          // Legacy invite rows: the user already exists, so send a password-setup link instead of
+          // inviteUserByEmail. No re-queue here: this row itself is retried by the cron on failure.
+          await sendPasswordSetupEmail(supabaseAdmin, { email: item.email, flow: 'invite', queueOnFailure: false });
         }
 
         // success

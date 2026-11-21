@@ -62,7 +62,7 @@ import NewMemberModal from '../components/admin/NewMemberModal';
 import EconomyTab from '../components/admin/EconomyTab';
 import { useAuth } from '../context/useAuth';
 import { useMembers } from '../hooks/useMembers';
-import { History, TrendingUp, Gift, MailWarning, Megaphone } from 'lucide-react';
+import { History, TrendingUp, Gift, MailWarning, Megaphone, KeyRound } from 'lucide-react';
 import RestorativeCirclesTab from '../components/admin/RestorativeCirclesTab';
 import RewardsManager from '../components/admin/RewardsManager';
 import EmailQueuePanel from '../components/admin/EmailQueuePanel';
@@ -83,7 +83,8 @@ const AdminPanel: React.FC = () => {
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustJustification, setAdjustJustification] = useState('');
   const { user: authUser } = useAuth();
-  const { fetchMembersWithBalances } = useMembers();
+  const { fetchMembersWithBalances, sendPasswordSetupEmail } = useMembers();
+  const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
@@ -224,6 +225,27 @@ const AdminPanel: React.FC = () => {
     setAnchorEl(null);
     // Note: selectedUser is NOT cleared here to allow Dialogs to use its data
     // It will be cleared when a Dialog is closed or an action completes
+  };
+
+  const handleSendPasswordEmail = async () => {
+    const target = selectedUser;
+    if (!target || sendingResetEmail) return;
+    handleMenuClose();
+    if (!window.confirm(t('admin.sendPasswordEmailConfirm', { email: target.email }))) {
+      setSelectedUser(null);
+      return;
+    }
+    setSendingResetEmail(true);
+    const result = await sendPasswordSetupEmail(target.id);
+    setSendingResetEmail(false);
+    setSelectedUser(null);
+    if (!result.success) {
+      setMessage({ type: 'error', text: result.error || t('common.error') });
+    } else if (result.emailStatus === 'queued') {
+      setMessage({ type: 'success', text: t('admin.sendPasswordEmailQueued') });
+    } else {
+      setMessage({ type: 'success', text: t('admin.sendPasswordEmailSent', { email: target.email }) });
+    }
   };
 
   const handleToggleRole = async (role: 'member' | 'transversal_council' | 'admin') => {
@@ -925,6 +947,10 @@ const AdminPanel: React.FC = () => {
           <ListItemIcon><DollarSign size={18} /></ListItemIcon>
           <ListItemText primary="Ajustar Saldo" />
         </MenuItem>
+        <MenuItem onClick={handleSendPasswordEmail} disabled={sendingResetEmail || !selectedUser?.email}>
+          <ListItemIcon><KeyRound size={18} /></ListItemIcon>
+          <ListItemText primary={t('admin.sendPasswordEmail')} />
+        </MenuItem>
         <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.05)' }} />
         <MenuItem 
           onClick={() => {
@@ -1066,8 +1092,10 @@ const AdminPanel: React.FC = () => {
       <NewMemberModal 
         open={isNewMemberModalOpen} 
         onClose={() => setIsNewMemberModalOpen(false)}
-        onSuccess={() => {
-          setMessage({ type: 'success', text: t('common.success') });
+        onSuccess={(emailStatus) => {
+          if (emailStatus === 'queued') setMessage({ type: 'success', text: t('admin.memberCreatedEmailQueued') });
+          else if (emailStatus === 'error') setMessage({ type: 'error', text: t('admin.memberCreatedEmailError') });
+          else setMessage({ type: 'success', text: t('common.success') });
           fetchUsers();
         }}
       />
