@@ -490,6 +490,7 @@ CREATE TABLE discussion_topics (
   status TEXT DEFAULT 'open' CHECK (status IN ('open', 'closed')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  reward_amount NUMERIC(15, 2) NOT NULL DEFAULT 0 CHECK (reward_amount >= 0),
   created_by UUID REFERENCES auth.users ON DELETE SET NULL
 );
 
@@ -2299,3 +2300,15 @@ ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL D
 -- Ensure the view is also updated
 CREATE OR REPLACE VIEW public.vw_audit_logs_all AS
 SELECT * FROM public.audit_logs;
+
+-- Recompensas por interação com pautas (ver migração 20261104000000_topic_interaction_rewards.sql,
+-- que também define a função grant_topic_reward)
+CREATE TABLE IF NOT EXISTS public.topic_interaction_rewards (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  topic_id UUID NOT NULL REFERENCES public.discussion_topics(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('vote', 'comment')),
+  amount NUMERIC(15, 2) NOT NULL CHECK (amount > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (topic_id, user_id, kind)
+);

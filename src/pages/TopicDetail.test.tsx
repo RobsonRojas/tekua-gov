@@ -15,7 +15,8 @@ vi.mock('../lib/api', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, defaultValue: string) => defaultValue || key,
+    t: (key: string, defaultValue?: string, opts?: Record<string, unknown>) =>
+      (defaultValue || key).replace(/\{\{(\w+)\}\}/g, (_m, k) => String(opts?.[k] ?? '')),
     i18n: { language: 'pt' },
   }),
 }));
@@ -27,6 +28,9 @@ vi.mock('react-router-dom', async () => {
     useParams: () => ({ id: 'test-topic-id' }),
   };
 });
+
+const writeText = vi.fn().mockResolvedValue(undefined);
+Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 
 const comments = [
   {
@@ -44,13 +48,13 @@ describe('TopicDetail Page', () => {
     vi.clearAllMocks();
   });
 
-  const mockSetup = (hasVoted = false, status = 'open', withComments = false) => {
-    vi.mocked(useAuth).mockReturnValue({ user: { id: 'test-user-id' } } as never);
+  const mockSetup = (hasVoted = false, status = 'open', withComments = false, isAdmin = false, reward = 0) => {
+    vi.mocked(useAuth).mockReturnValue({ user: { id: 'test-user-id' }, profile: { roles: isAdmin ? ['admin'] : ['member'] } } as never);
     vi.mocked(apiClient.invoke).mockImplementation(async (_fn: string, action: string) => {
       if (action === 'fetchTopicDetail') {
         return {
           data: {
-            topic: { id: 'test-topic-id', title: { pt: 'Tópico de Teste' }, content: { pt: '<p>Conteúdo</p>' }, status },
+            topic: { id: 'test-topic-id', title: { pt: 'Tópico de Teste' }, content: { pt: '<p>Conteúdo</p>' }, status, reward_amount: reward },
             comments: withComments ? comments : [],
             stats: { yes: hasVoted ? 1 : 0, no: 0, abstain: 0 },
             userVoted: hasVoted,
@@ -143,5 +147,59 @@ describe('TopicDetail Page', () => {
 
     expect(screen.queryByText('Responder')).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText('Adicione um comentário...')).toBeDisabled();
+  });
+
+  it('copia o link da pauta', async () => {
+    mockSetup(false, 'open');
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Tópico de Teste')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Copiar link da pauta'));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/voting/test-topic-id`));
+    expect(await screen.findByText('Link copiado!')).toBeInTheDocument();
+  });
+
+  it('copia o link de um comentário', async () => {
+    mockSetup(false, 'open', true);
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Primeiro comentário')).toBeInTheDocument());
+    fireEvent.click(screen.getAllByLabelText('Copiar link do comentário')[0]);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/voting/test-topic-id#comment-c1`));
+  });
+
+  it('mostra o aviso quando o voto gera surreais', async () => {
+    mockSetup(false, 'open', false, false, 5);
+    vi.mocked(apiClient.invoke).mockImplementation(async (_fn: string, action: string) => {
+      if (action === 'castVote') return { data: { reward: { amount: 5 } }, error: null };
+      return {
+        data: {
+          topic: { id: 'test-topic-id', title: { pt: 'Tópico de Teste' }, content: { pt: '<p>x</p>' }, status: 'open', reward_amount: 5 },
+          comments: [], stats: { yes: 0, no: 0, abstain: 0 }, userVoted: false, mentionedProfiles: {},
+        },
+        error: null,
+      };
+    });
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Tópico de Teste')).toBeInTheDocument());
+    expect(screen.getByText('+5 surreais por participar')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Sim (0)'));
+    expect(await screen.findByText('Você recebeu 5 surreais por participar!')).toBeInTheDocument();
+  });
+
+  it('só administradores veem Editar Pauta e enviam a recompensa', async () => {
+    mockSetup(false, 'open', false, false);
+    const { unmount } = renderPage();
+    await waitFor(() => expect(screen.getByText('Tópico de Teste')).toBeInTheDocument());
+    expect(screen.queryByText('Editar Pauta')).not.toBeInTheDocument();
+    unmount();
+
+    mockSetup(false, 'open', false, true, 2);
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Tópico de Teste')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Editar Pauta'));
+    const reward = await screen.findByLabelText('Recompensa por interação (surreais)');
+    fireEvent.change(reward, { target: { value: '7,5' } });
+    fireEvent.click(screen.getByText('Salvar'));
+    await waitFor(() => expect(calls('updateTopic')).toHaveLength(1));
+    expect((calls('updateTopic')[0][2] as Record<string, unknown>).rewardAmount).toBe(7.5);
   });
 });

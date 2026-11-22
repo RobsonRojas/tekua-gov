@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, CircularProgress, Container, Divider, Avatar } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { Box, Typography, Button, Paper, CircularProgress, Container, Divider, Avatar, IconButton, Tooltip, Snackbar, Chip } from '@mui/material';
+import { Link as LinkIcon } from 'lucide-react';
+import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import SanitizedHTML from '../components/common/SanitizedHTML';
 import MentionTextField from '../components/common/MentionTextField';
 import { buildCommentThreads, splitMentions } from './topicComments';
+import TopicFormDialog, { type TopicFormValues } from '../components/voting/TopicFormDialog';
+import { buildCommentUrl, buildTopicUrl, commentIdFromHash, copyToClipboard } from '../lib/topicLinks';
 
 interface Topic {
   id: string;
@@ -14,6 +17,7 @@ interface Topic {
   content: any;
   status: 'open' | 'closed';
   created_by?: string;
+  reward_amount?: number;
 }
 
 interface Comment {
@@ -35,7 +39,8 @@ interface VoteStats {
 const TopicDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const location = useLocation();
   
   const [topic, setTopic] = useState<Topic | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -45,6 +50,9 @@ const TopicDetail: React.FC = () => {
   const [newComment, setNewComment] = useState('');
   const [newMentions, setNewMentions] = useState<string[]>([]);
   const [mentionedProfiles, setMentionedProfiles] = useState<Record<string, string>>({});
+  const [notice, setNotice] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [replyMentions, setReplyMentions] = useState<string[]>([]);
@@ -54,6 +62,19 @@ const TopicDetail: React.FC = () => {
       fetchTopicData();
     }
   }, [id, user]);
+
+  useEffect(() => {
+    if (loading) return;
+    const cid = commentIdFromHash(location.hash);
+    if (!cid) return;
+    const el = document.getElementById(`comment-${cid}`);
+    if (el) {
+      el.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      setHighlightId(cid);
+      const timer = setTimeout(() => setHighlightId(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, location.hash, comments.length]);
 
   const fetchTopicData = async () => {
     setLoading(true);
@@ -73,14 +94,44 @@ const TopicDetail: React.FC = () => {
 
   const handleVote = async (option: 'yes' | 'no' | 'abstain') => {
     if (!user || !id) return;
-    const { error } = await apiClient.invoke('api-governance', 'castVote', { topicId: id, option });
+    const { data, error } = await apiClient.invoke('api-governance', 'castVote', { topicId: id, option });
     if (!error) {
+      showReward(data?.reward?.amount);
       setHasVoted(true);
       fetchTopicData(); // refresh stats
     } else {
       alert(t('voting.voteError', 'Erro ao registrar voto. Talvez você já tenha votado.'));
     }
   };
+
+  const showReward = (amount?: number) => {
+    if (amount && amount > 0) {
+      setNotice(t('voting.rewardReceived', 'Você recebeu {{amount}} surreais por participar!', { amount }));
+    }
+  };
+
+  const handleCopy = async (url: string) => {
+    const ok = await copyToClipboard(url);
+    setNotice(ok ? t('voting.linkCopied', 'Link copiado!') : t('voting.linkCopyError', 'Não foi possível copiar o link.'));
+  };
+
+  const handleEditTopic = async (values: TopicFormValues) => {
+    if (!id) return;
+    const { error } = await apiClient.invoke('api-governance', 'updateTopic', {
+      id,
+      title: { [i18n.language]: values.title, pt: values.title, en: values.title },
+      content: { [i18n.language]: values.content, pt: values.content, en: values.content },
+      rewardAmount: values.rewardAmount,
+    });
+    if (error) {
+      setNotice(t('voting.editError', 'Não foi possível salvar a pauta.'));
+      return;
+    }
+    setEditOpen(false);
+    fetchTopicData();
+  };
+
+  const isAdmin = !!profile?.roles?.includes('admin');
 
   const submitComment = async (text: string, mentions: string[], parentId?: string) => {
     if (!user || !id || !text.trim()) return false;
@@ -89,7 +140,7 @@ const TopicDetail: React.FC = () => {
     if (i18n.language === 'pt') contentObj.en = text;
     else contentObj.pt = text;
 
-    const { error } = await apiClient.invoke('api-governance', 'addComment', {
+    const { data, error } = await apiClient.invoke('api-governance', 'addComment', {
       topicId: id,
       content: contentObj,
       mentionedUserIds: mentions,
@@ -99,6 +150,7 @@ const TopicDetail: React.FC = () => {
       alert(t('voting.commentError', 'Não foi possível enviar o comentário.'));
       return false;
     }
+    showReward(data?.reward?.amount);
     fetchTopicData();
     return true;
   };
@@ -128,10 +180,28 @@ const TopicDetail: React.FC = () => {
   };
 
   const renderComment = (c: Comment, isReply: boolean, rootId: string) => (
-    <Box key={c.id} sx={{ display: 'flex', mb: 2, ml: isReply ? 6 : 0 }}>
+    <Box
+      key={c.id}
+      id={`comment-${c.id}`}
+      sx={{
+        display: 'flex', mb: 2, ml: isReply ? 6 : 0, p: 1, borderRadius: 1,
+        bgcolor: highlightId === c.id ? 'action.selected' : 'transparent', transition: 'background-color 0.4s',
+      }}
+    >
       <Avatar src={c.profiles?.avatar_url} sx={{ mr: 2 }} />
       <Box sx={{ flex: 1 }}>
-        <Typography variant="subtitle2">{c.profiles?.full_name}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Typography variant="subtitle2">{c.profiles?.full_name}</Typography>
+          <Tooltip title={t('voting.copyCommentLink', 'Copiar link do comentário')}>
+            <IconButton
+              size="small"
+              aria-label={t('voting.copyCommentLink', 'Copiar link do comentário')}
+              onClick={() => id && handleCopy(buildCommentUrl(id, c.id))}
+            >
+              <LinkIcon size={14} />
+            </IconButton>
+          </Tooltip>
+        </Box>
         <Typography variant="body2" color="text.secondary">{new Date(c.created_at).toLocaleString()}</Typography>
         <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>{renderContent(c)}</Typography>
         {topic && topic.status !== 'closed' && (
@@ -176,7 +246,18 @@ const TopicDetail: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h4" gutterBottom>{getLocalized(topic.title)}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+          <Typography variant="h4" sx={{ flex: 1, minWidth: 200 }}>{getLocalized(topic.title)}</Typography>
+          {!!topic.reward_amount && topic.reward_amount > 0 && topic.status !== 'closed' && (
+            <Chip color="success" variant="outlined" label={t('voting.rewardChip', '+{{amount}} surreais por participar', { amount: topic.reward_amount })} />
+          )}
+          <Button size="small" startIcon={<LinkIcon size={16} />} onClick={() => id && handleCopy(buildTopicUrl(id))}>
+            {t('voting.copyTopicLink', 'Copiar link da pauta')}
+          </Button>
+          {isAdmin && (
+            <Button size="small" onClick={() => setEditOpen(true)}>{t('voting.editTopic', 'Editar Pauta')}</Button>
+          )}
+        </Box>
         <Box sx={{ mt: 2, mb: 4 }}>
           {getLocalized(topic.content).startsWith('<') ? (
             <SanitizedHTML html={getLocalized(topic.content)} />
@@ -242,6 +323,14 @@ const TopicDetail: React.FC = () => {
           </Button>
         </Box>
       </Paper>
+      <TopicFormDialog
+        open={editOpen}
+        mode="edit"
+        initial={{ title: getLocalized(topic.title), content: getLocalized(topic.content), rewardAmount: topic.reward_amount ?? 0 }}
+        onClose={() => setEditOpen(false)}
+        onSubmit={handleEditTopic}
+      />
+      <Snackbar open={notice !== null} autoHideDuration={3000} onClose={() => setNotice(null)} message={notice ?? ''} />
     </Container>
   );
 };

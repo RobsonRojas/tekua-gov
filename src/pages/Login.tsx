@@ -30,7 +30,8 @@ const Login: React.FC = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+  const fromLoc = location.state?.from;
+  const from = fromLoc?.pathname ? `${fromLoc.pathname}${fromLoc.search || ''}${fromLoc.hash || ''}` : '/';
 
   const mapSupabaseError = (message: string): string => {
     if (message.toLowerCase().includes('invalid login credentials')) return t('auth.invalid_credentials');

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { canCancelCircle, canCloseCircle, validateNewCircle } from "./circleRules.ts"
 import { canWriteProtocols, isProtocolStatus, validateProtocolInput } from "./protocolRules.ts"
-import { acceptsVotes, notificationTargets, resolveReplyParent, sanitizeMentionIds, TOPIC_STATUS_OPEN } from "./topicRules.ts"
+import { acceptsVotes, notificationTargets, parseRewardAmount, resolveReplyParent, sanitizeMentionIds, TOPIC_STATUS_OPEN } from "./topicRules.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,6 +51,20 @@ serve(async (req) => {
     }
 
     let responseData: any = null
+
+    // Helper: paga a recompensa da pauta (no máximo 1 por pauta/membro/tipo). Nunca falha a interação.
+    const grantReward = async (topicId: string, kind: 'vote' | 'comment'): Promise<number> => {
+      try {
+        const { data, error } = await supabaseAdmin.rpc('grant_topic_reward', {
+          p_topic_id: topicId, p_user_id: user.id, p_kind: kind
+        })
+        if (error) throw error
+        return Number(data) || 0
+      } catch (err) {
+        console.error(`Failed to grant ${kind} reward for topic ${topicId}:`, err)
+        return 0
+      }
+    }
 
     switch (action) {
       case 'fetchSettings': {
@@ -124,7 +138,9 @@ serve(async (req) => {
           .select()
 
         if (voteError) throw voteError
-        responseData = vote
+
+        const rewardAmountGranted = await grantReward(topicId, 'vote')
+        responseData = { vote, reward: rewardAmountGranted > 0 ? { amount: rewardAmountGranted } : null }
         break
       }
 
@@ -165,12 +181,15 @@ serve(async (req) => {
         const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
         if (!isAdmin) throw new Error('Forbidden')
 
-        const { title, content } = params
+        const { title, content, rewardAmount } = params
+        const reward = parseRewardAmount(rewardAmount)
+        if (!reward.ok) throw new Error(reward.error)
         const { data, error } = await supabaseAdmin
           .from('discussion_topics')
           .insert([{ 
             title, 
             content, 
+            reward_amount: reward.amount,
             status: TOPIC_STATUS_OPEN,
             created_at: new Date().toISOString()
           }])
@@ -198,6 +217,32 @@ serve(async (req) => {
           }).catch(err => console.error('Failed to notify agenda creation:', err))
         }
 
+        break
+      }
+
+      case 'updateTopic': {
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, roles')
+          .eq('id', user.id)
+          .single()
+        const isAdmin = profile?.role === 'admin' || profile?.roles?.includes('admin')
+        if (!isAdmin) throw new Error('Forbidden')
+
+        const { id, title, content, rewardAmount } = params
+        if (!id) throw new Error('Missing topic ID')
+        const reward = parseRewardAmount(rewardAmount)
+        if (!reward.ok) throw new Error(reward.error)
+        if (!title || !content) throw new Error('Missing title or content')
+
+        const { data, error } = await supabaseAdmin
+          .from('discussion_topics')
+          .update({ title, content, reward_amount: reward.amount, updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .select()
+        if (error) throw error
+        if (!data || data.length === 0) throw new Error('Topic not found')
+        responseData = data
         break
       }
 
@@ -313,7 +358,9 @@ serve(async (req) => {
           .select()
 
         if (error) throw error
-        responseData = data
+
+        const commentReward = await grantReward(topicId, 'comment')
+        responseData = { comments: data, reward: commentReward > 0 ? { amount: commentReward } : null }
 
         // Notificações assíncronas (não bloqueiam a resposta)
         const targets = notificationTargets(user.id, validMentions, parentAuthorId)

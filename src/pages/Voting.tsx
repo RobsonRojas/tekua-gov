@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, List, ListItem, ListItemButton, ListItemText, Chip, Container, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, Skeleton } from '@mui/material';
-import RichTextEditor from '../components/common/RichTextEditor';
+import { Box, Typography, Button, Paper, List, ListItem, ListItemButton, ListItemText, Chip, Container, Stack, Skeleton, IconButton, Tooltip, Snackbar } from '@mui/material';
+import { Link as LinkIcon } from 'lucide-react';
+import TopicFormDialog, { type TopicFormValues } from '../components/voting/TopicFormDialog';
+import { buildTopicUrl, copyToClipboard } from '../lib/topicLinks';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api';
@@ -13,6 +15,7 @@ interface Topic {
   content: string | any;
   status: 'open' | 'closed';
   created_at: string;
+  reward_amount?: number;
 }
 
 const Voting: React.FC = () => {
@@ -22,8 +25,7 @@ const Voting: React.FC = () => {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [newTopicTitle, setNewTopicTitle] = useState('');
-  const [newTopicContent, setNewTopicContent] = useState('');
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTopics();
@@ -37,18 +39,23 @@ const Voting: React.FC = () => {
     setLoading(false);
   };
 
-  const handleCreateTopic = async () => {
+  const handleCreateTopic = async (values: TopicFormValues) => {
     const { error } = await apiClient.invoke('api-governance', 'createTopic', {
-      title: { [i18n.language]: newTopicTitle, pt: newTopicTitle, en: newTopicTitle },
-      content: { [i18n.language]: newTopicContent, pt: newTopicContent, en: newTopicContent }
+      title: { [i18n.language]: values.title, pt: values.title, en: values.title },
+      content: { [i18n.language]: values.content, pt: values.content, en: values.content },
+      rewardAmount: values.rewardAmount
     });
-    
+
     if (!error) {
       setOpenDialog(false);
-      setNewTopicTitle('');
-      setNewTopicContent('');
       fetchTopics();
     }
+  };
+
+  const handleCopyLink = async (e: React.MouseEvent, topicId: string) => {
+    e.stopPropagation();
+    const ok = await copyToClipboard(buildTopicUrl(topicId));
+    setNotice(ok ? t('voting.linkCopied', 'Link copiado!') : t('voting.linkCopyError', 'Não foi possível copiar o link.'));
   };
 
   const getLocalized = (json: any) => {
@@ -100,6 +107,15 @@ const Voting: React.FC = () => {
                     primary={getLocalized(topic.title)} 
                     secondary={new Date(topic.created_at).toLocaleDateString()} 
                   />
+                  <Tooltip title={t('voting.copyTopicLink', 'Copiar link da pauta')}>
+                    <IconButton
+                      aria-label={t('voting.copyTopicLink', 'Copiar link da pauta')}
+                      onClick={(e) => handleCopyLink(e, topic.id)}
+                      sx={{ mr: 1 }}
+                    >
+                      <LinkIcon size={18} />
+                    </IconButton>
+                  </Tooltip>
                   <Chip 
                     label={topic.status === 'open' ? t('voting.statusOpen', 'Aberta') : t('voting.statusClosed', 'Encerrada')} 
                     color={topic.status === 'open' ? 'success' : 'default'} 
@@ -111,32 +127,13 @@ const Voting: React.FC = () => {
         </List>
       </Paper>
 
-      {/* Dialog for Creating Topic */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{t('voting.createTopic', 'Criar Nova Pauta')}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label={t('voting.topicTitle', 'Título da Pauta')}
-            fullWidth
-            value={newTopicTitle}
-            onChange={(e) => setNewTopicTitle(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <RichTextEditor
-            value={newTopicContent}
-            onChange={setNewTopicContent}
-            placeholder={t('voting.topicContent', 'Conteúdo da Pauta')}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>{t('common.cancel', 'Cancelar')}</Button>
-          <Button onClick={handleCreateTopic} variant="contained" disabled={!newTopicTitle || !newTopicContent}>
-            {t('common.save', 'Salvar')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <TopicFormDialog
+        open={openDialog}
+        mode="create"
+        onClose={() => setOpenDialog(false)}
+        onSubmit={handleCreateTopic}
+      />
+      <Snackbar open={notice !== null} autoHideDuration={2500} onClose={() => setNotice(null)} message={notice ?? ''} />
     </Container>
   );
 };

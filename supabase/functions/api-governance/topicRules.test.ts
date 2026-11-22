@@ -55,3 +55,24 @@ Deno.test("notificações: autor do pai mencionado recebe só a menção", () =>
 Deno.test("notificações: responder a si mesmo não notifica", () => {
   assertEquals(notificationTargets("me", [], "me"), { mention: [], reply: [] })
 })
+
+import { parseRewardAmount, MAX_TOPIC_REWARD } from "./topicRules.ts"
+
+Deno.test("recompensa ausente vale zero", () => {
+  assertEquals(parseRewardAmount(undefined), { ok: true, amount: 0 })
+  assertEquals(parseRewardAmount(""), { ok: true, amount: 0 })
+})
+
+Deno.test("recompensa aceita número e texto com vírgula, arredondando a 2 casas", () => {
+  assertEquals(parseRewardAmount(5), { ok: true, amount: 5 })
+  assertEquals(parseRewardAmount("2,5"), { ok: true, amount: 2.5 })
+  assertEquals(parseRewardAmount(1.239), { ok: true, amount: 1.24 })
+})
+
+Deno.test("recompensa rejeita negativo, não numérico e acima do teto", () => {
+  assertEquals(parseRewardAmount(-1).ok, false)
+  assertEquals(parseRewardAmount("abc").ok, false)
+  assertEquals(parseRewardAmount(NaN).ok, false)
+  assertEquals(parseRewardAmount(MAX_TOPIC_REWARD + 1).ok, false)
+  assertEquals(parseRewardAmount(MAX_TOPIC_REWARD), { ok: true, amount: MAX_TOPIC_REWARD })
+})

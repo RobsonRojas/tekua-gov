@@ -73,6 +73,7 @@ vi.mock('lucide-react', () => {
 
   return {
     Vote: IconMock('Vote'),
+    Link: IconMock('Link'),
     FileText: IconMock('FileText'),
     ChevronRight: IconMock('ChevronRight'),
     ChevronLeft: IconMock('ChevronLeft'),
