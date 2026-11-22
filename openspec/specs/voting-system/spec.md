@@ -8,7 +8,7 @@ O sistema SHALL permitir o debate organizado e a tomada de decisão formal atrav
 
 #### Scenario: Criação de Tema por Administrador com Notificação
 - **WHEN** um administrador preenche o título e o conteúdo em um editor de texto rico estável e define o prazo de encerramento.
-- **THEN** o sistema salva a pauta como "Ativa" e a disponibiliza para todos os membros sem causar falhas no navegador.
+- **THEN** o sistema salva a pauta com status `open` ("Aberta"), um valor aceito pela restrição de status da tabela, e a disponibiliza para todos os membros sem causar falhas no navegador.
 - **THEN** o sistema notifica os membros sobre a nova pauta criada através do envio de email.
 
 #### Scenario: Debate em Texto Rico e Multilíngue
@@ -16,11 +16,19 @@ O sistema SHALL permitir o debate organizado e a tomada de decisão formal atrav
 - **THEN** o sistema armazena o comentário em um campo JSONB, utilizando o idioma atual como chave, e o exibe cronologicamente garantindo a integridade visual da página.
 
 ### Requirement: Sistema de Votação Formal
-O sistema SHALL permitir que membros exerçam seu direito de voto de forma segura e única.
+O sistema SHALL permitir que membros exerçam seu direito de voto de forma segura e única, apenas em pautas abertas.
 
 #### Scenario: Votação Única
 - **WHEN** um membro autenticado seleciona uma opção (Sim, Não, Abstenção) e confirma seu voto.
 - **THEN** o sistema registra o voto associado ao seu ID e impede que ele vote novamente no mesmo tema.
+
+#### Scenario: Voto em Pauta Recém-Criada
+- **WHEN** um membro vota em uma pauta com status `open`.
+- **THEN** o sistema aceita o voto.
+
+#### Scenario: Voto em Pauta Encerrada
+- **WHEN** um membro tenta votar em uma pauta com status `closed`.
+- **THEN** o sistema rejeita o voto informando que a pauta não aceita mais votos.
 
 #### Scenario: Apuração de Resultados
 - **WHEN** uma votação é encerrada (tempo expirado ou ação do admin).
@@ -38,7 +46,7 @@ O sistema SHALL possuir testes automatizados para garantir a estabilidade das fu
 - **THEN** o sistema SHALL validar a integração entre frontend, rotas e Supabase.
 
 ### Requirement: Conteúdo em HTML Sanitizado
-O conteúdo da pauta DEVE ser armazenado como HTML sanitizado no campo JSONB `content`, em vez de Markdown. A exibição DEVE renderizar o HTML com segurança.
+O conteúdo da pauta SHALL ser armazenado como HTML sanitizado no campo JSONB `content`, em vez de Markdown. A exibição DEVE renderizar o HTML com segurança.
 
 #### Scenario: Criação de Pauta Salva como HTML
 - **WHEN** um administrador cria uma pauta com o editor de texto rico

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { canCancelCircle, canCloseCircle, validateNewCircle } from "./circleRules.ts"
 import { canWriteProtocols, isProtocolStatus, validateProtocolInput } from "./protocolRules.ts"
+import { acceptsVotes, TOPIC_STATUS_OPEN } from "./topicRules.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -109,7 +110,7 @@ serve(async (req) => {
           .single()
         
         if (topicError || !topic) throw new Error('Topic not found')
-        if (topic.status !== 'active') throw new Error('This topic is no longer accepting votes')
+        if (!acceptsVotes(topic.status)) throw new Error('This topic is no longer accepting votes')
 
         // 2. Cast vote (upsert)
         const { data: vote, error: voteError } = await supabaseClient
@@ -170,7 +171,7 @@ serve(async (req) => {
           .insert([{ 
             title, 
             content, 
-            status: 'active',
+            status: TOPIC_STATUS_OPEN,
             created_at: new Date().toISOString()
           }])
           .select()
