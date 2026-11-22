@@ -499,6 +499,8 @@ CREATE TABLE topic_comments (
   topic_id UUID REFERENCES discussion_topics(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
   content TEXT NOT NULL,
+  parent_id UUID REFERENCES topic_comments(id) ON DELETE CASCADE,
+  mentioned_user_ids UUID[] NOT NULL DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

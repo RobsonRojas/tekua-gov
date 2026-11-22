@@ -446,6 +446,9 @@
     "abstain": "Abstenção",
     "voteRecorded": "Seu voto foi registrado com sucesso.",
     "comments": "Comentários",
+    "reply": "Responder",
+    "writeReply": "Escreva uma resposta...",
+    "commentError": "Não foi possível enviar o comentário.",
     "addComment": "Adicione um comentário...",
     "send": "Enviar",
     "voteError": "Erro ao registrar voto. Talvez você já tenha votado."

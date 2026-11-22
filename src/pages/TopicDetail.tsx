@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, CircularProgress, Container, TextField, Divider, Avatar } from '@mui/material';
+import { Box, Typography, Button, Paper, CircularProgress, Container, Divider, Avatar } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import SanitizedHTML from '../components/common/SanitizedHTML';
+import MentionTextField from '../components/common/MentionTextField';
+import { buildCommentThreads, splitMentions } from './topicComments';
 
 interface Topic {
   id: string;
@@ -19,6 +21,8 @@ interface Comment {
   user_id: string;
   content: any; // Localized object
   created_at: string;
+  parent_id?: string | null;
+  mentioned_user_ids?: string[];
   profiles: { full_name: string; avatar_url: string };
 }
 
@@ -39,6 +43,11 @@ const TopicDetail: React.FC = () => {
   const [hasVoted, setHasVoted] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
+  const [newMentions, setNewMentions] = useState<string[]>([]);
+  const [mentionedProfiles, setMentionedProfiles] = useState<Record<string, string>>({});
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replyMentions, setReplyMentions] = useState<string[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -56,6 +65,7 @@ const TopicDetail: React.FC = () => {
       setComments(data.comments || []);
       setVoteStats(data.stats || { yes: 0, no: 0, abstain: 0 });
       setHasVoted(data.userVoted);
+      setMentionedProfiles(data.mentionedProfiles || {});
     }
 
     setLoading(false);
@@ -72,22 +82,84 @@ const TopicDetail: React.FC = () => {
     }
   };
 
-  const handleComment = async () => {
-    if (!user || !id || !newComment.trim()) return;
-    const contentObj = { [i18n.language]: newComment };
+  const submitComment = async (text: string, mentions: string[], parentId?: string) => {
+    if (!user || !id || !text.trim()) return false;
+    const contentObj: Record<string, string> = { [i18n.language]: text };
     // Add other language as same text for now to avoid empty fields
-    if (i18n.language === 'pt') contentObj.en = newComment;
-    else contentObj.pt = newComment;
+    if (i18n.language === 'pt') contentObj.en = text;
+    else contentObj.pt = text;
 
-    const { error } = await apiClient.invoke('api-governance', 'addComment', { 
-      topicId: id, 
-      content: contentObj 
+    const { error } = await apiClient.invoke('api-governance', 'addComment', {
+      topicId: id,
+      content: contentObj,
+      mentionedUserIds: mentions,
+      ...(parentId ? { parentId } : {}),
     });
-    if (!error) {
+    if (error) {
+      alert(t('voting.commentError', 'Não foi possível enviar o comentário.'));
+      return false;
+    }
+    fetchTopicData();
+    return true;
+  };
+
+  const handleComment = async () => {
+    if (await submitComment(newComment, newMentions)) {
       setNewComment('');
-      fetchTopicData();
+      setNewMentions([]);
     }
   };
+
+  const handleReply = async (parentId: string) => {
+    if (await submitComment(replyText, replyMentions, parentId)) {
+      setReplyText('');
+      setReplyMentions([]);
+      setReplyingTo(null);
+    }
+  };
+
+  const renderContent = (c: Comment) => {
+    const names = (c.mentioned_user_ids || []).map((uid) => mentionedProfiles[uid]).filter(Boolean);
+    return splitMentions(getLocalized(c.content), names).map((part, i) =>
+      part.mention
+        ? <Box component="span" key={i} sx={{ color: 'primary.main', fontWeight: 600 }}>{part.text}</Box>
+        : <React.Fragment key={i}>{part.text}</React.Fragment>
+    );
+  };
+
+  const renderComment = (c: Comment, isReply: boolean, rootId: string) => (
+    <Box key={c.id} sx={{ display: 'flex', mb: 2, ml: isReply ? 6 : 0 }}>
+      <Avatar src={c.profiles?.avatar_url} sx={{ mr: 2 }} />
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="subtitle2">{c.profiles?.full_name}</Typography>
+        <Typography variant="body2" color="text.secondary">{new Date(c.created_at).toLocaleString()}</Typography>
+        <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>{renderContent(c)}</Typography>
+        {topic && topic.status !== 'closed' && (
+          <Button size="small" sx={{ mt: 0.5 }} onClick={() => { setReplyingTo(c.id); setReplyText(''); setReplyMentions([]); }}>
+            {t('voting.reply', 'Responder')}
+          </Button>
+        )}
+        {replyingTo === c.id && (
+          <Box sx={{ mt: 1 }}>
+            <MentionTextField
+              autoFocus
+              value={replyText}
+              onChange={setReplyText}
+              mentionedUserIds={replyMentions}
+              onMentionedUserIdsChange={setReplyMentions}
+              placeholder={t('voting.writeReply', 'Escreva uma resposta...')}
+            />
+            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+              <Button variant="contained" size="small" onClick={() => handleReply(rootId)} disabled={!replyText.trim()}>
+                {t('voting.send', 'Enviar')}
+              </Button>
+              <Button size="small" onClick={() => setReplyingTo(null)}>{t('common.cancel', 'Cancelar')}</Button>
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
 
   const getLocalized = (json: any) => {
     if (!json) return '';
@@ -148,29 +220,24 @@ const TopicDetail: React.FC = () => {
       <Paper sx={{ p: 3 }}>
         <Typography variant="h5" gutterBottom>{t('voting.comments', 'Comentários')}</Typography>
         <Box sx={{ mb: 3 }}>
-          {comments.map(c => (
-            <Box key={c.id} sx={{ display: 'flex', mb: 2 }}>
-              <Avatar src={c.profiles?.avatar_url} sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="subtitle2">{c.profiles?.full_name}</Typography>
-                <Typography variant="body2" color="text.secondary">{new Date(c.created_at).toLocaleString()}</Typography>
-                <Typography variant="body1" sx={{ mt: 1 }}>{getLocalized(c.content)}</Typography>
-              </Box>
-            </Box>
+          {buildCommentThreads(comments).map(({ comment, replies }) => (
+            <React.Fragment key={comment.id}>
+              {renderComment(comment, false, comment.id)}
+              {replies.map(r => renderComment(r, true, comment.id))}
+            </React.Fragment>
           ))}
         </Box>
 
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField 
-            fullWidth 
-            multiline 
-            rows={2} 
-            variant="outlined" 
-            placeholder={t('voting.addComment', 'Adicione um comentário...')} 
+          <MentionTextField
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={setNewComment}
+            mentionedUserIds={newMentions}
+            onMentionedUserIdsChange={setNewMentions}
+            placeholder={t('voting.addComment', 'Adicione um comentário...')}
+            disabled={topic.status === 'closed'}
           />
-          <Button variant="contained" onClick={handleComment} disabled={!newComment.trim()}>
+          <Button variant="contained" onClick={handleComment} disabled={!newComment.trim() || topic.status === 'closed'}>
             {t('voting.send', 'Enviar')}
           </Button>
         </Box>

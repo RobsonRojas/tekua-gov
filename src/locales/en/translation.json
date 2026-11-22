@@ -441,6 +441,9 @@
     "abstain": "Abstain",
     "voteRecorded": "Your vote was successfully recorded.",
     "comments": "Comments",
+    "reply": "Reply",
+    "writeReply": "Write a reply...",
+    "commentError": "Could not send the comment.",
     "addComment": "Add a comment...",
     "send": "Send",
     "voteError": "Error recording vote. You might have already voted."

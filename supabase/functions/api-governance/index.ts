@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { canCancelCircle, canCloseCircle, validateNewCircle } from "./circleRules.ts"
 import { canWriteProtocols, isProtocolStatus, validateProtocolInput } from "./protocolRules.ts"
-import { acceptsVotes, TOPIC_STATUS_OPEN } from "./topicRules.ts"
+import { acceptsVotes, notificationTargets, resolveReplyParent, sanitizeMentionIds, TOPIC_STATUS_OPEN } from "./topicRules.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -240,25 +240,88 @@ serve(async (req) => {
           if (v.user_id === user.id) userVoted = true
         })
 
-        responseData = { topic, comments, stats, userVoted }
+        // Nomes dos membros mencionados (para destacar nos comentários)
+        const mentionedIds = [...new Set((comments || []).flatMap((c: { mentioned_user_ids?: string[] }) => c.mentioned_user_ids || []))]
+        let mentionedProfiles: Record<string, string> = {}
+        if (mentionedIds.length > 0) {
+          const { data: mp } = await supabaseAdmin.from('profiles').select('id, full_name').in('id', mentionedIds)
+          mentionedProfiles = Object.fromEntries((mp || []).map((p: { id: string; full_name: string | null }) => [p.id, p.full_name || '']))
+        }
+
+        responseData = { topic, comments, stats, userVoted, mentionedProfiles }
         break
       }
 
       case 'addComment': {
-        const { topicId, content } = params
+        const { topicId, content, parentId, mentionedUserIds } = params
         if (!topicId || !content) throw new Error('Missing topicId or content')
+
+        // Pauta precisa existir e estar aberta
+        const { data: topic, error: topicError } = await supabaseClient
+          .from('discussion_topics')
+          .select('id, title, status')
+          .eq('id', topicId)
+          .single()
+        if (topicError || !topic) throw new Error('Topic not found')
+        if (!acceptsVotes(topic.status)) throw new Error('This topic is closed for comments')
+
+        // Resposta: pai da mesma pauta, normalizado para o comentário raiz
+        let resolvedParentId: string | null = null
+        let parentAuthorId: string | null = null
+        if (parentId) {
+          const { data: parent } = await supabaseClient
+            .from('topic_comments')
+            .select('id, topic_id, parent_id, user_id')
+            .eq('id', parentId)
+            .maybeSingle()
+          const resolved = resolveReplyParent(parent, topicId)
+          if (!resolved.ok) throw new Error(resolved.error)
+          resolvedParentId = resolved.parentId
+          parentAuthorId = parent!.user_id
+        }
+
+        // Menções: apenas membros existentes
+        const requested = sanitizeMentionIds(mentionedUserIds, user.id)
+        let validMentions: string[] = []
+        if (requested.length > 0) {
+          const { data: found } = await supabaseAdmin.from('profiles').select('id').in('id', requested)
+          const foundIds = new Set((found || []).map((p: { id: string }) => p.id))
+          validMentions = requested.filter((id) => foundIds.has(id))
+        }
 
         const { data, error } = await supabaseClient
           .from('topic_comments')
-          .insert([{ 
-            topic_id: topicId, 
-            user_id: user.id, 
-            content 
+          .insert([{
+            topic_id: topicId,
+            user_id: user.id,
+            content,
+            parent_id: resolvedParentId,
+            mentioned_user_ids: validMentions
           }])
           .select()
 
         if (error) throw error
         responseData = data
+
+        // Notificações assíncronas (não bloqueiam a resposta)
+        const targets = notificationTargets(user.id, validMentions, parentAuthorId)
+        const text = typeof content === 'string' ? content : (content?.pt || content?.en || '')
+        const send = (event: string, recipients: string[]) => {
+          if (recipients.length === 0) return
+          fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/notify-engine`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+            },
+            body: JSON.stringify({
+              event,
+              payload: { topic_id: topicId, title: topic.title, content: text, recipientIds: recipients }
+            })
+          }).catch(err => console.error(`Failed to notify ${event}:`, err))
+        }
+        send('governance.topic_mention', targets.mention)
+        send('governance.topic_reply', targets.reply)
         break
       }
 

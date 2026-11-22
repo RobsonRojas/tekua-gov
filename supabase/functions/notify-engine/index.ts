@@ -122,6 +122,28 @@ serve(async (req) => {
         title: { pt: 'Nova Pauta para Votação', en: 'New Agenda for Voting' },
         message: { pt: `Uma nova pauta de governança foi criada e está disponível para discussão e votação: "${title}". Acesse o portal para participar.`, en: `A new governance agenda was created and is available for discussion and voting: "${title}". Visit the portal to participate.` }
       }
+    } else if (event === 'governance.topic_mention' || event === 'governance.topic_reply') {
+      recipients = payload.recipientIds || []
+      const raw = typeof payload.content === 'string' ? payload.content : ''
+      const shortContent = raw.length > 100 ? raw.substring(0, 100) + '...' : raw
+      const isMention = event === 'governance.topic_mention'
+      const pt = isMention
+        ? `Você foi mencionado em um comentário da pauta "${title}": "${shortContent}".`
+        : `Responderam ao seu comentário na pauta "${title}": "${shortContent}".`
+      const en = isMention
+        ? `You were mentioned in a comment on the agenda "${title}": "${shortContent}".`
+        : `Someone replied to your comment on the agenda "${title}": "${shortContent}".`
+      template = {
+        subject: isMention ? `Você foi mencionado na pauta: ${title}` : `Nova resposta na pauta: ${title}`,
+        body: pt,
+        pushTitle: isMention ? 'Você foi mencionado' : 'Nova resposta ao seu comentário',
+        pushBody: `Em: ${title}`,
+        link: `/voting/${payload.topic_id}`,
+        title: isMention
+          ? { pt: 'Você foi mencionado', en: 'You were mentioned' }
+          : { pt: 'Nova resposta ao seu comentário', en: 'New reply to your comment' },
+        message: { pt, en }
+      }
     } else if (event === 'restorative_circle.convened') {
       // Convite à vila: broadcast para todos os perfis. O corpo não inclui a descrição nem nomes das partes.
       const { data: members } = await supabaseClient.from('profiles').select('id')
