@@ -2,7 +2,7 @@
 
 - [x] 1.1 Criar migração `parent_id` (FK self, `ON DELETE CASCADE`, índice) e `mentioned_user_ids UUID[] NOT NULL DEFAULT '{}'` em `topic_comments`
 - [x] 1.2 Atualizar `full_database_schema.sql`
-- [ ] 1.3 Aplicar migração em produção (`npx supabase db push`, com confirmação)
+- [x] 1.3 Aplicar migração em produção (`npx supabase db push`, com confirmação)
 
 ## 2. Regras e edge function
 
@@ -24,4 +24,4 @@
 
 - [x] 4.1 Testes Vitest de `TopicDetail`: responder, menção, pauta encerrada
 - [x] 4.2 Rodar `npx deno test` das regras e `npx vitest run` dos arquivos tocados (sem piorar a linha de base conhecida)
-- [ ] 4.3 Deploy de `api-governance` e `notify-engine`; verificar em produção comentário, resposta e menção
+- [x] 4.3 Deploy de `api-governance` e `notify-engine`; verificar em produção comentário, resposta e menção

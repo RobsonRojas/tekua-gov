@@ -214,14 +214,26 @@ serve(async (req) => {
         
         if (topicError) throw topicError
 
-        // 2. Fetch Comments
-        const { data: comments, error: commentsError } = await supabaseClient
+        // 2. Fetch Comments (topic_comments.user_id referencia auth.users, não profiles:
+        // os perfis são buscados à parte, pois o embed do PostgREST não tem relação para usar)
+        const { data: rawComments, error: commentsError } = await supabaseClient
           .from('topic_comments')
-          .select('*, profiles(full_name, avatar_url)')
+          .select('*')
           .eq('topic_id', id)
           .order('created_at', { ascending: true })
-        
+
         if (commentsError) throw commentsError
+
+        const authorIds = [...new Set((rawComments || []).map((c: { user_id: string }) => c.user_id))]
+        const authors: Record<string, { full_name: string | null; avatar_url: string | null }> = {}
+        if (authorIds.length > 0) {
+          const { data: ap } = await supabaseAdmin.from('profiles').select('id, full_name, avatar_url').in('id', authorIds)
+          for (const p of ap || []) authors[p.id] = { full_name: p.full_name, avatar_url: p.avatar_url }
+        }
+        const comments = (rawComments || []).map((c: { user_id: string; mentioned_user_ids?: string[] }) => ({
+          ...c,
+          profiles: authors[c.user_id] || { full_name: null, avatar_url: null }
+        }))
 
         // 3. Fetch Votes Stats
         const { data: votes, error: votesError } = await supabaseClient
