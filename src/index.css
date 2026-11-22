@@ -46,3 +46,21 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
+
+/* Contenção de texto e HTML sanitizado */
+.sanitized-html {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.sanitized-html img {
+  max-width: 100%;
+  height: auto;
+}
+
+.sanitized-html pre,
+.sanitized-html code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

@@ -100,7 +100,8 @@ const TopicDetail: React.FC = () => {
       setHasVoted(true);
       fetchTopicData(); // refresh stats
     } else {
-      alert(t('voting.voteError', 'Erro ao registrar voto. Talvez você já tenha votado.'));
+      const msg = typeof error === 'string' ? error : (error as any)?.message || t('voting.voteError', 'Erro ao registrar voto. Talvez você já tenha votado.');
+      setNotice(msg);
     }
   };
 
@@ -147,7 +148,8 @@ const TopicDetail: React.FC = () => {
       ...(parentId ? { parentId } : {}),
     });
     if (error) {
-      alert(t('voting.commentError', 'Não foi possível enviar o comentário.'));
+      const msg = typeof error === 'string' ? error : (error as any)?.message || t('voting.commentError', 'Não foi possível enviar o comentário.');
+      setNotice(msg);
       return false;
     }
     showReward(data?.reward?.amount);
@@ -258,7 +260,17 @@ const TopicDetail: React.FC = () => {
             <Button size="small" onClick={() => setEditOpen(true)}>{t('voting.editTopic', 'Editar Pauta')}</Button>
           )}
         </Box>
-        <Box sx={{ mt: 2, mb: 4 }}>
+        <Box
+          sx={{
+            mt: 2,
+            mb: 4,
+            maxWidth: '100%',
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            '& img': { maxWidth: '100%', height: 'auto' },
+            '& pre, & code': { whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
+          }}
+        >
           {getLocalized(topic.content).startsWith('<') ? (
             <SanitizedHTML html={getLocalized(topic.content)} />
           ) : (

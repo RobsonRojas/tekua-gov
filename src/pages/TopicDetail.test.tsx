@@ -202,4 +202,30 @@ describe('TopicDetail Page', () => {
     await waitFor(() => expect(calls('updateTopic')).toHaveLength(1));
     expect((calls('updateTopic')[0][2] as Record<string, unknown>).rewardAmount).toBe(7.5);
   });
+
+  it('exibe mensagem amigável no notice ao falhar voto ou comentário', async () => {
+    mockSetup(false, 'open', false, false);
+    vi.mocked(apiClient.invoke).mockImplementation(async (_fn: string, action: string) => {
+      if (action === 'castVote') return { data: null, error: 'Could not find column' };
+      if (action === 'addComment') return { data: null, error: 'Error adding comment' };
+      return {
+        data: {
+          topic: { id: 'test-topic-id', title: { pt: 'Tópico de Teste' }, content: { pt: '<p>x</p>' }, status: 'open' },
+          comments: [], stats: { yes: 0, no: 0, abstain: 0 }, userVoted: false, mentionedProfiles: {},
+        },
+        error: null,
+      };
+    });
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Tópico de Teste')).toBeInTheDocument());
+    
+    // Testa falha no voto
+    fireEvent.click(screen.getByText('Sim (0)'));
+    expect(await screen.findByText('Could not find column')).toBeInTheDocument();
+
+    // Testa falha no comentário
+    fireEvent.change(screen.getByPlaceholderText('Adicione um comentário...'), { target: { value: 'Falha' } });
+    fireEvent.click(screen.getByText('Enviar'));
+    expect(await screen.findByText('Error adding comment')).toBeInTheDocument();
+  });
 });

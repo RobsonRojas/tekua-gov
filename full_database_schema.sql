@@ -512,6 +512,7 @@ CREATE TABLE topic_votes (
   user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
   option TEXT NOT NULL CHECK (option IN ('yes', 'no', 'abstain')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(topic_id, user_id)
 );
 
