@@ -23,10 +23,10 @@
 ## 4. Testes
 
 - [x] 4.1 Testes unitários do helper (link montado corretamente, fallback para fila, erro sem `SITE_URL`)
-- [ ] 4.2 Atualizar `ResetPassword.test.tsx` cobrindo modo `invite` e `signOut`
-- [ ] 4.3 Teste do `MemberManagement` para o botão (visível, confirma, desabilita durante envio)
+- [x] 4.2 Atualizar `ResetPassword.test.tsx` cobrindo modo `invite` e `signOut`
+- [x] 4.3 Teste do `MemberManagement` para o botão (visível, confirma, desabilita durante envio)
 
 ## 5. Configuração e verificação
 
-- [ ] 5.1 Documentar/configurar secrets `RESEND_API_KEY` e `SITE_URL` e a validade do OTP no Supabase Auth
-- [ ] 5.2 Verificação manual: cadastrar membro, receber e-mail, definir senha e logar; repetir pelo botão do admin
+- [x] 5.1 Documentar/configurar secrets `RESEND_API_KEY` e `SITE_URL` e a validade do OTP no Supabase Auth
+- [x] 5.2 Verificação manual: cadastrar membro, receber e-mail, definir senha e logar; repetir pelo botão do admin

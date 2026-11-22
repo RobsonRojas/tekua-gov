@@ -42,6 +42,20 @@ npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
 ```
 *(Você encontra a Service Role Key em: Settings -> API -> service_role)*
 
+### 4.1 E-mails de definição/troca de senha
+O cadastro de membros e o botão "Enviar e-mail de troca de senha" (Gerenciamento de Usuários) enviam um link de uso único via Resend. Configure:
+
+```bash
+npx supabase secrets set RESEND_API_KEY=re_xxxxxxxx
+npx supabase secrets set SITE_URL=https://seu-dominio.com   # sem barra final; é a base do link /reset-password
+npx supabase secrets set EMAIL_FROM=contato@seu-dominio.com   # opcional (padrão: contato@tekua.com.br)
+```
+
+- Sem `SITE_URL` ou `RESEND_API_KEY`, o envio falha com erro explícito (nenhum link é gerado a partir do `Origin` da requisição).
+- Se o Resend falhar, o e-mail fica na fila (`email_queue`, `type = 'external'`) e é reenviado pelo `cron_retry_emails`.
+- **Validade do link:** é global no Supabase Auth. Em Authentication -> Providers -> Email -> **Email OTP Expiration**, defina um valor adequado a convites (recomendado: `86400` = 24h; o padrão de 1h é curto para novos membros). O mesmo valor vale para o fluxo "Esqueci minha senha". O admin pode reenviar o link a qualquer momento pelo botão.
+- Após alterar os secrets, faça o redeploy de `api-members` e `cron_retry_emails`.
+
 ## 5. Configuração do Frontend
 1. No seu ambiente local (ou na sua plataforma de deploy como Vercel/Netlify), atualize o arquivo `.env`:
    ```env

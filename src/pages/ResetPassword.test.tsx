@@ -1,147 +1,143 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ResetPassword from './ResetPassword';
 import { supabase } from '../lib/supabase';
 import { BrowserRouter } from 'react-router-dom';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '../lib/i18n';
-import { useAuth } from '../context/useAuth';
 
-// Mock supabase
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      changeLanguage: vi.fn(),
+      language: 'pt-BR',
+    },
+  }),
+}));
+
+vi.mock('../context/useAuth', () => ({
+  useAuth: () => ({
+    updateLanguage: vi.fn(),
+  }),
+}));
+
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
+      verifyOtp: vi.fn(),
       updateUser: vi.fn(),
+      signOut: vi.fn(),
     },
   },
 }));
 
-// Mock useAuth
-vi.mock('../context/useAuth', () => ({
-  useAuth: vi.fn(),
-}));
-
-const renderWithProviders = async (component: React.ReactNode) => {
-  await act(async () => {
-    await i18n.changeLanguage('en');
-  });
-  
-  const result = render(
-    <I18nextProvider i18n={i18n}>
-      <BrowserRouter>
-        {component}
-      </BrowserRouter>
-    </I18nextProvider>
+const renderAt = (search: string) => {
+  window.history.pushState({}, '', `/reset-password${search}`);
+  return render(
+    <BrowserRouter>
+      <ResetPassword />
+    </BrowserRouter>
   );
-  return result;
+};
+
+const fillAndSubmit = (container: HTMLElement, password: string, confirm: string, submitName: RegExp) => {
+  const inputs = container.querySelectorAll('input[type="password"]');
+  fireEvent.change(inputs[0], { target: { value: password } });
+  fireEvent.change(inputs[1], { target: { value: confirm } });
+  fireEvent.click(screen.getByRole('button', { name: submitName }));
 };
 
 describe('ResetPassword Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(supabase.auth.verifyOtp).mockResolvedValue({ data: {}, error: null } as any);
+    vi.mocked(supabase.auth.updateUser).mockResolvedValue({ data: {}, error: null } as any);
+    vi.mocked(supabase.auth.signOut).mockResolvedValue({ error: null } as any);
   });
 
-  it('renders the reset password form when session exists', async () => {
-    vi.mocked(useAuth).mockReturnValue({ 
-      session: { user: {} } as any, 
-      loading: false,
-      user: {} as any,
-      profile: { id: 'test-user', roles: ['member'], functions: [] },
-      signOut: vi.fn(),
-      updateLanguage: vi.fn(),
-      updateTheme: vi.fn(), acceptTerms: vi.fn()
-    });
+  it('shows the reset copy and verifies the token hash', async () => {
+    const { container } = renderAt('?e=a@b.com&t=hash123');
 
-    await renderWithProviders(<ResetPassword />);
-    
     await waitFor(() => {
-      expect(screen.getByText(/Set New Password/i)).toBeInTheDocument();
+      expect(screen.getByText('forgotPassword.resetTitle')).toBeInTheDocument();
     });
-    
-    const inputs = document.querySelectorAll('input[type="password"]');
-    expect(inputs).toHaveLength(2);
+    expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({ token_hash: 'hash123', type: 'recovery' });
+    expect(container.querySelectorAll('input[type="password"]')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: 'forgotPassword.resetSubmit' })).toBeInTheDocument();
   });
 
-  it('shows error if no session exists', async () => {
-    vi.mocked(useAuth).mockReturnValue({ 
-      session: null, 
-      loading: false,
-      user: null,
-      profile: null,
-      signOut: vi.fn(),
-      updateLanguage: vi.fn(),
-      updateTheme: vi.fn(), acceptTerms: vi.fn()
-    });
+  it('shows the finish-signup copy when flow=invite', async () => {
+    renderAt('?e=a@b.com&t=hash123&flow=invite');
 
-    await renderWithProviders(<ResetPassword />);
-    
     await waitFor(() => {
-      expect(screen.getByText(/Invalid or expired session/i)).toBeInTheDocument();
+      expect(screen.getByText('forgotPassword.inviteTitle')).toBeInTheDocument();
     });
+    expect(screen.getByText('forgotPassword.inviteSubtitle')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'forgotPassword.inviteSubmit' })).toBeInTheDocument();
+    expect(screen.queryByText('forgotPassword.resetTitle')).not.toBeInTheDocument();
+  });
+
+  it('shows an error and a back-to-login button when the token params are missing', async () => {
+    renderAt('');
+
+    await waitFor(() => {
+      expect(screen.getByText('forgotPassword.invalidRequest')).toBeInTheDocument();
+    });
+    expect(supabase.auth.verifyOtp).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'forgotPassword.backToLogin' })).toBeInTheDocument();
+  });
+
+  it('shows an error and a back-to-login button when the token is expired', async () => {
+    vi.mocked(supabase.auth.verifyOtp).mockResolvedValue({ data: {}, error: { message: 'expired' } } as any);
+    renderAt('?e=a@b.com&t=old&flow=invite');
+
+    await waitFor(() => {
+      expect(screen.getByText('forgotPassword.invalidRequest')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'forgotPassword.backToLogin' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'forgotPassword.inviteSubmit' })).not.toBeInTheDocument();
   });
 
   it('validates matching passwords', async () => {
-    vi.mocked(useAuth).mockReturnValue({ 
-      session: { user: {} } as any, 
-      loading: false,
-      user: {} as any,
-      profile: { id: 'test-user', roles: ['member'], functions: [] },
-      signOut: vi.fn(),
-      updateLanguage: vi.fn(),
-      updateTheme: vi.fn(), acceptTerms: vi.fn()
-    });
+    const { container } = renderAt('?e=a@b.com&t=hash123');
+    await screen.findByText('forgotPassword.resetTitle');
 
-    const { container } = await renderWithProviders(<ResetPassword />);
+    fillAndSubmit(container, 'password123', 'password456', /forgotPassword.resetSubmit/);
 
     await waitFor(() => {
-      expect(screen.getByText(/Set New Password/i)).toBeInTheDocument();
+      expect(screen.getByText('forgotPassword.errorMismatch')).toBeInTheDocument();
     });
-
-    const inputs = container.querySelectorAll('input[type="password"]');
-    const passwordInput = inputs[0];
-    const confirmInput = inputs[1];
-    const submitButton = screen.getByRole('button', { name: /Update Password/i });
-
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.change(confirmInput, { target: { value: 'password456' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument();
-    });
+    expect(supabase.auth.updateUser).not.toHaveBeenCalled();
+    expect(supabase.auth.signOut).not.toHaveBeenCalled();
   });
 
-  it('calls supabase.auth.updateUser on valid submit', async () => {
-    vi.mocked(useAuth).mockReturnValue({ 
-      session: { user: {} } as any, 
-      loading: false,
-      user: {} as any,
-      profile: { id: 'test-user', roles: ['member'], functions: [] },
-      signOut: vi.fn(),
-      updateLanguage: vi.fn(),
-      updateTheme: vi.fn(), acceptTerms: vi.fn()
-    });
-    const mockUpdate = vi.mocked(supabase.auth.updateUser).mockResolvedValue({ data: {}, error: null } as any);
+  it('updates the password and signs out in the invite flow', async () => {
+    const { container } = renderAt('?e=a@b.com&t=hash123&flow=invite');
+    await screen.findByText('forgotPassword.inviteTitle');
 
-    const { container } = await renderWithProviders(<ResetPassword />);
+    fillAndSubmit(container, 'password123', 'password123', /forgotPassword.inviteSubmit/);
 
     await waitFor(() => {
-      expect(screen.getByText(/Set New Password/i)).toBeInTheDocument();
+      expect(supabase.auth.updateUser).toHaveBeenCalledWith({ password: 'password123' });
     });
+    await waitFor(() => {
+      expect(supabase.auth.signOut).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByText('forgotPassword.resetSuccess')).toBeInTheDocument();
+    expect(
+      vi.mocked(supabase.auth.updateUser).mock.invocationCallOrder[0]
+    ).toBeLessThan(vi.mocked(supabase.auth.signOut).mock.invocationCallOrder[0]);
+  });
 
-    const inputs = container.querySelectorAll('input[type="password"]');
-    const passwordInput = inputs[0];
-    const confirmInput = inputs[1];
-    const submitButton = screen.getByRole('button', { name: /Update Password/i });
+  it('does not sign out when updating the password fails', async () => {
+    vi.mocked(supabase.auth.updateUser).mockResolvedValue({ data: {}, error: { message: 'weak password' } } as any);
+    const { container } = renderAt('?e=a@b.com&t=hash123');
+    await screen.findByText('forgotPassword.resetTitle');
 
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.change(confirmInput, { target: { value: 'password123' } });
-    fireEvent.click(submitButton);
+    fillAndSubmit(container, 'password123', 'password123', /forgotPassword.resetSubmit/);
 
     await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalledWith({ password: 'password123' });
+      expect(screen.getByText('weak password')).toBeInTheDocument();
     });
-
-    expect(screen.getByText(/Password updated successfully/i)).toBeInTheDocument();
+    expect(supabase.auth.signOut).not.toHaveBeenCalled();
   });
 });
