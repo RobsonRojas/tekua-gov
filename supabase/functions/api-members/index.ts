@@ -98,17 +98,25 @@ serve(async (req) => {
         
         const isAdmin = profile?.roles?.includes('admin')
 
-        // 2. Fetch all users. If admin, use admin client to see everything.
+        // 2. Fetch users. If admin, use admin client to see everything.
         // If not admin, just use regular client (RLS will handle it or we select specific fields)
         let query = isAdmin ? supabaseAdmin.from('profiles').select('*') : supabaseClient.from('profiles').select('id, full_name, email, avatar_url, roles, functions')
-        
+
+        // 3. Apply optional search filter (used by the @mention system)
+        const { search, limit } = params
+        if (search && typeof search === 'string' && search.trim().length > 0) {
+          query = query.ilike('full_name', `%${search.trim()}%`)
+        }
+
         const { data, error } = await query
           .order('full_name', { ascending: true })
+          .limit(limit && typeof limit === 'number' ? limit : 50)
 
         if (error) throw error
         responseData = data
         break
       }
+
 
       case 'fetchUsersWithBalances': {
         // 1. Fetch requester profile to check role

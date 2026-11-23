@@ -46,6 +46,7 @@ const TopicDetail: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [voteStats, setVoteStats] = useState<VoteStats>({ yes: 0, no: 0, abstain: 0 });
   const [hasVoted, setHasVoted] = useState<boolean>(false);
+  const [userVoteOption, setUserVoteOption] = useState<'yes' | 'no' | 'abstain' | null>(null);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [newMentions, setNewMentions] = useState<string[]>([]);
@@ -86,6 +87,7 @@ const TopicDetail: React.FC = () => {
       setComments(data.comments || []);
       setVoteStats(data.stats || { yes: 0, no: 0, abstain: 0 });
       setHasVoted(data.userVoted);
+      setUserVoteOption(data.userVoteOption || null);
       setMentionedProfiles(data.mentionedProfiles || {});
     }
 
@@ -94,14 +96,30 @@ const TopicDetail: React.FC = () => {
 
   const handleVote = async (option: 'yes' | 'no' | 'abstain') => {
     if (!user || !id) return;
-    const { data, error } = await apiClient.invoke('api-governance', 'castVote', { topicId: id, option });
-    if (!error) {
-      showReward(data?.reward?.amount);
-      setHasVoted(true);
-      fetchTopicData(); // refresh stats
+
+    if (userVoteOption === option) {
+      // Remover voto
+      const { error } = await apiClient.invoke('api-governance', 'removeVote', { topicId: id });
+      if (!error) {
+        setUserVoteOption(null);
+        setHasVoted(false);
+        fetchTopicData();
+      } else {
+        const msg = typeof error === 'string' ? error : (error as any)?.message || t('voting.removeVoteError', 'Erro ao remover voto.');
+        setNotice(msg);
+      }
     } else {
-      const msg = typeof error === 'string' ? error : (error as any)?.message || t('voting.voteError', 'Erro ao registrar voto. Talvez você já tenha votado.');
-      setNotice(msg);
+      // Registrar ou trocar voto
+      const { data, error } = await apiClient.invoke('api-governance', 'castVote', { topicId: id, option });
+      if (!error) {
+        showReward(data?.reward?.amount);
+        setUserVoteOption(option);
+        setHasVoted(true);
+        fetchTopicData(); // refresh stats
+      } else {
+        const msg = typeof error === 'string' ? error : (error as any)?.message || t('voting.voteError', 'Erro ao registrar voto. Talvez você já tenha votado.');
+        setNotice(msg);
+      }
     }
   };
 
@@ -282,13 +300,28 @@ const TopicDetail: React.FC = () => {
         
         <Typography variant="h5" gutterBottom>{t('voting.castVote', 'Registrar Voto')}</Typography>
         <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-          <Button variant="contained" color="success" disabled={hasVoted || topic.status === 'closed'} onClick={() => handleVote('yes')}>
+          <Button
+            variant={userVoteOption === 'yes' ? "contained" : "outlined"}
+            color="success"
+            disabled={topic.status === 'closed'}
+            onClick={() => handleVote('yes')}
+          >
             {t('voting.yes', 'Sim')} ({voteStats.yes})
           </Button>
-          <Button variant="contained" color="error" disabled={hasVoted || topic.status === 'closed'} onClick={() => handleVote('no')}>
+          <Button
+            variant={userVoteOption === 'no' ? "contained" : "outlined"}
+            color="error"
+            disabled={topic.status === 'closed'}
+            onClick={() => handleVote('no')}
+          >
             {t('voting.no', 'Não')} ({voteStats.no})
           </Button>
-          <Button variant="outlined" color="inherit" disabled={hasVoted || topic.status === 'closed'} onClick={() => handleVote('abstain')}>
+          <Button
+            variant={userVoteOption === 'abstain' ? "contained" : "outlined"}
+            color="inherit"
+            disabled={topic.status === 'closed'}
+            onClick={() => handleVote('abstain')}
+          >
             {t('voting.abstain', 'Abstenção')} ({voteStats.abstain})
           </Button>
         </Box>

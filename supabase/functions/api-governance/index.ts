@@ -144,6 +144,33 @@ serve(async (req) => {
         break
       }
 
+      case 'removeVote': {
+        const { topicId } = params
+        if (!topicId) throw new Error('Missing topicId')
+
+        // 1. Verify topic exists and is active
+        const { data: topic, error: topicError } = await supabaseClient
+          .from('discussion_topics')
+          .select('status')
+          .eq('id', topicId)
+          .single()
+
+        if (topicError || !topic) throw new Error('Topic not found')
+        if (!acceptsVotes(topic.status)) throw new Error('This topic is no longer accepting votes')
+
+        // 2. Remove vote
+        const { error: deleteError } = await supabaseClient
+          .from('topic_votes')
+          .delete()
+          .eq('topic_id', topicId)
+          .eq('user_id', user.id)
+
+        if (deleteError) throw deleteError
+
+        responseData = { removed: true }
+        break
+      }
+
       case 'saveConfig': {
         // Admin only check
         const { data: profile } = await supabaseClient
@@ -290,11 +317,15 @@ serve(async (req) => {
 
         const stats = { yes: 0, no: 0, abstain: 0 }
         let userVoted = false
+        let userVoteOption: string | null = null
         votes.forEach(v => {
           if (v.option === 'yes') stats.yes++
           if (v.option === 'no') stats.no++
           if (v.option === 'abstain') stats.abstain++
-          if (v.user_id === user.id) userVoted = true
+          if (v.user_id === user.id) {
+            userVoted = true
+            userVoteOption = v.option
+          }
         })
 
         // Nomes dos membros mencionados (para destacar nos comentários)
@@ -305,7 +336,7 @@ serve(async (req) => {
           mentionedProfiles = Object.fromEntries((mp || []).map((p: { id: string; full_name: string | null }) => [p.id, p.full_name || '']))
         }
 
-        responseData = { topic, comments, stats, userVoted, mentionedProfiles }
+        responseData = { topic, comments, stats, userVoted, userVoteOption, mentionedProfiles }
         break
       }
 
