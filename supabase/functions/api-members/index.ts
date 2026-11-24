@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 import { checkRateLimit, getResponseHeaders } from "../_shared/security.ts"
-import { sendPasswordSetupEmail } from "../_shared/password-email.ts"
+import { sendPasswordSetupEmail, EmailConfigError, EMAIL_NOT_CONFIGURED } from "../_shared/password-email.ts"
 
 const corsHeaders = getResponseHeaders();
 
@@ -505,6 +505,14 @@ serve(async (req) => {
       status: 200,
     })
   } catch (error: any) {
+    if (error instanceof EmailConfigError) {
+      // Server misconfiguration, not a client error: log which setting is missing (never its value).
+      console.error(`[api-members] Email not configured: ${error.message}`)
+      return new Response(JSON.stringify({ data: null, error: EMAIL_NOT_CONFIGURED }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 503,
+      })
+    }
     return new Response(JSON.stringify({ data: null, error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

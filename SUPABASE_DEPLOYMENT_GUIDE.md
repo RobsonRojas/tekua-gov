@@ -55,6 +55,13 @@ npx supabase secrets set EMAIL_FROM=contato@seu-dominio.com   # opcional (padrã
 - Se o Resend falhar, o e-mail fica na fila (`email_queue`, `type = 'external'`) e é reenviado pelo `cron_retry_emails`.
 - **Validade do link:** é global no Supabase Auth. Em Authentication -> Providers -> Email -> **Email OTP Expiration**, defina um valor adequado a convites (recomendado: `86400` = 24h; o padrão de 1h é curto para novos membros). O mesmo valor vale para o fluxo "Esqueci minha senha". O admin pode reenviar o link a qualquer momento pelo botão.
 - Após alterar os secrets, faça o redeploy de `api-members` e `cron_retry_emails`.
+- `SITE_URL` deve ser uma URL absoluta em `https://` (somente `http://localhost` é aceito para desenvolvimento). Valor inválido é tratado como ausente.
+- Quando algum secret falta, a função responde `503` com `EMAIL_NOT_CONFIGURED` e o painel exibe "Envio de e-mail não configurado no servidor". O log da função (`api-members`) indica qual variável falta.
+- **Checklist de verificação:**
+  1. `npx supabase secrets list` mostra `SITE_URL` e `RESEND_API_KEY`.
+  2. Redeploy: `npx supabase functions deploy api-members cron_retry_emails`.
+  3. No painel, use "Enviar e-mail de troca de senha" em um usuário de teste: deve aparecer "enviado" (ou "pendente", se o Resend falhar; nesse caso verifique o domínio de `EMAIL_FROM` no Resend).
+  4. Confirme o recebimento e que o link abre `SITE_URL/reset-password?...`.
 
 ## 5. Configuração do Frontend
 1. No seu ambiente local (ou na sua plataforma de deploy como Vercel/Netlify), atualize o arquivo `.env`:

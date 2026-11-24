@@ -123,4 +123,15 @@ describe('MemberManagement - password setup email button', () => {
 
     expect(await screen.findByText('SITE_URL not configured')).toBeInTheDocument();
   });
+
+  it('shows the translated message when email is not configured', async () => {
+    const send = vi.fn().mockResolvedValue({ success: false, error: 'HTTP 503', code: 'EMAIL_NOT_CONFIGURED' });
+    mockHook(send);
+    stubConfirm(true);
+    render(<MemberManagement />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'admin.sendPasswordEmail' })[0]);
+
+    expect(await screen.findByText('admin.sendPasswordEmailNotConfigured')).toBeInTheDocument();
+  });
 });

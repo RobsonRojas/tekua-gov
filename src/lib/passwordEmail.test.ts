@@ -3,6 +3,8 @@ import {
   buildSetupUrl,
   buildPasswordEmail,
   sendPasswordSetupEmail,
+  EmailConfigError,
+  isValidSiteUrl,
 } from '../../supabase/functions/_shared/password-email';
 
 const env: Record<string, string | undefined> = {};
@@ -40,7 +42,29 @@ describe('password-email helper', () => {
   it('fails explicitly without SITE_URL', async () => {
     delete env.SITE_URL;
     const { client } = makeAdmin({ data: { properties: { hashed_token: 't' } }, error: null });
-    await expect(sendPasswordSetupEmail(client, { email: 'a@x.com', flow: 'reset' })).rejects.toThrow('SITE_URL');
+    const promise = sendPasswordSetupEmail(client, { email: 'a@x.com', flow: 'reset' });
+    await expect(promise).rejects.toBeInstanceOf(EmailConfigError);
+    await expect(promise).rejects.toMatchObject({ code: 'EMAIL_NOT_CONFIGURED', missing: 'SITE_URL' });
+    expect(client.auth.admin.generateLink).not.toHaveBeenCalled();
+  });
+
+  it('rejects a SITE_URL that is not https', async () => {
+    env.SITE_URL = 'ftp://app.tekua.com.br';
+    const { client } = makeAdmin({ data: { properties: { hashed_token: 't' } }, error: null });
+    await expect(sendPasswordSetupEmail(client, { email: 'a@x.com', flow: 'reset' })).rejects.toBeInstanceOf(EmailConfigError);
+  });
+
+  it('fails explicitly without RESEND_API_KEY', async () => {
+    delete env.RESEND_API_KEY;
+    const { client } = makeAdmin({ data: { properties: { hashed_token: 't' } }, error: null });
+    await expect(sendPasswordSetupEmail(client, { email: 'a@x.com', flow: 'reset' })).rejects.toMatchObject({ missing: 'RESEND_API_KEY' });
+  });
+
+  it('validates site urls', () => {
+    expect(isValidSiteUrl('https://app.tekua.com.br')).toBe(true);
+    expect(isValidSiteUrl('http://localhost:5173')).toBe(true);
+    expect(isValidSiteUrl('http://app.tekua.com.br')).toBe(false);
+    expect(isValidSiteUrl('app.tekua.com.br')).toBe(false);
   });
 
   it('returns sent when Resend accepts', async () => {

@@ -240,7 +240,12 @@ const AdminPanel: React.FC = () => {
     setSendingResetEmail(false);
     setSelectedUser(null);
     if (!result.success) {
-      setMessage({ type: 'error', text: result.error || t('common.error') });
+      setMessage({
+        type: 'error',
+        text: result.code === 'EMAIL_NOT_CONFIGURED'
+          ? t('admin.sendPasswordEmailNotConfigured')
+          : result.error || t('common.error'),
+      });
     } else if (result.emailStatus === 'queued') {
       setMessage({ type: 'success', text: t('admin.sendPasswordEmailQueued') });
     } else {

@@ -66,6 +66,7 @@
     "sendPasswordEmail": "Enviar e-mail de troca de senha",
     "sendPasswordEmailConfirm": "Enviar um e-mail de troca de senha para {{email}}?",
     "sendPasswordEmailSent": "E-mail de troca de senha enviado para {{email}}.",
+    "sendPasswordEmailNotConfigured": "Envio de e-mail não configurado no servidor. Contate o responsável técnico.",
     "sendPasswordEmailQueued": "Envio pendente: o e-mail foi colocado na fila e será reenviado automaticamente.",
     "memberCreatedEmailQueued": "Membro cadastrado, mas o e-mail de finalização ficou pendente na fila de envio.",
     "memberCreatedEmailError": "Membro cadastrado, mas não foi possível enviar o e-mail de finalização. Use a opção de enviar e-mail de troca de senha.",

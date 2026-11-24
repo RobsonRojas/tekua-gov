@@ -45,7 +45,12 @@ const MemberManagement: React.FC = () => {
     const result = await sendPasswordSetupEmail(member.id);
     setSendingId(null);
     if (!result.success) {
-      setFeedback({ severity: 'error', text: result.error || t('common.error') });
+      setFeedback({
+        severity: 'error',
+        text: result.code === 'EMAIL_NOT_CONFIGURED'
+          ? t('admin.sendPasswordEmailNotConfigured')
+          : result.error || t('common.error'),
+      });
     } else if (result.emailStatus === 'queued') {
       setFeedback({ severity: 'success', text: t('admin.sendPasswordEmailQueued') });
     } else {

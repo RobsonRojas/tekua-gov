@@ -100,7 +100,9 @@ export function useMembers() {
       return { success: true, emailStatus: (data as any)?.emailStatus as 'sent' | 'queued' };
     } catch (err: any) {
       console.error('Error sending password setup email:', err);
-      return { success: false, error: err.message as string };
+      const message = (err?.message ?? '') as string;
+      const code = message.includes('EMAIL_NOT_CONFIGURED') ? ('EMAIL_NOT_CONFIGURED' as const) : undefined;
+      return { success: false, error: message, code };
     }
   };
 

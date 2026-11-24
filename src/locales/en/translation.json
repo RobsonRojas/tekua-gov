@@ -64,6 +64,7 @@
     "sendPasswordEmail": "Send password reset email",
     "sendPasswordEmailConfirm": "Send a password reset email to {{email}}?",
     "sendPasswordEmailSent": "Password reset email sent to {{email}}.",
+    "sendPasswordEmailNotConfigured": "Email sending is not configured on the server. Contact the technical administrator.",
     "sendPasswordEmailQueued": "Delivery pending: the email was queued and will be resent automatically.",
     "memberCreatedEmailQueued": "Member created, but the signup email is pending in the send queue.",
     "memberCreatedEmailError": "Member created, but the signup email could not be sent. Use the send password reset email option.",

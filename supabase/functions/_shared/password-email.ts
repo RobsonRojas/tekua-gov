@@ -8,6 +8,27 @@ const DEFAULT_FROM = 'contato@tekua.com.br'
 
 export type PasswordEmailFlow = 'invite' | 'reset'
 
+export const EMAIL_NOT_CONFIGURED = 'EMAIL_NOT_CONFIGURED'
+
+/** Thrown when server-side email settings (SITE_URL / RESEND_API_KEY) are missing or invalid. */
+export class EmailConfigError extends Error {
+  code = EMAIL_NOT_CONFIGURED
+  constructor(public missing: string, detail?: string) {
+    super(`${missing} is not configured${detail ? ` (${detail})` : ''}`)
+    this.name = 'EmailConfigError'
+  }
+}
+
+/** Accepts only absolute https URLs (http allowed for localhost, for development). */
+export function isValidSiteUrl(value: string): boolean {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || (url.protocol === 'http:' && url.hostname === 'localhost')
+  } catch {
+    return false
+  }
+}
+
 export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -57,8 +78,9 @@ export async function sendPasswordSetupEmail(
 ): Promise<{ status: 'sent' | 'queued' }> {
   const siteUrl = Deno.env.get('SITE_URL')
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
-  if (!siteUrl) throw new Error('SITE_URL is not configured')
-  if (!resendApiKey) throw new Error('RESEND_API_KEY is not configured')
+  if (!siteUrl) throw new EmailConfigError('SITE_URL')
+  if (!isValidSiteUrl(siteUrl)) throw new EmailConfigError('SITE_URL', 'must be an absolute https URL')
+  if (!resendApiKey) throw new EmailConfigError('RESEND_API_KEY')
 
   const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
     type: 'recovery',
