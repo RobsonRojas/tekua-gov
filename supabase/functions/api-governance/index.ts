@@ -126,14 +126,16 @@ serve(async (req) => {
         if (topicError || !topic) throw new Error('Topic not found')
         if (!acceptsVotes(topic.status)) throw new Error('This topic is no longer accepting votes')
 
-        // 2. Cast vote (upsert)
-        const { data: vote, error: voteError } = await supabaseClient
+        // 2. Cast vote (upsert via supabaseAdmin with explicit conflict target)
+        const { data: vote, error: voteError } = await supabaseAdmin
           .from('topic_votes')
           .upsert({ 
             topic_id: topicId, 
             user_id: user.id, 
             option,
             updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'topic_id,user_id'
           })
           .select()
 

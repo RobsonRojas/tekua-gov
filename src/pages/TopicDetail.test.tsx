@@ -84,11 +84,13 @@ describe('TopicDetail Page', () => {
     expect(calls('castVote')[0][2]).toEqual({ topicId: 'test-topic-id', option: 'yes' });
   });
 
-  it('disables voting buttons if user has already voted', async () => {
+  it('keeps voting buttons active if user has already voted (vote toggle/change)', async () => {
     mockSetup(true, 'open');
     renderPage();
     await waitFor(() => expect(screen.getByText('Seu voto foi registrado com sucesso.')).toBeInTheDocument());
-    expect(screen.getByText('Sim (1)')).toBeDisabled();
+    expect(screen.getByText('Sim (1)')).not.toBeDisabled();
+    expect(screen.getByText('Não (0)')).not.toBeDisabled();
+    expect(screen.getByText('Abstenção (0)')).not.toBeDisabled();
   });
 
   it('disables voting buttons if topic is closed', async () => {

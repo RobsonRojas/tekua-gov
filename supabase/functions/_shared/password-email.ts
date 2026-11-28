@@ -13,9 +13,11 @@ export const EMAIL_NOT_CONFIGURED = 'EMAIL_NOT_CONFIGURED'
 /** Thrown when server-side email settings (SITE_URL / RESEND_API_KEY) are missing or invalid. */
 export class EmailConfigError extends Error {
   code = EMAIL_NOT_CONFIGURED
-  constructor(public missing: string, detail?: string) {
+  missing: string
+  constructor(missing: string, detail?: string) {
     super(`${missing} is not configured${detail ? ` (${detail})` : ''}`)
     this.name = 'EmailConfigError'
+    this.missing = missing
   }
 }
 
